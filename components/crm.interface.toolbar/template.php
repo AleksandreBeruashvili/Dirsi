@@ -575,7 +575,7 @@ if($dealId){
 		//
 
 		//რეზერვაციის ცვლილება
-			if (userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product && deal["STAGE_ID"] != "WON") {
+			if (userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product && deal["UF_CRM_1762331240"] && deal["STAGE_ID"] != "WON") {
 				if(Product[0]["_WJ6N47"] != "თავისდაუფალი" || Product[0]["_WJ6N47"] != "გაყიდული" ){
 				const observer = new MutationObserver(() => {
 					const buttonContainer = createButtonContainer();
