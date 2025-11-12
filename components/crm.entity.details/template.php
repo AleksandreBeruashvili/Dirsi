@@ -129,7 +129,7 @@ if ($url[2] == "deal" && intval($url[4]) > 0) {
 
     $catalogTab = array(
         "id" => "catalog",
-        "name" => "კატალოგი",
+        "name" => "catalog",
         "loader" => array(
 			"serviceUrl" => "/custom/catalog?dealid=$dealId"
         )

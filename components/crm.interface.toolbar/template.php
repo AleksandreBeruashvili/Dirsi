@@ -448,7 +448,7 @@ if($dealId){
 							<svg class="custom-action-icon" viewBox="0 0 24 24">
 								<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1.81.45 1.61 1.67 1.61 1.16 0 1.6-.64 1.6-1.46 0-.83-.44-1.61-2.11-2.14-1.93-.6-3.27-1.48-3.27-3.3 0-1.59 1.22-2.84 2.94-3.2V4h2.67v2.15c1.63.29 2.79 1.37 2.96 3.08h-1.97c-.1-.71-.44-1.5-1.54-1.5-1.03 0-1.6.61-1.6 1.39 0 .78.58 1.22 2.11 1.75 1.86.63 3.27 1.36 3.27 3.39 0 1.63-1.11 3.08-3.04 3.4z"/>
 							</svg>
-							<span>გაყიდვა</span>
+							<span>Sale</span>
 						`;
 						
 						sellButton.onmouseover = function() {
@@ -527,7 +527,7 @@ if($dealId){
 								<svg class="custom-action-icon" viewBox="0 0 24 24">
 									<path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
 								</svg>
-								<span>რეზერვაცია</span>
+								<span>Reservation</span>
 							`;
 							
 							reservationButton.onmouseover = function() {
@@ -593,7 +593,7 @@ if($dealId){
 							<svg class="custom-action-icon" viewBox="0 0 24 24">
 								<path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
 							</svg>
-							<span>რეზერვაციის ცვლილება</span>
+							<span>Reservation Change</span>
 						`;
 						
 						resChangeButton.onmouseover = function() {
@@ -658,7 +658,7 @@ if($dealId){
 								<svg class="custom-action-icon" viewBox="0 0 24 24">
 									<path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
 								</svg>
-								<span>ჯავშნის რიგი</span>
+								<span>Reservation Queue</span>
 							`;
 
 							javshnisRigi.onmouseover = function() {
@@ -723,7 +723,7 @@ if($dealId){
 							<svg class="custom-action-icon" viewBox="0 0 24 24">
 								<path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
 							</svg>
-							<span>დოკუმენტები</span>
+							<span>Documents</span>
 						`;
 						
 						documentsButton.onmouseover = function() {

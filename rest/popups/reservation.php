@@ -147,6 +147,9 @@ $contactInfo= getContactById($contactId);
         .form-control.error-input {
             border-color: #ff0000;
         }
+        .gtranslate_wrapper{
+            margin-left: 450px;
+        }
     </style>
 </head>
 <body>
@@ -228,14 +231,33 @@ $contactInfo= getContactById($contactId);
         console.log(ResChange);
 
 
+        // if(ResChange==1){
+        //     document.getElementById("resChangeDiv").style.display="";
+        //     document.getElementById("resChange").setAttribute("required", "required");
+        //     document.getElementById("reservationType").value="ufaso";
+        //     document.getElementById("reservationType").style.pointerEvents="none";
+        // }else{
+        //     document.getElementById("resChangeDiv").style.display="none"
+        // }
+
         if(ResChange==1){
             document.getElementById("resChangeDiv").style.display="";
             document.getElementById("resChange").setAttribute("required", "required");
-            document.getElementById("reservationType").value="ufaso";
-            document.getElementById("reservationType").style.pointerEvents="none";
+                if(deal["UF_CRM_1762331240"]=="71"){
+                    typeValue="ufaso";
+                }else if(deal["UF_CRM_1762331240"]=="72"){
+                    typeValue="uvado";
+                }else{
+                    typeValue=""; 
+                }
+
+            document.getElementById("reservationType").value=typeValue;
+            // document.getElementById("resChange").value=deal["UF_CRM_1762330753"];
+            // document.getElementById("reservationType").style.pointerEvents="none";
         }else{
             document.getElementById("resChangeDiv").style.display="none"
         }
+
 
         function javshnisTypeFunc(){
 
@@ -382,6 +404,35 @@ $contactInfo= getContactById($contactId);
         });
 
 
+        setTimeout(() => {
+            // დავამატოთ GTranslate-ის პარამეტრები
+            const settingsScript = document.createElement('script');
+            settingsScript.textContent = `
+                window.gtranslateSettings = {
+                    "default_language": "ka",
+                    "languages": ["ka", "en", "ru"],
+                    "wrapper_selector": ".gtranslate_wrapper",
+                    "flag_size": 24
+                };
+            `;
+            document.body.appendChild(settingsScript);
 
+            // დავამატოთ თვითონ თარგმანის სკრიპტი
+            const gtranslateScript = document.createElement('script');
+            gtranslateScript.src = "https://cdn.gtranslate.net/widgets/latest/flags.js";
+            gtranslateScript.defer = true;
+            document.body.appendChild(gtranslateScript);
+
+            // ვიპოვოთ რეზერვაციის ფორმის ელემენტი
+            const reservationForm = document.querySelector('.reservation-form');
+            if (reservationForm) {
+                // შევქმნათ თარგმანის HTML
+                const translateHtml = document.createElement('div');
+                translateHtml.className = 'gtranslate_wrapper';
+
+                // ჩავსვათ რეზერვაციის ფორმის ზემოთ
+                reservationForm.parentNode.insertBefore(translateHtml, reservationForm);
+            }
+        }, 1000);
 
     </script>
