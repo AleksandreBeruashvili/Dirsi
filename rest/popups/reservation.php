@@ -158,8 +158,8 @@ $contactInfo= getContactById($contactId);
                 <label for="reservationType" class="required">რეზერვაციის ტიპი</label>
                 <select class="form-control" id="reservationType" name="reservationType" style="width: 40%;" required>
                     <option value="">აირჩიეთ...</option>
-                    <option value="ufaso">უფასო 3 სამუშაო დღე</option>
-                    <option value="uvado">უვადო</option>
+                    <option value="ufaso">უფასო 2 სამუშაო დღე</option>
+                    <option value="uvado">არასტანდარტული ჯავშანი</option>
                 </select>
                 <div class="error" id="reservationType-error">გთხოვთ აირჩიოთ რეზერვაციის ტიპი</div>
             </div>

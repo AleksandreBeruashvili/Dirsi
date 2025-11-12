@@ -112,7 +112,7 @@ if ($contactId > 0) {
 }
 if($dealId){
     $today = date("d/m/Y"); 
-    $threeWorkDaysLater = addWorkDays($today, 3);
+    $threeWorkDaysLater = addWorkDays($today, 2);
 
     if($reservationType=="ufaso"){
         $typeId="71";

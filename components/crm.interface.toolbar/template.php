@@ -338,11 +338,15 @@ if($dealId){
             })
             .then(data => {
                 stageIdFromService = data["deal_data"]["STAGE_ID"];
-                if (stageIdFromService === "NEW") {
-                    catalog.style.display = "none";
-                } else {
-                    catalog.style.display = "";
-                }
+
+				// if(userID!=1){
+					if (stageIdFromService === "NEW" || stageIdFromService === "PREPARATION" ) {
+						catalog.style.display = "none";
+					} else {
+						catalog.style.display = "";
+					}
+				// }
+
             })
             .catch(error => {
                 console.log(error);
@@ -350,6 +354,15 @@ if($dealId){
     }, 500);
 
 	//სანდროს კოდები
+
+
+		setInterval(function() {
+			var terminationDiv = document.getElementById("popup-window-content-entity_progress_TERMINATION");
+			if (terminationDiv && window.getComputedStyle(terminationDiv).display === "block") {
+				var acceptBtn = terminationDiv.querySelector(".webform-small-button-accept");
+				if (acceptBtn) acceptBtn.style.display = "none";
+			}
+		}, 100);
 
 	//ბათონები და ფუნქციები
 
@@ -460,7 +473,7 @@ if($dealId){
 			function sellPopup(dealIdForToolbar) {
 				if (typeof BX !== 'undefined' && BX.SidePanel) {
 					BX.SidePanel.Instance.open(
-						'http://146.255.242.182/rest/popups/sell.php?DEAL_ID=' + dealIdForToolbar,
+						'/rest/popups/sell.php?DEAL_ID=' + dealIdForToolbar,
 						{
 							width: 600,
 							cacheable: false,
@@ -470,7 +483,7 @@ if($dealId){
 					);
 				} else {
 					window.open(
-						'http://146.255.242.182/rest/popups/sell.php?DEAL_ID=' + dealIdForToolbar,
+						'/rest/popups/sell.php?DEAL_ID=' + dealIdForToolbar,
 						'reservationPopup',
 						'width=600,height=700,resizable=yes,scrollbars=yes'
 					);
@@ -491,7 +504,10 @@ if($dealId){
 				// console.log(queueParts[1]);
 				// console.log(Product[0]["_WJ6N47"])
 				
-				if (((userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details")&& !deal["UF_CRM_1762333827"]) || (Product[0]["_WJ6N47"] == "თავისუფალი" && (isset($queueParts[1]) && trim($queueParts[1]) == dealIdForToolbar)) || (deal["STAGE_ID"] !== "NEW" || deal["STAGE_ID"] !== "PREPARATION" || deal["STAGE_ID"] !== "PREPAYMENT_INVOICE")) {
+				if ((((userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details")) 
+				&& ((!deal["UF_CRM_1762333827"]) || (Product[0]["_WJ6N47"] == "თავისუფალი" && (isset($queueParts[1]) && trim($queueParts[1]) == dealIdForToolbar)))) 
+				&& 
+				(deal["STAGE_ID"] == "UC_12CJ1Z" || deal["STAGE_ID"] == "UC_2EW8VW" || deal["STAGE_ID"] !== "UC_15207E" || deal["STAGE_ID"] == "EXECUTING" || deal["STAGE_ID"] !== "UC_BAUB5P" || deal["STAGE_ID"] == "UC_F3FOBF")) {
 
 					// console.log("shemovida")
 
@@ -538,7 +554,7 @@ if($dealId){
 				function reservationPopup(dealIdForToolbar) {
 					if (typeof BX !== 'undefined' && BX.SidePanel) {
 						BX.SidePanel.Instance.open(
-							'http://146.255.242.182/rest/popups/reservation.php?ResChange=0&DEAL_ID=' + dealIdForToolbar,
+							'/rest/popups/reservation.php?ResChange=0&DEAL_ID=' + dealIdForToolbar,
 							{
 								width: 600,
 								cacheable: false,
@@ -548,7 +564,7 @@ if($dealId){
 						);
 					} else {
 						window.open(
-							'http://146.255.242.182/rest/popups/reservation.php?ResChange=0&DEAL_ID=' + dealIdForToolbar,
+							'/rest/popups/reservation.php?ResChange=0&DEAL_ID=' + dealIdForToolbar,
 							'reservationPopup',
 							'width=600,height=700,resizable=yes,scrollbars=yes'
 						);
@@ -559,7 +575,7 @@ if($dealId){
 		//
 
 		//რეზერვაციის ცვლილება
-			if (userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product && deal["UF_CRM_1762331240"]== "71" && deal["STAGE_ID"] != "WON") {
+			if (userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product && deal["STAGE_ID"] != "WON") {
 				if(Product[0]["_WJ6N47"] != "თავისდაუფალი" || Product[0]["_WJ6N47"] != "გაყიდული" ){
 				const observer = new MutationObserver(() => {
 					const buttonContainer = createButtonContainer();
@@ -604,7 +620,7 @@ if($dealId){
 			function resChangePopUp(dealIdForToolbar) {
 				if (typeof BX !== 'undefined' && BX.SidePanel) {
 					BX.SidePanel.Instance.open(
-						'http://146.255.242.182/rest/popups/reservation.php?ResChange=1&DEAL_ID=' + dealIdForToolbar,
+						'/rest/popups/reservation.php?ResChange=1&DEAL_ID=' + dealIdForToolbar,
 						{
 							width: 600,
 							cacheable: false,
@@ -614,7 +630,7 @@ if($dealId){
 					);
 				} else {
 					window.open(
-						'http://146.255.242.182/rest/popups/reservation.php?ResChange=1&DEAL_ID=' + dealIdForToolbar,
+						'/rest/popups/reservation.php?ResChange=1&DEAL_ID=' + dealIdForToolbar,
 						'resChangePopUp',
 						'width=600,height=700,resizable=yes,scrollbars=yes'
 					);
@@ -625,7 +641,7 @@ if($dealId){
 
 		//ჯავშნის რიგი
 			if (userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product) {
-				if (Product[0]["_WJ6N47"] == "დაჯავშნილი" || Product[0]["_WJ6N47"] == "ჯავშნის რიგი") {
+				if (Product[0]["_WJ6N47"] == "დაჯავშნილი" && (deal["STAGE_ID"] == "PREPARATION" ||  deal["STAGE_ID"] == "PREPAYMENT_INVOICE" ||  deal["STAGE_ID"] == "EXECUTING")) {
 
 					const observer = new MutationObserver(() => {
 						const buttonContainer = createButtonContainer();
@@ -755,28 +771,26 @@ if($dealId){
 
 
 	// კონკრეტულ სთეიჯებზე გადატანის დაბლოკვა
-	// userID != 1 &&
+	if ( userID != 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details" ) {
+		setTimeout(function() {
+			// აიდების სია, რომლებიც უნდა დაიბლოკოს
+			const blockedIds = ["3", "4"];
 
-	// if ( url[3] == "crm" && url[4] == "deal" && url[5] == "details" ) {
-	// 	setTimeout(function() {
-	// 		// აიდების სია, რომლებიც უნდა დაიბლოკოს
-	// 		const blockedIds = ["FINAL_INVOICE", "WON", "1", "2", "3", "4"];
+			blockedIds.forEach(id => {
+				const element = document.querySelector(`[data-id="${id}"]`);
+				if (element) {
+					element.style.pointerEvents = 'none';
+					element.style.opacity = '0.8';
 
-	// 		blockedIds.forEach(id => {
-	// 			const element = document.querySelector(`[data-id="${id}"]`);
-	// 			if (element) {
-	// 				element.style.pointerEvents = 'none';
-	// 				element.style.opacity = '0.8';
-
-	// 				element.onclick = function(e) {
-	// 					e.preventDefault();
-	// 					alert('ამ სტეიჯზე ხელით გადატანა შეუძლებელია!');
-	// 					return false;
-	// 				};
-	// 			}
-	// 		});
-	// 	}, 100);
-	// }
+					element.onclick = function(e) {
+						e.preventDefault();
+						alert('ამ სტეიჯზე ხელით გადატანა შეუძლებელია!');
+						return false;
+					};
+				}
+			});
+		}, 100);
+	}
 
 </script>
 
