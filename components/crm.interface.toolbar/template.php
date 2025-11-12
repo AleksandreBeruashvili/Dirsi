@@ -418,7 +418,7 @@ if($dealId){
 		}
 
 		//გაყიდვა
-			if (userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product && (deal["STAGE_ID"] == "1" || deal["STAGE_ID"] == "2")) {
+			if (userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product && deal["STAGE_ID"] == "2") {
 				const observer = new MutationObserver(() => {
 					const buttonContainer = createButtonContainer();
 					
@@ -479,8 +479,6 @@ if($dealId){
 			window.reservationPopup = reservationPopup;
 		//
 
-
-		// console.log(Product);
 		//რეზერვაცია
 			if(Product){
 
@@ -493,7 +491,7 @@ if($dealId){
 				// console.log(queueParts[1]);
 				// console.log(Product[0]["_WJ6N47"])
 				
-				if (((userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details") && ((!deal["UF_CRM_1762333827"])) || (Product[0]["_WJ6N47"] == "თავისუფალი" && (isset($queueParts[1]) && trim($queueParts[1]) == dealIdForToolbar)))) {
+				if (((userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details")&& !deal["UF_CRM_1762333827"]) || (Product[0]["_WJ6N47"] == "თავისუფალი" && (isset($queueParts[1]) && trim($queueParts[1]) == dealIdForToolbar)) || (deal["STAGE_ID"] !== "NEW" || deal["STAGE_ID"] !== "PREPARATION" || deal["STAGE_ID"] !== "PREPAYMENT_INVOICE")) {
 
 					// console.log("shemovida")
 
@@ -625,7 +623,6 @@ if($dealId){
 			window.resChangePopUp = resChangePopUp;
 		//
 
-
 		//ჯავშნის რიგი
 			if (userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product) {
 				if (Product[0]["_WJ6N47"] == "დაჯავშნილი" || Product[0]["_WJ6N47"] == "ჯავშნის რიგი") {
@@ -692,7 +689,7 @@ if($dealId){
 		//
 
 		//დოკუმენტები
-			if (userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details" && (deal["STAGE_ID"] == "1" || deal["STAGE_ID"] == "2" || deal["STAGE_ID"] == "3" || deal["STAGE_ID"] == "4"|| deal["STAGE_ID"] == "WON" )) {
+			if (userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details" && (deal["STAGE_ID"] == "2" || deal["STAGE_ID"] == "3" || deal["STAGE_ID"] == "4"|| deal["STAGE_ID"] == "WON" )) {
 				
 				const observer = new MutationObserver(() => {
 					const buttonContainer = createButtonContainer();
@@ -753,7 +750,6 @@ if($dealId){
 			}
 			window.reservationPopup = reservationPopup;
 		//
-
 	//
 
 
