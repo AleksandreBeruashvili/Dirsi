@@ -431,7 +431,7 @@ if($dealId){
 		}
 
 		//გაყიდვა
-			if (userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product && deal["STAGE_ID"] == "2") {
+			if (url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product && deal["STAGE_ID"] == "2") {
 				const observer = new MutationObserver(() => {
 					const buttonContainer = createButtonContainer();
 					
@@ -504,7 +504,7 @@ if($dealId){
 				// console.log(queueParts[1]);
 				// console.log(Product[0]["_WJ6N47"])
 				
-				if ((((userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details")) 
+				if ((((url[3] == "crm" && url[4] == "deal" && url[5] == "details")) 
 				&& ((!deal["UF_CRM_1762333827"]) || (Product[0]["_WJ6N47"] == "თავისუფალი" && (isset($queueParts[1]) && trim($queueParts[1]) == dealIdForToolbar)))) 
 				&& 
 				(deal["STAGE_ID"] == "UC_12CJ1Z" || deal["STAGE_ID"] == "UC_2EW8VW" || deal["STAGE_ID"] !== "UC_15207E" || deal["STAGE_ID"] == "EXECUTING" || deal["STAGE_ID"] !== "UC_BAUB5P" || deal["STAGE_ID"] == "UC_F3FOBF")) {
@@ -575,7 +575,7 @@ if($dealId){
 		//
 
 		//რეზერვაციის ცვლილება
-			if (userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product && deal["UF_CRM_1762331240"] && deal["STAGE_ID"] != "WON") {
+			if (url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product && deal["UF_CRM_1762331240"] && deal["STAGE_ID"] != "WON") {
 				if(Product[0]["_WJ6N47"] != "თავისდაუფალი" || Product[0]["_WJ6N47"] != "გაყიდული" ){
 				const observer = new MutationObserver(() => {
 					const buttonContainer = createButtonContainer();
@@ -640,7 +640,7 @@ if($dealId){
 		//
 
 		//ჯავშნის რიგი
-			if (userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product) {
+			if (url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product) {
 				if (Product[0]["_WJ6N47"] == "დაჯავშნილი" && (deal["STAGE_ID"] == "PREPARATION" ||  deal["STAGE_ID"] == "PREPAYMENT_INVOICE" ||  deal["STAGE_ID"] == "EXECUTING")) {
 
 					const observer = new MutationObserver(() => {
@@ -705,7 +705,7 @@ if($dealId){
 		//
 
 		//დოკუმენტები
-			if (userID == 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details" && (deal["STAGE_ID"] == "2" || deal["STAGE_ID"] == "3" || deal["STAGE_ID"] == "4"|| deal["STAGE_ID"] == "WON" )) {
+			if ( url[3] == "crm" && url[4] == "deal" && url[5] == "details" && (deal["STAGE_ID"] == "2" || deal["STAGE_ID"] == "3" || deal["STAGE_ID"] == "4"|| deal["STAGE_ID"] == "WON" )) {
 				
 				const observer = new MutationObserver(() => {
 					const buttonContainer = createButtonContainer();
@@ -792,5 +792,26 @@ if($dealId){
 		}, 100);
 	}
 
+    setInterval(() => {
+
+		if (pathname[1] == "crm" && pathname[2] == "deal" && pathname[4] != "0" &&  deal["STAGE_ID"] == "NEW") {
+
+			const realEstateSection = document.querySelector("[data-cid='user_qo1d69qy']");
+			if (realEstateSection) {
+				realEstateSection.style.display = "none";
+			}
+
+			const agr = document.querySelector("[data-cid='user_835g4q5p']");
+			if (agr) {
+				agr.style.display = "none";
+			}
+
+			var reservation = document.querySelector("[data-cid='user_iunr3z03']");
+			if (reservation) {
+				reservation.style.display = 'none';
+			}
+		}
+
+    }, 500);
 </script>
 
