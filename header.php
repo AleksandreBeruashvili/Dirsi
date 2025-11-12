@@ -73,11 +73,17 @@ if ($USER->IsAuthorized()) {
 
         var logo = document.getElementsByClassName('menu-items-header');
 
-        var translatehtml = `
-                    <div class="gtranslate_wrapper"></div>
-                `;
+        if(logo){
+            var translatehtml = `
+                        <div class="gtranslate_wrapper"></div>
+                    `;
+            if(logo[0]){
+                logo[0].insertAdjacentHTML('afterbegin', translatehtml);
+            }
 
-        logo[0].insertAdjacentHTML('afterbegin', translatehtml);
+        }
+
+
 
 
     }, 1000);
