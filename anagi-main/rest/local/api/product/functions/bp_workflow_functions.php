@@ -1,0 +1,167 @@
+<?php
+
+function printArr ($arr) {
+    echo "<pre>"; print_r($arr); echo "</pre>";
+}
+
+function getCIBlockElementByID($ID){
+    $arElements = array();
+    $res = CIBlockElement::GetList(array("ID"=>"DESC"), array("ID"=>$ID), false, Array("nPageSize" => 1), Array("ID", "IBLOCK_ID", "NAME", "DATE_ACTIVE_FROM", "PROPERTY_*"));
+    while ($ob = $res->GetNextElement()) {
+        $arFilds = $ob->GetFields();
+        $arProps = $ob->GetProperties();
+        $arPushs = array();
+        foreach ($arFilds as $key => $arFild) $arPushs[$key] = $arFild;
+        foreach ($arProps as $key => $arProp) $arPushs[$key] = $arProp["VALUE"];
+        return $arPushs;
+    }
+    return $arElements;
+}
+
+
+function sendNotificationToQueue ($queue,$notification) {
+    $queueAr = explode("|",$queue);
+
+    $count = 1;
+    foreach ($queueAr as $QueuedealID) {
+        if($QueuedealID>0 && is_numeric($QueuedealID)) {
+            $dealData = getDealInfoByID($QueuedealID);
+            $responsible = $dealData["ASSIGNED_BY_ID"];
+
+            $arFields = array(
+                "MESSAGE_TYPE" => "S", # P - private chat, G - group chat, S - notification
+                "TO_USER_ID" => $responsible,
+                "FROM_USER_ID" => 1,
+                "MESSAGE" => $notification." თქვენ ხართ რიგში N$count \n <a href='" . $_SERVER['HTTP_HOST'] ."/crm/deal/details/$QueuedealID/'>".$dealData["TITLE"] ."</a>",
+                "AUTHOR_ID" => 1,
+                "EMAIL_TEMPLATE" => "some",
+
+                "NOTIFY_TYPE" => 4,  # 1 - confirm, 2 - notify single from, 4 - notify single
+                "NOTIFY_MODULE" => "main", # module id sender (ex: xmpp, main, etc)
+                "NOTIFY_EVENT" => "IM_GROUP_INVITE", # module event id for search (ex, IM_GROUP_INVITE)
+                "NOTIFY_TITLE" => "title to send email", # notify title to send email
+            );
+            CModule::IncludeModule('im');
+            CIMMessenger::Add($arFields);
+
+            $count++;
+        }
+    }
+}
+
+function sendNotificationToResponsible ($dealID,$notification) {
+
+    if($dealID>0 && is_numeric($dealID)) {
+        $dealData = getDealInfoByID($dealID);
+        $responsible = $dealData["ASSIGNED_BY_ID"];
+
+        $arFields = array(
+            "MESSAGE_TYPE" => "S", # P - private chat, G - group chat, S - notification
+            "TO_USER_ID" => 1,
+            "FROM_USER_ID" => 1,
+            "MESSAGE" => $notification." \n <a href='" . $_SERVER['HTTP_HOST'] ."/crm/deal/details/$dealID/'>".$dealData["TITLE"] ."</a>",
+            "AUTHOR_ID" => 1,
+            "EMAIL_TEMPLATE" => "some",
+
+            "NOTIFY_TYPE" => 4,  # 1 - confirm, 2 - notify single from, 4 - notify single
+            "NOTIFY_MODULE" => "main", # module id sender (ex: xmpp, main, etc)
+            "NOTIFY_EVENT" => "IM_GROUP_INVITE", # module event id for search (ex, IM_GROUP_INVITE)
+            "NOTIFY_TITLE" => "title to send email", # notify title to send email
+        );
+        CModule::IncludeModule('im');
+        CIMMessenger::Add($arFields);
+    }
+}
+
+function getCIBlockElementsByFilter($arrFilter)
+{
+    $arElements = array();
+    $res = CIBlockElement::GetList(array("ID"=>"DESC"), $arrFilter, false, Array("nPageSize" => 1), Array("ID", "IBLOCK_ID", "NAME", "DATE_ACTIVE_FROM", "PROPERTY_*"));
+    while ($ob = $res->GetNextElement()) {
+        $arFilds = $ob->GetFields();
+        $arProps = $ob->GetProperties();
+        $arPushs = array();
+        foreach ($arFilds as $key => $arFild) $arPushs[$key] = $arFild;
+        foreach ($arProps as $key => $arProp) $arPushs[$key] = $arProp["VALUE"];
+        array_push($arElements, $arPushs);
+    }
+    return $arElements;
+}
+
+function getDealInfoByID ($dealID) {
+    $res = CCrmDeal::GetList(array("ID" => "ASC"), array("ID" => $dealID,"CHECK_PERMISSIONS" => "N"), array());
+
+    $resArr = array();
+    if($arDeal = $res->Fetch()){
+        return $arDeal;
+    }
+}
+
+function dealUpdate_163($dealId,$productData)
+{
+
+    $prodNumber = $productData["NUMBER"];
+    $prodFLOOR = $productData["_IL24RV"];
+    $prodPRODUCT_TYPE = $productData["PRODUCT_TYPE"];
+    $prodTOTAL_AREA = $productData["TOTAL_AREA"];
+
+
+    $arrForAdd ["UF_CRM_1693385964548"] = $prodNumber;      //ბინის N
+    $arrForAdd ["UF_CRM_1709803989"] = $prodFLOOR;      //სართული
+    $arrForAdd ["UF_CRM_1693385948133"] = "";      //პროექტი
+    $arrForAdd ["UF_CRM_1693385992603"] = $prodPRODUCT_TYPE;      //ფართის ტიპი
+    $arrForAdd ["UF_CRM_1693386021079"] = $prodTOTAL_AREA;      //საერთო ფართი
+    $arrForAdd ["UF_CRM_1693398443196"] = date("d/m/Y");      //ხელშეკრულების გაფორმების თარიღი
+
+    $Deal = new CCrmDeal();
+    $result = $Deal->Update($dealId, $arrForAdd);
+}
+
+
+function getProductDataByID($ID)
+{
+    $arElements=array();
+
+    if(is_numeric($ID)) {
+        $arSelect = Array();
+        $res = CIBlockElement::GetList(Array(), array("ID"=>$ID), false, Array("nPageSize"=>50), $arSelect);
+        if($ob = $res->GetNextElement()) {
+            $arFilds = $ob->GetFields();
+            $arProps = $ob->GetProperties();
+            $arPushs = array();
+            foreach($arFilds as $key => $arFild) $arPushs[$key] = $arFild;
+            foreach($arProps as $key => $arProp) $arPushs[$key] = $arProp["VALUE"];
+            $price = CPrice::GetBasePrice($arPushs["ID"]);
+            $arPushs["PRICE"] = $price["PRICE"];
+
+            return $arPushs;
+        }
+    }
+    return $arElements;
+}
+
+function reservation_163($deal,$element){
+
+    $dealID = $deal["ID"];
+    $element["_WJ6N47"] = "დაჯავშნილი";
+    $element["OWNER_DEAL"] = $dealID;
+    $element["DEAL_RESPONSIBLE"] = $deal["ASSIGNED_BY_ID"];
+    $element["OWNER_CONTACT"] = $deal["CONTACT_ID"];
+    $element["OWNER_COMPANY"] = $deal["COMPANY_ID"];
+    $element["QUEUE"] = str_replace("|$dealID", "", $element["QUEUE"]);
+
+    $el = new CIBlockElement;
+    $arLoadProductArray = array(
+        "PROPERTY_VALUES" => $element,
+        "NAME" => $element["NAME"],
+        "ACTIVE" => "Y",            // активен
+    );
+    $res = $el->Update($element["ID"], $arLoadProductArray);
+
+    $arrLoadProductRows = array();
+    $arPush = array('PRODUCT_ID' => $element["ID"], 'PRICE' => $element["PRICE"], 'QUANTITY' => 1);
+    array_push($arrLoadProductRows, $arPush);
+    $saveRes = CCrmDeal::SaveProductRows($dealID, $arrLoadProductRows);
+
+    dealUpdate_163($deal["ID"],$element);
+}
