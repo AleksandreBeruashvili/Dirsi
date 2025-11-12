@@ -156,12 +156,18 @@ $contactInfo= getContactById($contactId);
             
             <div class="form-group">
                 <label for="reservationType" class="required">რეზერვაციის ტიპი</label>
-                <select class="form-control" id="reservationType" name="reservationType" style="width: 40%;" required>
+                <select class="form-control" id="reservationType" name="reservationType" style="width: 40%;" onchange="javshnisTypeFunc()" required>
                     <option value="">აირჩიეთ...</option>
                     <option value="ufaso">უფასო 2 სამუშაო დღე</option>
                     <option value="uvado">არასტანდარტული ჯავშანი</option>
                 </select>
                 <div class="error" id="reservationType-error">გთხოვთ აირჩიოთ რეზერვაციის ტიპი</div>
+            </div>
+
+            <div id="vadaDiv" class="form-group" style="display: none;">
+                <label for="vada" class="required">ვადა</label>
+                <input type="date" class="form-control" id="vada" name="vada">
+                <div class="error" id="vada-error">გთხოვთ შეიყვანოთ ვადა</div>
             </div>
             
 
@@ -230,6 +236,19 @@ $contactInfo= getContactById($contactId);
         }else{
             document.getElementById("resChangeDiv").style.display="none"
         }
+
+        function javshnisTypeFunc(){
+
+            if(ResChange!=1){
+                if(document.getElementById("reservationType").value=="uvado" || document.getElementById("reservationType").value=="fasiani"){
+                    document.getElementById("vadaDiv").style.display="";
+                }else{
+                    document.getElementById("vadaDiv").style.display="none";
+                }
+
+            }
+
+        }
         
         function fillContactInfo(id, value){
             if(document.getElementById(id)){
@@ -265,15 +284,35 @@ $contactInfo= getContactById($contactId);
                 $("#" + inputId + "-error").hide();
             }
 
-            // Basic form validation
             function validateForm() {
                 let isValid = true;
+                let requiredFields = []; // აქ უნდა გამოცხადდეს გარეთ
 
-                const requiredFields = [
-                    "reservationType",
-                    "firstName",
-                    "lastName"
-                ];
+                if (ResChange == 1) {
+                    requiredFields = [
+                        "reservationType",
+                        "resChange",
+                        "firstName",
+                        "lastName"
+                    ];
+                } else {
+                    if (
+                        document.getElementById("reservationType").value == "uvado"
+                    ) {
+                        requiredFields = [
+                            "reservationType",
+                            "vada",
+                            "firstName",
+                            "lastName"
+                        ];
+                    } else {
+                        requiredFields = [
+                            "reservationType",
+                            "firstName",
+                            "lastName"
+                        ];
+                    }
+                }
 
                 requiredFields.forEach(function (field) {
                     let value = $("#" + field).val().trim();
@@ -287,6 +326,7 @@ $contactInfo= getContactById($contactId);
 
                 return isValid;
             }
+
 
             // Submit form
             $("#reservationForm").on("submit", function (e) {
@@ -303,7 +343,7 @@ $contactInfo= getContactById($contactId);
                     personalId: $("#personalId").val(),
                     passportId: $("#passportId").val(),
                     comment: $("#comment").val(),
-
+                    vada: $("#vada").val(),
                     ResChange: ResChange,              
                     ResChangeDate: $("#resChange").val() || ""
                 };

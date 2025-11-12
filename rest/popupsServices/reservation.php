@@ -58,7 +58,7 @@ $sellComment=trim($_POST["comment"]);
 
 $ResChange=trim($_POST["ResChange"]);
 $ResChangeDate =trim($_POST["ResChangeDate"]);
-
+$vada =trim($_POST["vada"]);
 
 $contactFields = [
     "NAME" => trim($_POST["firstName"]),
@@ -132,7 +132,7 @@ if($dealId){
     $wfId = CBPDocument::StartWorkflow(  
         18,                                                           //პროცესის ID
         array("crm", "CCrmDocumentDeal", "DEAL_$dealId"),        // deal || contact || lead || company
-        array("ResChangeDate"=>$ResChangeDate, "resComment"=>$sellComment, "gashvebisTarixi"=>$today,"reservationDate"=>$reservationDate, "reservationType"=>$reservationType, "TargetUser" => "user_".$currentUserId),
+        array("vada"=>$vada, "ResChangeDate"=>$ResChangeDate, "resComment"=>$sellComment, "gashvebisTarixi"=>$today,"reservationDate"=>$reservationDate, "reservationType"=>$reservationType, "TargetUser" => "user_".$currentUserId),
         $arErrorsTmp
     );
 }
