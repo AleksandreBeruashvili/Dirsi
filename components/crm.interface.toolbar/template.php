@@ -441,8 +441,8 @@ if($dealId){
 						sellButton.className = 'custom-action-btn';
 						// მწვანე ფერი გაყიდვისთვის
 						sellButton.style.cssText = `
-							background: linear-gradient(135deg, #52c41a 0%, #237804 100%);
-							box-shadow: 0 4px 15px rgba(82, 196, 26, 0.4);
+								background: linear-gradient(135deg, #8f99c4ff 0%, #427efeff 100%);
+								box-shadow: 0 4px 15px rgba(27, 55, 176, 0.4);
 						`;
 						sellButton.innerHTML = `
 							<svg class="custom-action-icon" viewBox="0 0 24 24">
@@ -452,11 +452,11 @@ if($dealId){
 						`;
 						
 						sellButton.onmouseover = function() {
-							this.style.boxShadow = '0 7px 25px rgba(82, 196, 26, 0.5)';
+							this.style.boxShadow = '0 7px 25px rgba(102, 126, 234, 0.5)';
 						};
 						
 						sellButton.onmouseout = function() {
-							this.style.boxShadow = '0 4px 15px rgba(82, 196, 26, 0.4)';
+							this.style.boxShadow = '0 4px 15px rgba(27, 55, 176, 0.4)';
 						};
 						
 						sellButton.onclick = function () {
@@ -520,7 +520,7 @@ if($dealId){
 							reservationButton.className = 'custom-action-btn';
 							// ლურჯი ფერი რეზერვაციისთვის
 							reservationButton.style.cssText = `
-								background: linear-gradient(135deg, #667eea 0%, #427efeff 100%);
+								background: linear-gradient(135deg, #8f99c4ff 0%, #427efeff 100%);
 								box-shadow: 0 4px 15px rgba(27, 55, 176, 0.4);
 							`;
 							reservationButton.innerHTML = `
@@ -665,7 +665,7 @@ if($dealId){
 								this.style.boxShadow = '0 7px 25px rgba(102, 126, 234, 0.5)';
 							};
 							javshnisRigi.onmouseout = function() {
-								this.style.boxShadow = '0 4px 15px rgba(27, 55, 176, 0.4)';
+							this.style.boxShadow = '0 4px 15px rgba(27, 55, 176, 0.4)';
 							};
 
 							javshnisRigi.onclick = function () {
@@ -716,8 +716,8 @@ if($dealId){
 						documentsButton.className = 'custom-action-btn';
 						// ნარინჯისფერი დოკუმენტებისთვის
 						documentsButton.style.cssText = `
-							background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-							box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+								background: linear-gradient(135deg, #8f99c4ff 0%, #427efeff 100%);
+								box-shadow: 0 4px 15px rgba(27, 55, 176, 0.4);
 						`;
 						documentsButton.innerHTML = `
 							<svg class="custom-action-icon" viewBox="0 0 24 24">
@@ -727,11 +727,11 @@ if($dealId){
 						`;
 						
 						documentsButton.onmouseover = function() {
-							this.style.boxShadow = '0 7px 25px rgba(255, 152, 0, 0.5)';
+							this.style.boxShadow = '0 7px 25px rgba(102, 126, 234, 0.5)';
 						};
 						
 						documentsButton.onmouseout = function() {
-							this.style.boxShadow = '0 4px 15px rgba(255, 152, 0, 0.4)';
+							this.style.boxShadow = '0 4px 15px rgba(27, 55, 176, 0.4)';
 						};
 						
 						documentsButton.onclick = function () {
