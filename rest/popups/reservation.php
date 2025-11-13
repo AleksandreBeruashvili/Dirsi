@@ -433,6 +433,6 @@ $contactInfo= getContactById($contactId);
                 // ჩავსვათ რეზერვაციის ფორმის ზემოთ
                 reservationForm.parentNode.insertBefore(translateHtml, reservationForm);
             }
-        }, 1000);
+        }, 3000);
 
     </script>

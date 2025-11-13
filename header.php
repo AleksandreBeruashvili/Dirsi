@@ -58,35 +58,70 @@ if ($USER->IsAuthorized()) {
 
 
 
-    setTimeout(() => {
-        const settingsScript = document.createElement('script');
-        settingsScript.textContent = `
-            window.gtranslateSettings = {
-                "default_language":"en","languages":["ka","en","ru"],"wrapper_selector":".gtranslate_wrapper","flag_size":24};
-        `;
-        document.body.appendChild(settingsScript);
+    // setTimeout(() => {
+    //     const settingsScript = document.createElement('script');
+    //     settingsScript.textContent = `
+    //         window.gtranslateSettings = {
+    //             "default_language":"en","languages":["ka","en","ru"],"wrapper_selector":".gtranslate_wrapper","flag_size":24};
+    //     `;
+    //     document.body.appendChild(settingsScript);
 
-        const gtranslateScript = document.createElement('script');
-        gtranslateScript.src = "https://cdn.gtranslate.net/widgets/latest/flags.js";
-        gtranslateScript.defer = true;
-        document.body.appendChild(gtranslateScript);
+    //     const gtranslateScript = document.createElement('script');
+    //     gtranslateScript.src = "https://cdn.gtranslate.net/widgets/latest/flags.js";
+    //     gtranslateScript.defer = true;
+    //     document.body.appendChild(gtranslateScript);
 
-        var logo = document.getElementsByClassName('menu-items-header');
+    //     var logo = document.getElementsByClassName('menu-items-header');
 
-        if(logo){
-            var translatehtml = `
-                        <div class="gtranslate_wrapper"></div>
-                    `;
-            if(logo[0]){
-                logo[0].insertAdjacentHTML('afterbegin', translatehtml);
-            }
+    //     if(logo){
+    //         var translatehtml = `
+    //                     <div class="gtranslate_wrapper"></div>
+    //                 `;
+    //         if(logo[0]){
+    //             logo[0].insertAdjacentHTML('afterbegin', translatehtml);
+    //         }
 
+    //     }
+    // }, 3000);
+
+
+setTimeout(() => {
+    // CSS დამატება loader-ის დასამალად
+    const style = document.createElement('style');
+    style.textContent = `
+        .gt_loader,
+        .gt-loading,
+        .gtranslate-loading,
+        .skiptranslate .goog-te-spinner-pos,
+        .goog-te-spinner-animation {
+            display: none !important;
         }
+    `;
+    document.head.appendChild(style);
 
+    const settingsScript = document.createElement('script');
+    settingsScript.textContent = `
+        window.gtranslateSettings = {
+            "default_language":"en",
+            "languages":["ka","en","ru"],
+            "wrapper_selector":".gtranslate_wrapper",
+            "flag_size":24
+        };
+    `;
+    document.body.appendChild(settingsScript);
 
+    const gtranslateScript = document.createElement('script');
+    gtranslateScript.src = "https://cdn.gtranslate.net/widgets/latest/flags.js";
+    gtranslateScript.defer = true;
+    document.body.appendChild(gtranslateScript);
 
+    var logo = document.getElementsByClassName('menu-items-header');
 
-    }, 1000);
+    if(logo && logo[0]){
+        var translatehtml = `<div class="gtranslate_wrapper"></div>`;
+        logo[0].insertAdjacentHTML('afterbegin', translatehtml);
+    }
+}, 3000);
 
 </script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
