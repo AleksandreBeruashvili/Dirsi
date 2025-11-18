@@ -42,8 +42,26 @@ function getCIBlockElementsByFilter($arFilter)
     return $arElements;
 }
 
-function getDealProds($dealID) {
+function getUserName ($id) {
+    $res = CUser::GetByID($id)->Fetch();
 
+    return $res["NAME"]." ".$res["LAST_NAME"];
+}
+
+function getContactInfo($contactId) {
+    $arContact = array();
+    $res = CCrmContact::GetList(array("ID" => "ASC"), array("ID" => $contactId), array());
+    if($arContact = $res->Fetch()){
+        $PHONE=\CCrmFieldMulti::GetList(array(), array('ENTITY_ID' => 'CONTACT','TYPE_ID' => 'PHONE', 'VALUE_TYPE' => 'MOBILE|WORK', "ELEMENT_ID" => $arContact["ID"]))->Fetch();
+        $MAIL=\CCrmFieldMulti::GetList(array(), array('ENTITY_ID' => 'CONTACT','TYPE_ID' => 'EMAIL', 'VALUE_TYPE' => 'HOME|WORK', "ELEMENT_ID" => $arContact["ID"]))->Fetch();
+        $arContact["PHONE"] = $PHONE["VALUE"];
+        $arContact["EMAIL"] = $MAIL["VALUE"];
+        return $arContact;
+    }
+    return $arContact;
+}
+
+function getDealProds($dealID) {
     $prods = CCrmDeal::LoadProductRows($dealID);
     $products = [];
     foreach ($prods as $prod) {
@@ -52,7 +70,41 @@ function getDealProds($dealID) {
         );
         $each = getCIBlockElementsByFilter($arFilter);
         if($each[0]["IBLOCK_SECTION_ID"]!=31) {
-            $price = CPrice::GetBasePrice($prod["PRODUCT_ID"]);
+            if ($each[0]["OWNER_CONTACT"]) {
+                $each[0]["OWNER_CONTACT_NAME"] = getContactInfo($each[0]["OWNER_CONTACT"])["FULL_NAME"];
+            }
+
+            if ($each[0]["DEAL_RESPONSIBLE"]) {
+                $each[0]["DEAL_RESPONSIBLE_NAME"] = getUserName($each[0]["DEAL_RESPONSIBLE"]);
+            }
+
+            $image = CFile::GetPath($each[0]['binis_naxazi']);
+            if ($image) {
+                $image = $_SERVER["REQUEST_SCHEME"] . "://" . $_SERVER["HTTP_HOST"] . $image;
+            } else {
+                $image = $_SERVER["REQUEST_SCHEME"] . "://" . $_SERVER["HTTP_HOST"] . "/catalog/projects/resources/noimage.jpg";
+            }
+            $each[0]['image'] = $image;
+
+            $image2 = CFile::GetPath($each[0]['binis_gegmareba']);
+            if ($image2) {
+                $image2 = $_SERVER["REQUEST_SCHEME"] . "://" . $_SERVER["HTTP_HOST"] . $image2;
+            } else {
+                $image2 = $_SERVER["REQUEST_SCHEME"] . "://" . $_SERVER["HTTP_HOST"] . "/catalog/projects/resources/noimage.jpg";
+            }
+            $each[0]['image2'] = $image2;
+
+            $image3 = CFile::GetPath($each[0]['render_3D']);
+            if ($image3) {
+                $image3 = $_SERVER["REQUEST_SCHEME"] . "://" . $_SERVER["HTTP_HOST"] . $image3;
+            } else {
+                $image3 = $_SERVER["REQUEST_SCHEME"] . "://" . $_SERVER["HTTP_HOST"] . "/catalog/projects/resources/noimage.jpg";
+            }
+            $each[0]['image3'] = $image3;
+
+            $price = CPrice::GetBasePrice($each[0]["ID"]);
+            $each[0]["PRICE"] = isset($price["PRICE"]) ? round($price["PRICE"], 2) : 0;
+
             array_push($products, $each[0]);
         }
     }
@@ -962,14 +1014,19 @@ ob_end_clean();
 
         /* ========================== TRANSLATE BOX ========================== */
         .gtranslate_wrapper {
+            display: flex;
+            height: 30px;
+            width: 75px;
+            justify-content: center;
+            align-items: center;
             position: absolute;
             top: 32px;
-            left: 200px;
+            left: 186.5px;
             z-index: 9999;
             background: white;
-            padding: 5px;
+            padding: 3px;
             border-radius: 6px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
         }
 
         /* =========================== PRODUCTS BOX =========================== */
@@ -1236,6 +1293,7 @@ ob_end_clean();
 
     <!-- APARTMENT DISPLAYS -->
     <div style="flex-grow:1; min-width: 0; max-width: 100%;">
+        <!-- LEGEND -->
         <div id="legendBar">
             <div class="legend-item"><span class="legend-color status-active"></span> თავისუფალი</div>
             <div class="legend-item"><span class="legend-color status-queue"></span> ჯავშნის რიგი</div>
@@ -1244,6 +1302,7 @@ ob_end_clean();
             <div class="legend-item"><span class="legend-color status-notforsale"></span> NFS</div>
         </div>
 
+        <!-- PRODUCTS BOX -->
         <div id="productsBoxWrapper" style="display: none;">
             <div id="productsBox"></div>
             <button id="saveBtn">Save</button>
@@ -1333,12 +1392,15 @@ ob_end_clean();
     let openedOnDeal = false;
     let allowedStages = ["PREPARATION", "PREPAYMENT_INVOICE", "EXECUTING"];
     let inAllowedStages = true;
+    let productsBoxWrapper = document.getElementById("productsBoxWrapper");
 
 
     // check if deal exists - do some stuff
     if (Array.isArray(deal) && deal.length !== 0) {
         stage_id = deal[0].STAGE_ID; // get stage
         openedOnDeal = true; // this section is for when opened through a deal
+
+        // aps display scroll designs
         document.getElementById("apsDisplay").style.maxWidth = '820px'; 
         document.getElementById("apartmentPopup").style.position = 'absolute';
         let containerDiv = document.querySelector(".containerCatalog");
@@ -1347,20 +1409,19 @@ ob_end_clean();
         // make extra filter dropdown scrollable
         document.getElementById("extraFiltersDropdown").style.height = '165px';
 
-        // show products box
-        let productsBoxWrapper = document.getElementById("productsBoxWrapper");
-        productsBoxWrapper.style.display = "flex";
-        productsBoxWrapper.innerHTML += `<span class="border-text">დილზე დამატებული ბინები</span>`;
-
         // only allow save and delete on allowed stages
         if (!allowedStages.includes(stage_id)) {
             inAllowedStages = false;
             document.getElementById("extraFiltersDropdown").style.display = "none";
         }
 
+        // show products box
+        productsBoxWrapper.style.display = "flex";
+        productsBoxWrapper.innerHTML += `<span class="border-text">დილზე დამატებული ბინები</span>`;
+
         // if the deal has products
         if (Array.isArray(products) && products.length !== 0) {
-
+  
             // start loading damatebuli products project and blocks
             // Get unique project ID and blocks from products
             const productProject = parseInt(products[0]["IBLOCK_SECTION_ID"]); // Assuming all products are from same project
@@ -1436,7 +1497,7 @@ ob_end_clean();
                 }
 
 
-                // Optional: add remove button
+                // add remove button
                 const removeBtn = document.createElement("button");
                 removeBtn.textContent = "×";
                 removeBtn.classList.add("remove-chip");
@@ -1495,9 +1556,6 @@ ob_end_clean();
                         document.getElementById("popupSelectBtn").style.display = "flex";
                     }
                     
-                    if (container.children.length === 0) {
-                        parentContainer.style.display = "none";
-                    }
                 }
                 removeBtn.style.marginLeft = "4px";
                 removeBtn.style.fontSize = "10px";
@@ -1515,7 +1573,7 @@ ob_end_clean();
         }
     }
 
-    // ======================== FOR DROPDOWNS ========================
+    // ======================== FOR FILTER DROPDOWNS ========================
     // Open/Close checkbox dropdowns
     $(".dropdown-header").on("click", function (event) {
         event.stopPropagation(); // prevent closing immediately
@@ -1569,7 +1627,7 @@ ob_end_clean();
     }
 
 
-    // CLEAN BUTTON
+    // ============================= CLEAN BUTTON =============================
     $("#clean").on("click", function () {
         // Clear selects
         // $("select").val("");
@@ -1630,7 +1688,7 @@ ob_end_clean();
         });
     }
 
-    // load blocks on project change
+    // ================================ FETCH APARTMENTS ================================
     projectSelect.addEventListener("change", function() {
         const projId = this.value;
 
@@ -1665,15 +1723,16 @@ ob_end_clean();
                         label.innerHTML = `<input type="checkbox" value="${block}"> ${block}`;
                         blockContainer.appendChild(label);
                     });
+
+
                 }
             })
             .catch(err => console.error(err));
     });
 
-    // When a block is selected, fetch filtered products
-    let productsCache = []; // Store fetched products for the selected block
+    let productsCache = []; // To Store fetched products for the selected block
 
-    // When a block is selected, fetch products from API
+    // ======================== When a block is selected, fetch products from API ========================
     $(document).on("change", "#blockFilter input[type=checkbox]", function () {
         const projId = $("#projects").val();
         const selectedBlocks = getCheckboxValues("blockFilter");
@@ -1706,6 +1765,8 @@ ob_end_clean();
             container.innerHTML = "<p style='color:#999;'>ბინები ვერ მოიძებნა.</p>";
             return;
         }
+
+
 
         // Calculate max apartments per block across all floors
         const maxApartmentsPerBlock = {};
@@ -2001,8 +2062,6 @@ ob_end_clean();
         // apartments container
         const container = document.getElementById("productsBox");
         let incontainer = false;
-        // console.log("this the container", container);
-        // console.log("brother brother", container.querySelector(`.apt status-active [data-id="${apartmentInfo.id}"]`));
         if (container.querySelector(`.apt [data-id="${apartmentInfo.id}"]`)) {
             incontainer = true;
         }
@@ -2078,13 +2137,11 @@ ob_end_clean();
             detailsList.innerHTML += `<li><b>ჯავშნის რიგი: </b><span>${queue}</span></li>`;
         }
 
-        console.log(apartment["OWNER_CONTACT"]);
         if (apartment["OWNER_CONTACT"]) {
             linkshtmlContact = `<a href="//146.255.242.182/crm/contact/details/${apartment["OWNER_CONTACT"]}/" target="_blank">${apartment["OWNER_CONTACT_NAME"]}</a>`;
             detailsList.innerHTML += `<li><b>კონტაქტი: </b><span>${linkshtmlContact}</span></li>`;
         }
         
-        console.log(apartment["DEAL_RESPONSIBLE"]);
         if (apartment["DEAL_RESPONSIBLE"]) {
             linkshtmlResponsible = `<a href="//146.255.242.182/company/personal/user/${apartment["DEAL_RESPONSIBLE"]}/" target="_blank">${apartment["DEAL_RESPONSIBLE_NAME"]}</a>`;
             detailsList.innerHTML += `<li><b>პასუხისმგებელი: </b><span>${linkshtmlResponsible}</span></li>`;
@@ -2156,6 +2213,7 @@ ob_end_clean();
         }
     });
 
+    // popup extra details toggle
     document.getElementById("toggleDetailsBtn").addEventListener("click", function () {
         const wrapper = document.getElementById("popupDetailsWrapper");
 
@@ -2191,6 +2249,7 @@ ob_end_clean();
         updateDropdownHeader(parentId, defaultText);
     });
 
+    // ============================== EXTRA FILTER FUNCTIONALITIES ==============================
     // Function to add the extra filter chip
     function addFilter(id, code, value, buttonElement) {
         const chipsContainer = document.getElementById("extraFilterChips");
@@ -2280,8 +2339,6 @@ ob_end_clean();
         
         buttons.forEach(button => {
             const name = button.textContent;
-            console.log("button.dataset.name: ", name);
-            console.log("search value: ", searchTerm);
             if (name.includes(searchTerm)) {
                 button.style.display = "block";
             } else {
@@ -2314,6 +2371,7 @@ ob_end_clean();
         $(".dropdown-content").slideUp(150);
     });
 
+    // for filtering apartments
     function getExtraFilterValues() {
         const extraFilters = {};
 
@@ -2321,7 +2379,6 @@ ob_end_clean();
             const rangeInput = chip.querySelector(".range-filter");
             const textInput = chip.querySelector("input[type=text]");
 
-            console.log(chip);
             if (rangeInput) {
                 const min = parseFloat(chip.querySelector("input[id$='_Min']").value);
                 const max = parseFloat(chip.querySelector("input[id$='_Max']").value);
@@ -2340,6 +2397,7 @@ ob_end_clean();
         return extraFilters;
     }
 
+    // ========================== PRODUCTS BOX ==========================
     // Function to add apartment to box
     function addSelectedApartment() {
         const container = document.getElementById("productsBox");
@@ -2454,9 +2512,9 @@ ob_end_clean();
                 }
             }
             
-            if (container.children.length === 0) {
-                parentContainer.style.display = "none";
-            }
+            // if (container.children.length === 0) {
+            //     parentContainer.style.display = "none";
+            // }
         }
         removeBtn.style.marginLeft = "4px";
         removeBtn.style.fontSize = "10px";
@@ -2471,12 +2529,13 @@ ob_end_clean();
     }
 
 
-    // Example: trigger when user clicks "Select Apartment" in popup
+    // trigger when user clicks "damateba" in popup
     document.getElementById("popupSelectBtn")?.addEventListener("click", () => {
         addSelectedApartment();
     });
 
-
+    // ====================================== SAVE APTS ======================================
+    // save 
     function saveApartments(productIds){
         fetch(`/rest/local/api/projects/saveApartments.php?deal_id=${dealID}&productIds=${productIds}`).then(data => {
             return data.json();
@@ -2504,14 +2563,12 @@ ob_end_clean();
 
     // damatebuli produqtebis shenaxva
     document.getElementById("saveBtn")?.addEventListener("click", () => {
+        console.log("ra xdebatqo bejan");
         const saveBtn = document.getElementById("saveBtn");
         const container = document.getElementById("productsBox");
-        let shesanaxiAptsIds = [];
-        if (container.children > 0) {
-            shesanaxiAptsIds = [...container.children].map(el => Number(el.dataset.id));
-        }
-        console.log("shesanaxi apts: ", shesanaxiAptsIds);
-        
+        let shesanaxiAptsIds = [...container.children].map(el => Number(el.dataset.id));
+        console.log(shesanaxiAptsIds);
+
         // Disable button and show loading state
         saveBtn.disabled = true;
         saveBtn.textContent = "...";
@@ -2520,6 +2577,7 @@ ob_end_clean();
         saveApartments(shesanaxiAptsIds);
     });
 
+    // ============================== TRANSLATE ==============================
     function initGTranslate() {        
         const translateContainer = document.createElement("div");
         translateContainer.className = "gtranslate_wrapper";

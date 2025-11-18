@@ -146,13 +146,10 @@ function DATE_SityvieradNewFormat($date){
 
 // ============================ MAIN CODE ============================
 
-$deal_id = $_GET["deal_id"] ?? null;
+$deal_id = $_GET["deal_id"];
+$productIds = explode(",", $_GET["productIds"]);
+$productIds = array_filter($productIds, fn($x) => is_numeric($x));
 
-$productIds = isset($_GET["productIds"]) && $_GET["productIds"] !== ""
-    ? array_filter(explode(",", $_GET["productIds"]), 'is_numeric')
-    : [];
-
-$deal = getDealInfoByID($deal_id);
 $resArray = [];
 $arrForAdd = [];
 
@@ -168,41 +165,41 @@ if ($deal_id) {
     $prodNumber = "";
     $prodTOTAL_AREA = "";
     $LIVING_SPACE = "";
+    $sawyisiGirebuleba = "";
     // end initialization
 
     $rows = [];
-    if(!empty($productIds)) {
-        foreach ($productIds as $pid) {
+    foreach ($productIds as $pid) {
 
-            $productData = getCIBlockElementsByID($pid);
+        $productData = getCIBlockElementsByID($pid);
 
-            if (!$productData) {
-                $resArray["status"] = 400;
-                $resArray["error"] = "ბინა ვერ მოიძებნა";
-                echo json_encode($resArray, JSON_UNESCAPED_UNICODE);
-                exit;
-            }
-
-            $price = floatval($productData["PRICE"]);
-
-            // prepare product infos to add
-            $rows[] = [
-                "PRODUCT_ID" => $pid,
-                "PRICE" => $price,
-                "QUANTITY" => 1,
-            ];
-
-            // update deal info
-            $KVM_PRICE ? $KVM_PRICE .= " /" . $productData["KVM_PRICE"] : $KVM_PRICE = $productData["KVM_PRICE"];
-            $project ? $project .= " /" . $productData["PROJECT"] : $project = $productData["PROJECT"];
-            $block ? $block .= " /" . $productData["KORPUSIS_NOMERI_XE3NX2"] : $block = $productData["KORPUSIS_NOMERI_XE3NX2"];
-            $PRODUCT_TYPE ? $PRODUCT_TYPE .= " /" . $productData["PRODUCT_TYPE"] : $PRODUCT_TYPE = $productData["PRODUCT_TYPE"];
-            $sadarbazo ? $sadarbazo .= " /" . $productData["_15MYD6"] : $sadarbazo = $productData["_15MYD6"];
-            $prodFLOOR ? $prodFLOOR .= " /" . $productData["FLOOR"] : $prodFLOOR = $productData["FLOOR"];
-            $prodNumber ? $prodNumber .= " /" . $productData["Number"] : $prodNumber = $productData["Number"];
-            $prodTOTAL_AREA ? $prodTOTAL_AREA .= " /" . $productData["TOTAL_AREA"] : $prodTOTAL_AREA = $productData["TOTAL_AREA"];
-            $LIVING_SPACE ? $LIVING_SPACE .= " /" . $productData["LIVING_SPACE"] : $LIVING_SPACE = $productData["LIVING_SPACE"];
+        if (!$productData) {
+            $resArray["status"] = 400;
+            $resArray["error"] = "ბინა ვერ მოიძებნა";
+            echo json_encode($resArray, JSON_UNESCAPED_UNICODE);
+            exit;
         }
+
+        $price = floatval($productData["PRICE"]);
+
+        // prepare product infos to add
+        $rows[] = [
+            "PRODUCT_ID" => $pid,
+            "PRICE" => $price,
+            "QUANTITY" => 1,
+        ];
+
+        // update deal info
+        $KVM_PRICE ? $KVM_PRICE .= " /" . $productData["KVM_PRICE"] : $KVM_PRICE = $productData["KVM_PRICE"];
+        $project ? $project .= " /" . $productData["PROJECT"] : $project = $productData["PROJECT"];
+        $block ? $block .= " /" . $productData["KORPUSIS_NOMERI_XE3NX2"] : $block = $productData["KORPUSIS_NOMERI_XE3NX2"];
+        $PRODUCT_TYPE ? $PRODUCT_TYPE .= " /" . $productData["PRODUCT_TYPE"] : $PRODUCT_TYPE = $productData["PRODUCT_TYPE"];
+        $sadarbazo ? $sadarbazo .= " /" . $productData["_15MYD6"] : $sadarbazo = $productData["_15MYD6"];
+        $prodFLOOR ? $prodFLOOR .= " /" . $productData["FLOOR"] : $prodFLOOR = $productData["FLOOR"];
+        $prodNumber ? $prodNumber .= " /" . $productData["Number"] : $prodNumber = $productData["Number"];
+        $prodTOTAL_AREA ? $prodTOTAL_AREA .= " /" . $productData["TOTAL_AREA"] : $prodTOTAL_AREA = $productData["TOTAL_AREA"];
+        $LIVING_SPACE ? $LIVING_SPACE .= " /" . $productData["LIVING_SPACE"] : $LIVING_SPACE = $productData["LIVING_SPACE"];
+        $sawyisiGirebuleba ? $sawyisiGirebuleba .= " /" . $productData["PRICE"] : $sawyisiGirebuleba = $productData["PRICE"];
     }
     
     $arrForAdd ["UF_CRM_1761658503260"] = $KVM_PRICE;         //კვ.მ ღირებულება
@@ -214,6 +211,7 @@ if ($deal_id) {
     $arrForAdd ["UF_CRM_1761658559005"] = $prodNumber;      //ბინის №
     $arrForAdd ["UF_CRM_1761658608306"] = $prodTOTAL_AREA;      //საერთო ფართი მ²
     $arrForAdd ["UF_CRM_1761658765237"] = $LIVING_SPACE;      //საცხოვრებელი ფართი მ²
+    $arrForAdd ["UF_CRM_1761658642424"] = $sawyisiGirebuleba; // საწყისი
 
     $added = CCrmDeal::SaveProductRows($deal_id, $rows);
     if($added){
