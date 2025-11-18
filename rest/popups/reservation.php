@@ -231,15 +231,6 @@ $contactInfo= getContactById($contactId);
         console.log(ResChange);
 
 
-        // if(ResChange==1){
-        //     document.getElementById("resChangeDiv").style.display="";
-        //     document.getElementById("resChange").setAttribute("required", "required");
-        //     document.getElementById("reservationType").value="ufaso";
-        //     document.getElementById("reservationType").style.pointerEvents="none";
-        // }else{
-        //     document.getElementById("resChangeDiv").style.display="none"
-        // }
-
         if(ResChange==1){
             document.getElementById("resChangeDiv").style.display="";
             document.getElementById("resChange").setAttribute("required", "required");

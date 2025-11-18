@@ -575,7 +575,7 @@ if($dealId){
 		//
 
 		//რეზერვაციის ცვლილება
-			if (url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product && deal["UF_CRM_1762331240"] && deal["STAGE_ID"] != "WON") {
+			if (url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product && deal["UF_CRM_1762331240"] && deal["STAGE_ID"] == "1") {
 				if(Product[0]["_WJ6N47"] != "თავისდაუფალი" || Product[0]["_WJ6N47"] != "გაყიდული" ){
 				const observer = new MutationObserver(() => {
 					const buttonContainer = createButtonContainer();
@@ -625,7 +625,7 @@ if($dealId){
 							width: 600,
 							cacheable: false,
 							allowChangeHistory: false,
-							title: 'რეზერვაციის ცვლილება'
+							title: 'Reservation Change'
 						}
 					);
 				} else {
