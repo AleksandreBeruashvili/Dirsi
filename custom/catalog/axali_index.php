@@ -2546,7 +2546,7 @@ ob_end_clean();
         settingsScript.textContent = `
             window.gtranslateSettings = {
                 "default_language": "ka",
-                "languages": ["ka", "en"],
+                "languages": ["ka", "en", "ru"],
                 "wrapper_selector": ".gtranslate_wrapper",
                 "flag_size": 24
             };
