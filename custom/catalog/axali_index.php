@@ -2084,7 +2084,12 @@ ob_end_clean();
         document.getElementById("popupDetails").innerHTML = "<li>იტვირთება...</li>";
 
         // set button links
-        document.getElementById("popupCalc").href = `/custom/calculator/?ProductID=${apartment["ID"]}`;
+        if (openedOnDeal) {
+            document.getElementById("popupCalc").href = `/custom/calculator/?dealid=${dealID}&ProductID=${apartment["ID"]}`;
+        } else {
+            document.getElementById("popupCalc").href = `/custom/calculator/?ProductID=${apartment["ID"]}`;
+        }
+            
         document.getElementById("popupOffer").href = `/crm/deal/offer-catalog.php?prod_ID=${apartmentInfo.id}`;
 
         // display image
