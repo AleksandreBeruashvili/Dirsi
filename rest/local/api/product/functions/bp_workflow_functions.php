@@ -101,7 +101,7 @@ function dealUpdate_163($dealId,$productData)
 {
 
     $prodNumber = $productData["NUMBER"];
-    $prodFLOOR = $productData["_IL24RV"];
+    $prodFLOOR = $productData["FLOOR"];
     $prodPRODUCT_TYPE = $productData["PRODUCT_TYPE"];
     $prodTOTAL_AREA = $productData["TOTAL_AREA"];
 
@@ -143,7 +143,7 @@ function getProductDataByID($ID)
 function reservation_163($deal,$element){
 
     $dealID = $deal["ID"];
-    $element["_WJ6N47"] = "დაჯავშნილი";
+    $element["STATUS"] = "დაჯავშნილი";
     $element["OWNER_DEAL"] = $dealID;
     $element["DEAL_RESPONSIBLE"] = $deal["ASSIGNED_BY_ID"];
     $element["OWNER_CONTACT"] = $deal["CONTACT_ID"];

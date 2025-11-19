@@ -2890,7 +2890,7 @@ ob_end_clean();
         document.getElementById('offerEng').innerHTML = `<a href="/crm/deal/offer-catalog-eng.php?prod_ID=${myApartmentID}" target="_blank"><button class="button-19">შეთავაზება ENG</button></a>`;
         // document.querySelector('#apartmentInfoBlockContainer').children[0].children[0].children[0].innerHTML =apartment["62"] +" №" + apartment["217"];
         document.querySelector('#apartmentInfoBlockContainer').children[0].children[0].children[0].innerHTML ="";
-        document.querySelector('#apartmentInfoBlockContainer').children[0].children[1].innerHTML = apartment["_WJ6N47"];
+        document.querySelector('#apartmentInfoBlockContainer').children[0].children[1].innerHTML = apartment["STATUS"];
         // document.querySelector('#apartmentInfoBlockContainer').children[2].children[0].children[0].innerHTML = apartment["PRICE"];
         // document.querySelector('#detailImg').src = apartment["218"];
 
@@ -2915,16 +2915,16 @@ ob_end_clean();
             let dataBlock = "";
       
 
-            if (data["_51DT4E"]) {
-                dataBlock += '<li class="apartment-about-li" style="font-weight: bold;">პროექტი: <span>' + data["_51DT4E"] + '</span></li>';
+            if (data["PROJECT"]) {
+                dataBlock += '<li class="apartment-about-li" style="font-weight: bold;">პროექტი: <span>' + data["PROJECT"] + '</span></li>';
             }
 
-            if (data["__OY0G7R"]) {
-                dataBlock += '<li class="apartment-about-li" style="font-weight: bold;">ქონების ტიპი: <span>' + data["__OY0G7R"] + '</span></li>';
+            if (data["PRODUCT_TYPE"]) {
+                dataBlock += '<li class="apartment-about-li" style="font-weight: bold;">ქონების ტიპი: <span>' + data["PRODUCT_TYPE"] + '</span></li>';
             }
 
-            if (data["_IL24RV"]) {
-                dataBlock += '<li class="apartment-about-li" style="font-weight: bold;">სართული: <span>' + data["_IL24RV"] + '</span></li>';
+            if (data["FLOOR"]) {
+                dataBlock += '<li class="apartment-about-li" style="font-weight: bold;">სართული: <span>' + data["FLOOR"] + '</span></li>';
             }
 
         
@@ -2934,14 +2934,14 @@ ob_end_clean();
                 dataBlock += '<li class="apartment-about-li" style="font-weight: bold;">ბლოკი: <span>' + data["KORPUSIS_NOMERI_XE3NX2"] + '</span></li>';
             }
 
-            if (data["_2RS72M"]) {
-                dataBlock += '<li class="apartment-about-li" style="font-weight: bold;">№: <span>' + data["_2RS72M"] + '</span></li>';
+            if (data["Number"]) {
+                dataBlock += '<li class="apartment-about-li" style="font-weight: bold;">№: <span>' + data["Number"] + '</span></li>';
             }
 
     
             
             // if (data["Number"]) {
-            //     dataBlock += '<li class="apartment-about-li" style="font-weight: bold;">სართული: <span>' + data["_IL24RV"] + '</span></li>';
+            //     dataBlock += '<li class="apartment-about-li" style="font-weight: bold;">სართული: <span>' + data["FLOOR"] + '</span></li>';
             // }
 
             if (data["Number"]) {
@@ -2964,8 +2964,8 @@ ob_end_clean();
                 sruli_pasebi += '<li class="apartment-about-li" style="font-weight: bold; width: 100%;">სრული ფასი $: <span>' + numberFormat(data["PRICE"]) + '</span></li>';
             }
 
-            if (data["M2__8MKGVW"]) {
-                sruli_pasebi += '<li class="apartment-about-li" style="font-weight: bold; width: 50%;">ფასი m<sup>2</sup> $: <span>' + numberFormat(parseInt(data["M2__8MKGVW"])) + '</span></li>';
+            if (data["KVM_PRICE"]) {
+                sruli_pasebi += '<li class="apartment-about-li" style="font-weight: bold; width: 50%;">ფასი m<sup>2</sup> $: <span>' + numberFormat(parseInt(data["KVM_PRICE"])) + '</span></li>';
             }
 
             var sruli_pasebi_gel = '<div style="display: flex; justify-content: space-between; width: 100%;">';
@@ -2985,11 +2985,11 @@ ob_end_clean();
 
             dataBlock += '<li class="apartment-about-li" style="font-weight: bold;border-bottom: 1px solid black"><span></span></li>';
 
-            if (data["__ERWGRY"]) {
-                dataBlock += '<li class="apartment-about-li" style="font-weight: bold;">საერთო ფართი: <span>' + data["__ERWGRY"] + 'm<sup>2</span></li>';
+            if (data["TOTAL_AREA"]) {
+                dataBlock += '<li class="apartment-about-li" style="font-weight: bold;">საერთო ფართი: <span>' + data["TOTAL_AREA"] + 'm<sup>2</span></li>';
             }
-            if (data["__I5V4XI"]) {
-                dataBlock += '<li class="apartment-about-li" style="font-weight: bold;"> ფართი (საცხოვრებელი): <span>' + data["__I5V4XI"] + 'm<sup>2</span></li>';
+            if (data["LIVING_SPACE"]) {
+                dataBlock += '<li class="apartment-about-li" style="font-weight: bold;"> ფართი (საცხოვრებელი): <span>' + data["LIVING_SPACE"] + 'm<sup>2</span></li>';
             }
 
             if (data["terrace_area"]) {

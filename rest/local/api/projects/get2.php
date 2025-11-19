@@ -65,7 +65,7 @@ function getProductsByFilterS($proj) {
 
         $arPushs["KVM_PRICE"] = CPrice::GetBasePrice($arPushs["ID"])["KVM_PRICE"];
 
-        $arPushs["_WJ6N47"] = $arPushs["71"];
+        $arPushs["STATUS"] = $arPushs["71"];
 
         $arPushs["RESPONSIBLE"]='';
         $arPushs["RESPONSIBLE_NAME"]='';

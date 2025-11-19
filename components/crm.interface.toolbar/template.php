@@ -502,10 +502,10 @@ if($dealId){
 				// console.log(queue);                       
 				// console.log(queueParts);
 				// console.log(queueParts[1]);
-				// console.log(Product[0]["_WJ6N47"])
+				// console.log(Product[0]["STATUS"])
 				
 				if ((((url[3] == "crm" && url[4] == "deal" && url[5] == "details")) 
-				&& ((!deal["UF_CRM_1762333827"]) || (Product[0]["_WJ6N47"] == "თავისუფალი" && (isset($queueParts[1]) && trim($queueParts[1]) == dealIdForToolbar)))) 
+				&& ((!deal["UF_CRM_1762333827"]) || (Product[0]["STATUS"] == "თავისუფალი" && (isset($queueParts[1]) && trim($queueParts[1]) == dealIdForToolbar)))) 
 				&& 
 				(deal["STAGE_ID"] == "UC_12CJ1Z" || deal["STAGE_ID"] == "UC_2EW8VW" || deal["STAGE_ID"] !== "UC_15207E" || deal["STAGE_ID"] == "EXECUTING" || deal["STAGE_ID"] !== "UC_BAUB5P" || deal["STAGE_ID"] == "UC_F3FOBF")) {
 
@@ -576,7 +576,7 @@ if($dealId){
 
 		//რეზერვაციის ცვლილება
 			if (url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product && deal["UF_CRM_1762331240"] && deal["STAGE_ID"] == "1") {
-				if(Product[0]["_WJ6N47"] != "თავისდაუფალი" || Product[0]["_WJ6N47"] != "გაყიდული" ){
+				if(Product[0]["STATUS"] != "თავისდაუფალი" || Product[0]["STATUS"] != "გაყიდული" ){
 				const observer = new MutationObserver(() => {
 					const buttonContainer = createButtonContainer();
 					
@@ -641,7 +641,7 @@ if($dealId){
 
 		//ჯავშნის რიგი
 			if (url[3] == "crm" && url[4] == "deal" && url[5] == "details" && Product) {
-				if (Product[0]["_WJ6N47"] == "დაჯავშნილი" && (deal["STAGE_ID"] == "PREPARATION" ||  deal["STAGE_ID"] == "PREPAYMENT_INVOICE" ||  deal["STAGE_ID"] == "EXECUTING")) {
+				if (Product[0]["STATUS"] == "დაჯავშნილი" && (deal["STAGE_ID"] == "PREPARATION" ||  deal["STAGE_ID"] == "PREPAYMENT_INVOICE" ||  deal["STAGE_ID"] == "EXECUTING")) {
 
 					const observer = new MutationObserver(() => {
 						const buttonContainer = createButtonContainer();

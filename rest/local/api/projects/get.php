@@ -101,7 +101,7 @@ function getApartments($project,$dealData) {
                     "totalArea" => $element["AREA"],
                     "CATEGORY" => $element["CATEGORY"],
                     "pricePerSqm" => $element["KVM_PRICE"],
-                    "projectName" => $element["_51DT4E"],
+                    "projectName" => $element["PROJECT"],
                     "status" => $element["_PZZ695"] ?: "თავისუფალი",
                     "model" => $element["__6PG2EC"],
                     "floor" => $element["FLOOR"],

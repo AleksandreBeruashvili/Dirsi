@@ -85,8 +85,8 @@ function freeProduct($productIDs,$dealID){
             //-------------------------element update-------------------------//
 
             $el = new CIBlockElement;
-            if ($element["_WJ6N47"] == "ჯავშნის რიგი" && $element["QUEUE"] == "|$dealID") {
-                $element["_WJ6N47"] = "თავისუფალი";                             //status
+            if ($element["STATUS"] == "ჯავშნის რიგი" && $element["QUEUE"] == "|$dealID") {
+                $element["STATUS"] = "თავისუფალი";                             //status
             }
             $element["QUEUE"] = str_replace("|$dealID","",$element["QUEUE"]);
 
@@ -112,7 +112,7 @@ function addQueueToProd($productID,$dealID)
         $el = new CIBlockElement;
         $arrQueue = explode("|", $element["QUEUE"]);
 
-        if ($element["_WJ6N47"] == "დაჯავშნილი" && $element["OWNER_DEAL"] != $dealID) {
+        if ($element["STATUS"] == "დაჯავშნილი" && $element["OWNER_DEAL"] != $dealID) {
             if (!(in_array("$dealID", $arrQueue))) {
                 $element["QUEUE"] = $element["QUEUE"] . "|$dealID";
             }
@@ -401,13 +401,13 @@ if($dealExists) {
 
                 foreach ($prodsForDeal as $related_product) {
                     $productData = getCIBlockElementsByID($related_product);
-                    $project ? $project .= " /" . $productData["_51DT4E"] : $project = $productData["_51DT4E"];
+                    $project ? $project .= " /" . $productData["PROJECT"] : $project = $productData["PROJECT"];
                     $korp ? $korp .= " /" . $productData["KORPUSIS_NOMERI_XE3NX2"] : $korp = $productData["KORPUSIS_NOMERI_XE3NX2"];
-                    $prodFLOOR ? $prodFLOOR .= " /" . $productData["_IL24RV"] : $prodFLOOR = $productData["_IL24RV"];
-                    $prodNumber ? $prodNumber .= " /" . $productData["_2RS72M"] : $prodNumber = $productData["_2RS72M"];
-                    $prodTOTAL_AREA ? $prodTOTAL_AREA .= " /" . $productData["__ERWGRY"] : $prodTOTAL_AREA = $productData["__ERWGRY"];
+                    $prodFLOOR ? $prodFLOOR .= " /" . $productData["FLOOR"] : $prodFLOOR = $productData["FLOOR"];
+                    $prodNumber ? $prodNumber .= " /" . $productData["Number"] : $prodNumber = $productData["Number"];
+                    $prodTOTAL_AREA ? $prodTOTAL_AREA .= " /" . $productData["TOTAL_AREA"] : $prodTOTAL_AREA = $productData["TOTAL_AREA"];
                     $prodPrice ? $prodPrice .= " /" . $productData["PRICE"] : $prodPrice = $productData["PRICE"];
-                    $LIVING_SPACE ? $LIVING_SPACE .= " /" . $productData["__I5V4XI"] : $LIVING_SPACE = $productData["__I5V4XI"];
+                    $LIVING_SPACE ? $LIVING_SPACE .= " /" . $productData["LIVING_SPACE"] : $LIVING_SPACE = $productData["LIVING_SPACE"];
                     $balconyArea ? $balconyArea .= " /" . $productData["__FVE8A2"] : $balconyArea = $productData["__FVE8A2"];
                     $balconyAreaKvmPrice ? $balconyAreaKvmPrice .= " /" . $productData["balconyAreaKvmPrice"] : $balconyAreaKvmPrice = $productData["balconyAreaKvmPrice"];
                     $balconyTotalPrice ? $balconyTotalPrice .= " /" . $productData["balconyTotalPrice"] : $balconyTotalPrice = $productData["balconyTotalPrice"];
@@ -419,9 +419,9 @@ if($dealExists) {
                     $KVM_PRICE_REPAIR ? $KVM_PRICE_REPAIR .= " /" . $productData["KVM_PRICE_REPAIR"] : $KVM_PRICE_REPAIR = $productData["KVM_PRICE_REPAIR"];
                     $FULL_PRICE_REPAIR ? $FULL_PRICE_REPAIR .= " /" . $productData["FULL_PRICE_REPAIR"] : $FULL_PRICE_REPAIR = $productData["FULL_PRICE_REPAIR"];
                     $KVM_PRICE_FURNITURE ? $KVM_PRICE_FURNITURE .= " /" . $productData["KVM_PRICE_FURNITURE"] : $KVM_PRICE_FURNITURE = $productData["KVM_PRICE_FURNITURE"];
-                    $FULL_PRICE_FURNITURE ? $FULL_PRICE_FURNITURE .= " /" . $productData["M2__8MKGVW"] : $FULL_PRICE_FURNITURE = $productData["M2__8MKGVW"];
-                    $PRODUCT_TYPE ? $PRODUCT_TYPE .= " /" . $productData["__OY0G7R"] : $PRODUCT_TYPE = $productData["__OY0G7R"];
-                    $sawyisi_girebuleba_kv ? $sawyisi_girebuleba_kv .= " /" . $productData["M2__8MKGVW"] : $sawyisi_girebuleba_kv = $productData["M2__8MKGVW"];
+                    $FULL_PRICE_FURNITURE ? $FULL_PRICE_FURNITURE .= " /" . $productData["KVM_PRICE"] : $FULL_PRICE_FURNITURE = $productData["KVM_PRICE"];
+                    $PRODUCT_TYPE ? $PRODUCT_TYPE .= " /" . $productData["PRODUCT_TYPE"] : $PRODUCT_TYPE = $productData["PRODUCT_TYPE"];
+                    $sawyisi_girebuleba_kv ? $sawyisi_girebuleba_kv .= " /" . $productData["KVM_PRICE"] : $sawyisi_girebuleba_kv = $productData["KVM_PRICE"];
                     $FLAT_PRICE ? $FLAT_PRICE .= " /" . $productData["FLAT_PRICE"] : $FLAT_PRICE = $productData["FLAT_PRICE"];
                     // $sawyisi_girebuleba ? $sawyisi_girebuleba .= " /" . $productData["FLAT_PRICE"] : $sawyisi_girebuleba = $productData["FLAT_PRICE"];
                     $opportunity = round($opportunity + $productData["PRICE"],2);

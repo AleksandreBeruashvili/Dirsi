@@ -11,7 +11,7 @@ if (!Loader::includeModule('iblock')) {
     die(json_encode(['error' => 'iblock module not installed/loaded']));
 }
 
-function getProductsByFilter($arFilter = array(),$arSelect = array("ID", "IBLOCK_ID","DETAIL_PICTURE", "_WJ6N47","_IL24RV","OWNER_DEAL","NUMBER","TOTAL_AREA"),$sort= array(),$count =10)
+function getProductsByFilter($arFilter = array(),$arSelect = array("ID", "IBLOCK_ID","DETAIL_PICTURE", "STATUS","FLOOR","OWNER_DEAL","NUMBER","TOTAL_AREA"),$sort= array(),$count =10)
 {
     $arElements = array();
 

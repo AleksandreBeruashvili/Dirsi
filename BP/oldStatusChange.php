@@ -1,12 +1,3 @@
-<?
-ob_start();
-require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
-
-
-//=== functions
-function printArr($arr) {
-    echo "<pre>"; print_r($arr); echo "</pre>";
-}
 require_once($_SERVER["DOCUMENT_ROOT"]."/functions/bp_workflow_functions.php");
 
 //=== functions
@@ -61,10 +52,10 @@ if (!function_exists('new_stage')) {
                     sendNotificationToQueue($element["QUEUE"], $notification);
                     sendNotificationToResponsible($dealID, $notification);
                     if ($element["QUEUE"]) {
-                        $element["STATUS"] = "ჯავშნის რიგი";
+                        $element["_WJ6N47"] = "ჯავშნის რიგი";
                         $element["DEAL_RESPONSIBLE"] = intval($deal["ASSIGNED_BY_ID"]);
                     } else {
-                        $element["STATUS"] = "თავისუფალი";
+                        $element["_WJ6N47"] = "თავისუფალი";
                     }
                     // $element["DEAL_RESPONSIBLE"] = "";
                     $element["RESERVATION_PERIOD"] = "";
@@ -77,8 +68,8 @@ if (!function_exists('new_stage')) {
                     $element["bankLoan"] = "";
                     $element["barter"] = "";
                 } else {
-                    if ($element["STATUS"] == "თავისუფალი" && $element["QUEUE"]) {
-                        $element["STATUS"] = "ჯავშნის რიგი";
+                    if ($element["_WJ6N47"] == "თავისუფალი" && $element["QUEUE"]) {
+                        $element["_WJ6N47"] = "ჯავშნის რიგი";
                         $element["DEAL_RESPONSIBLE"] = $deal["ASSIGNED_BY_ID"];
                     }
                 }
@@ -102,10 +93,10 @@ if (!function_exists('reservation')) {
             foreach ($arProducts as $product) {
                 $element = getCIBlockElementByID($product["PRODUCT_ID"]);
                 if ($element["OWNER_DEAL"] == $dealID) {
-                    if ($element["STATUS"] != "დაჯავშნილი") $sendNotification = true;
+                    if ($element["_WJ6N47"] != "დაჯავშნილი") $sendNotification = true;
                     $element = preparationProductForReservation($element, $deal);
                 } else {
-                    if ($element["STATUS"] == "თავისუფალი" || ($element["STATUS"] == "ჯავშნის რიგი" && firstInQueue($element["QUEUE"], $dealID))) {
+                    if ($element["_WJ6N47"] == "თავისუფალი" || ($element["_WJ6N47"] == "ჯავშნის რიგი" && firstInQueue($element["QUEUE"], $dealID))) {
                         $element = preparationProductForReservation($element, $deal);
                         $sendNotification = true;
                     } else {
@@ -152,10 +143,10 @@ if (!function_exists('sold')) {
                 $element = getCIBlockElementByID($product["PRODUCT_ID"]);
 
                 if ($element["OWNER_DEAL"] == $dealID) {
-                    if ($element["STATUS"] != "გაყიდული") $sendNotification = true;
+                    if ($element["_WJ6N47"] != "გაყიდული") $sendNotification = true;
                     $element = preparationProductForSale($element, $deal);
                 } else {
-                    if ($element["STATUS"] == "თავისუფალი" || ($element["STATUS"] == "ჯავშნის რიგი" && firstInQueue($element["QUEUE"], $dealID))) {
+                    if ($element["_WJ6N47"] == "თავისუფალი" || ($element["_WJ6N47"] == "ჯავშნის რიგი" && firstInQueue($element["QUEUE"], $dealID))) {
                         $element = preparationProductForSale($element, $deal);
                         $sendNotification = true;
                     } else {
@@ -199,9 +190,9 @@ if (!function_exists('junk')) {
                     sendNotificationToQueue($element["QUEUE"], $notification);
                     sendNotificationToResponsible($dealID, $notification);
                     if ($element["QUEUE"]) {
-                        $element["STATUS"] = "ჯავშნის რიგი";
+                        $element["_WJ6N47"] = "ჯავშნის რიგი";
                     } else {
-                        $element["STATUS"] = "თავისუფალი";
+                        $element["_WJ6N47"] = "თავისუფალი";
                     }
                     $element["DEAL_RESPONSIBLE"] = "";
                     $element["RESERVATION_PERIOD"] = "";
@@ -217,8 +208,8 @@ if (!function_exists('junk')) {
                     $needNotification = true;
 //                    deleteProdFromDeal($dealID);
                 } else {
-                    if ($element["STATUS"] == "ჯავშნის რიგი" && !$element["QUEUE"]) {
-                        $element["STATUS"] = "თავისუფალი";
+                    if ($element["_WJ6N47"] == "ჯავშნის რიგი" && !$element["QUEUE"]) {
+                        $element["_WJ6N47"] = "თავისუფალი";
                         $needNotification = true;
                     }
                 }
@@ -274,7 +265,7 @@ if (!function_exists('preparationProductForSale')) {
     function preparationProductForSale($element, $deal)
     {
         $dealID = $deal["ID"];
-        $element["STATUS"] = "გაყიდული";
+        $element["_WJ6N47"] = "გაყიდული";
         $element["OWNER_DEAL"] = $dealID;
         $element["DEAL_RESPONSIBLE"] = $deal["ASSIGNED_BY_ID"];
         $element["OWNER_CONTACT"] = $deal["CONTACT_ID"];
@@ -287,7 +278,7 @@ if (!function_exists('preparationProductForReservation')) {
     function preparationProductForReservation($element, $deal)
     {
         $dealID = $deal["ID"];
-        $element["STATUS"] = "დაჯავშნილი";
+        $element["_WJ6N47"] = "დაჯავშნილი";
         $element["OWNER_DEAL"] = $dealID;
         $element["DEAL_RESPONSIBLE"] = $deal["ASSIGNED_BY_ID"];
         $element["OWNER_CONTACT"] = $deal["CONTACT_ID"];
