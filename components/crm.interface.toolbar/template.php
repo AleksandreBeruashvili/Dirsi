@@ -766,6 +766,62 @@ if($dealId){
 			}
 			window.reservationPopup = reservationPopup;
 		//
+
+
+
+		//კალკულატორი
+			if(Product){
+				if (((url[3] == "crm" && url[4] == "deal" && url[5] == "details") && (deal["STAGE_ID"] == "1" || deal["STAGE_ID"] == "2" ||  deal["STAGE_ID"] == "3" ||  deal["STAGE_ID"] == "4"))) {
+
+
+				// console.log("shemovida")
+
+					const observer = new MutationObserver(() => {
+						const buttonContainer = createButtonContainer();
+						
+						if (buttonContainer && !document.getElementById('kalkButton')) {
+							var kalkBut = document.createElement('button');
+							kalkBut.id = 'kalkButton';
+							kalkBut.className = 'custom-action-btn';
+							// ლურჯი ფერი რეზერვაციისთვის
+							kalkBut.style.cssText = `
+								background: linear-gradient(135deg, #8f99c4ff 0%, #427efeff 100%);
+								box-shadow: 0 4px 15px rgba(27, 55, 176, 0.4);
+							`;
+							kalkBut.innerHTML = `
+								<svg class="custom-action-icon" viewBox="0 0 24 24" fill="currentColor">
+									<path d="M7 2C5.9 2 5 2.9 5 4v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2H7zm0 2h10v4H7V4zm0 6h4v4H7v-4zm0 6h4v4H7v-4zm6-6h4v4h-4v-4zm0 6h4v4h-4v-4z"/>
+								</svg>
+								<span>calculator</span>
+							`;
+							
+							kalkBut.onmouseover = function() {
+								this.style.boxShadow = '0 7px 25px rgba(102, 126, 234, 0.5)';
+							};
+							
+							kalkBut.onmouseout = function() {
+								this.style.boxShadow = '0 4px 15px rgba(27, 55, 176, 0.4)';
+							};
+							
+							// kalkBut.onclick = function () {
+							// 	calcOpenpop(dealIdForToolbar);
+								
+							// };
+							kalkBut.onclick = function() {
+								window.open(`/custom/calculator?dealid=${dealIdForToolbar}`);
+							};
+														
+							buttonContainer.appendChild(kalkBut);
+							observer.disconnect();
+						}
+					});
+
+					observer.observe(document.body, { childList: true, subtree: true });
+
+					
+				}
+			}
+		//
 	//
 
 
