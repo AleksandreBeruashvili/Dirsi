@@ -1,12 +1,4 @@
-<?
-ob_start();
-require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
-
-
-//=== functions
-function printArr($arr) {
-    echo "<pre>"; print_r($arr); echo "</pre>";
-}
+<?php
 require_once($_SERVER["DOCUMENT_ROOT"]."/functions/bp_workflow_functions.php");
 
 //=== functions
