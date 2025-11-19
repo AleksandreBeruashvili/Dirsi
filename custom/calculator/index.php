@@ -141,7 +141,8 @@ if (is_numeric($docID)) {
 $gegmaFilter = array(
     "IBLOCK_ID" => 22,
     "PROPERTY_product_type" => getWorkflowFieldsKeyByValue("147", $productInfo[0]["PRODUCT_TYPE"]),
-    "PROPERTY_section" => $productInfo[0]["PROJECT"],
+    "PROPERTY_PROJECT_LIST" => getWorkflowFieldsKeyByValue("211", $productInfo[0]["PROJECT"]),
+    // $productInfo[0]["PROJECT"],
     "PROPERTY_floor" => getWorkflowFieldsKeyByValue("148", $productInfo[0]["FLOOR"]),
     "PROPERTY_ACTIVE" => 115,
 );

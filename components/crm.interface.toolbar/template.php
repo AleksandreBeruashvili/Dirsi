@@ -291,6 +291,33 @@ function getCIBlockElementsByFilterT($arFilter = array())
 }
 
 
+
+
+function moneyFormatNum_CRM_ENTITY($num,$currency="USD") {
+    if($currency == "GEL") {
+        $num = floatval(preg_replace('/[^\d.]/', '', $num));
+        $numMoney = number_format($num, 2)."₾";
+    }else{
+        $num = floatval(preg_replace('/[^\d.]/', '', $num));
+        $numMoney = "$" . number_format($num, 2);
+    }
+    return $numMoney;
+}
+
+function moneyToNum_CRM_ENTITY($num) {
+    $num = floatval(preg_replace('/[^\d.]/', '', $num));
+
+    return $num;
+}
+function moneyFormatNum_CRM_ENTITY_GEL($num) {
+    $num = floatval(preg_replace('/[^\d.]/', '', $num));
+    $numMoney = "₾".number_format($num, 2);
+
+    return $numMoney;
+}
+
+
+
 $url = "//{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
 $url = explode('/', $url);
 $dealId = $url[6];
@@ -312,7 +339,71 @@ if($dealId){
 		$pipeline = 0;
 	}
 
+
+
+
+
+
+        $paymentsArr = array(
+            "PAYMENTS_SUM" => 0,
+            "PAYMENTS_SUM_GEL" => 0,
+            "PAYMENTS_SUM_FORMATED" => 0,
+            "PAYMENTS_SUM_FORMATED_GEL" => 0,
+            "PAYMENT_PLAN_SUM" => 0,
+            "PAYMENT_PLAN_SUM_FORMATED" => 0,
+            "OPPORTUNITY" => 0,
+        );
+
+
+        $paymentsFilter = array(
+            "IBLOCK_ID" => 21,
+            "PROPERTY_DEAL" => $dealId
+        );
+
+        $paymentsArr["OPPORTUNITY"] = moneyFormatNum_CRM_ENTITY($deal["OPPORTUNITY"]);
+        $resPayments = getCIBlockElementsByFilterT($paymentsFilter);
+
+        foreach ($resPayments as $payment) {
+
+            $paymentsArr["PAYMENTS_SUM"] += moneyToNum_CRM_ENTITY($payment["TANXA"]);
+            $paymentsArr["PAYMENTS_SUM_GEL"] += moneyToNum_CRM_ENTITY($payment["tanxa_gel"]);
+        }
+
+        $paymentsArr["PAYMENTS_SUM_FORMATED"] = moneyFormatNum_CRM_ENTITY($paymentsArr["PAYMENTS_SUM"]);
+        $paymentsArr["PAYMENTS_SUM_FORMATED_GEL"] = moneyFormatNum_CRM_ENTITY_GEL($paymentsArr["PAYMENTS_SUM_GEL"]);
+
+        $paymentPlanFilter = array(
+            "IBLOCK_ID" => 20,
+            "PROPERTY_DEAL" => $dealId
+        );
+
+        $resPaymentPlan = getCIBlockElementsByFilterT($paymentPlanFilter);
+
+        if($deal["UF_CRM_1702019032102"]==322) {
+            $paymentsArr["OPPORTUNITY"] = moneyFormatNum_CRM_ENTITY($deal["UF_CRM_1701778190"],"GEL");
+
+            foreach ($resPaymentPlan as $paymentPlan) {
+                $paymentsArr["PAYMENT_PLAN_SUM"] += moneyToNum_CRM_ENTITY($paymentPlan["amount_GEL"]);
+            }
+        }
+        else{
+            $paymentsArr["OPPORTUNITY"] = moneyFormatNum_CRM_ENTITY($deal["OPPORTUNITY"],"USD");
+            foreach ($resPaymentPlan as $paymentPlan) {
+                $paymentsArr["PAYMENT_PLAN_SUM"] += moneyToNum_CRM_ENTITY($paymentPlan["TANXA"]);
+            }
+
+        }
+
+        $paymentsArr["diff"] = moneyToNum_CRM_ENTITY($paymentsArr["OPPORTUNITY"]) - moneyToNum_CRM_ENTITY($paymentsArr["PAYMENT_PLAN_SUM"]);
+        if ($deal["UF_CRM_1702019032102"]==322) {
+            $paymentsArr["diff"] = moneyFormatNum_CRM_ENTITY($paymentsArr["diff"],"GEL");
+            $paymentsArr["PAYMENT_PLAN_SUM_FORMATED"] = moneyFormatNum_CRM_ENTITY($paymentsArr["PAYMENT_PLAN_SUM"],"GEL");
+        }else{
+            $paymentsArr["diff"] = moneyFormatNum_CRM_ENTITY($paymentsArr["diff"],"USD");
+            $paymentsArr["PAYMENT_PLAN_SUM_FORMATED"] = moneyFormatNum_CRM_ENTITY($paymentsArr["PAYMENT_PLAN_SUM"],"USD");
+        }
 }
+
 
 
 ?>
@@ -460,7 +551,24 @@ if($dealId){
 						};
 						
 						sellButton.onclick = function () {
-							sellPopup(dealIdForToolbar);
+
+							fetch(`${location.origin}/rest/local/checkBinisGayidva.php?dealID=${dealIdForToolbar}`)
+								.then(data => {
+									return data.json();
+								})
+								.then(data => {
+									if (data.status == 200) {
+										sellPopup(dealIdForToolbar);
+									} else {
+										alertMsg = data.message;
+										alert(alertMsg);
+									}
+										})
+								.catch(error => {
+									console.log(error);
+								});
+								
+
 						};
 						
 						buttonContainer.appendChild(sellButton);
@@ -850,7 +958,7 @@ if($dealId){
 
     setInterval(() => {
 
-		if (pathname[1] == "crm" && pathname[2] == "deal" && pathname[4] != "0" &&  deal["STAGE_ID"] == "NEW") {
+		if (pathname[1] == "crm" && pathname[2] == "deal" && pathname[4] != "0" && ( deal["STAGE_ID"] == "NEW"  || deal["STAGE_ID"] == "PREPARATION" ||  deal["STAGE_ID"] == "PREPAYMENT_INVOICE") ) {
 
 			const realEstateSection = document.querySelector("[data-cid='user_qo1d69qy']");
 			if (realEstateSection) {
@@ -869,5 +977,87 @@ if($dealId){
 		}
 
     }, 500);
+
+
+    if (pathname[3] == "details") {
+
+
+        if (pathname[4] > 0) {
+            paymentsArr = <?php echo json_encode($paymentsArr); ?>;
+            approvedInstallment = <?php echo json_encode($approvedInstallment); ?>;
+
+
+            // for patments and payment plan lists
+            setTimeout(() => {
+                    let paymantsBtn = document.getElementById("crm_scope_detail_c_deal__tab_lists_21");
+                let paymantPlanBtn = document.getElementById("crm_scope_detail_c_deal__tab_lists_20");
+
+                let addedToPayments = false;
+                let addedToPaymentPlan = false;
+
+                if(paymantsBtn) {
+                    paymantsBtn.addEventListener("click", () => {
+                        if(!addedToPayments) {
+                            setTimeout(() => {
+                                let forPaymentsInfo = document.querySelector("#container_lists_attached_crm_21");
+                                if(forPaymentsInfo) {
+                                    let tempContainer = `
+                                                    <div class="leac-title-menu">
+                                                          <span style="font-weight: bold; color: #39c3ef; font-size: 17px;">
+                                                              გადახდილი: ${paymentsArr["PAYMENTS_SUM_FORMATED"]} - ${paymentsArr["PAYMENTS_SUM_FORMATED_GEL"]}
+                                                          </span>
+                                                      </div>
+                                                `;
+
+                                    forPaymentsInfo.insertAdjacentHTML("beforebegin", tempContainer);
+                                    addedToPayments = true;
+                                }
+                            }, 1000);
+                        }
+                    });
+                }
+
+                if(paymantPlanBtn) {
+                    paymantPlanBtn.addEventListener("click", () => {
+                        if(!addedToPaymentPlan) {
+                            setTimeout(() => {
+                                let forPaymentPlanInfo = document.querySelector("#container_lists_attached_crm_20");
+                                // <span style="font-weight: bold; color: #39c3ef; font-size: 17px;">
+                                //             განვადების ტიპი: ${approvedInstallment["planType"]}; 
+                                //         </span>
+                                if(forPaymentPlanInfo) {
+                                    let paymentPlanInfo = `
+                                    <div class="leac-title-menu">
+                               
+                                        <span style="font-weight: bold; color: #39c3ef; font-size: 17px;">
+                                            პროდუქტის ღირებულება: ${paymentsArr["OPPORTUNITY"]}; 
+                                        </span>
+                                        <span style="font-weight: bold; color: #39c3ef; font-size: 17px;">
+                                            განვადება: ${paymentsArr["PAYMENT_PLAN_SUM_FORMATED"]}; 
+                                        </span>
+                                        <span style="font-weight: bold; color: #39c3ef; font-size: 17px;">
+                                            სხვაობა: ${paymentsArr["diff"]}; 
+                                        </span>
+                                    </div>
+                                `;
+
+                                    forPaymentPlanInfo.insertAdjacentHTML("beforebegin", paymentPlanInfo);
+
+                                    addedToPaymentPlan = true;
+                                }
+                            }, 600);
+                        }
+                    });
+                }
+            }, 400);
+
+
+
+        }
+
+    }
+
+
+
 </script>
 
