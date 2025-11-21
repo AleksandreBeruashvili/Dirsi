@@ -1022,32 +1022,23 @@ if (!empty($htmlEditorConfigs))
 
 
     setInterval(() => {
+		if (pathname[1] == "crm" && pathname[2] == "deal" && pathname[4] == "0") {
+			const realEstateSection = document.querySelector("[data-cid='user_qo1d69qy']");
+			if (realEstateSection) {
+				realEstateSection.style.display = "none";
+			}
 
-    if (pathname[1] == "crm" && pathname[2] == "deal" && pathname[4] == "0") {
+			var reservation = document.querySelector("[data-cid='user_iunr3z03']");
+			if (reservation) {
+				reservation.style.display = 'none';
+			}
 
-
-
-        const realEstateSection = document.querySelector("[data-cid='user_qo1d69qy']");
-        if (realEstateSection) {
-            realEstateSection.style.display = "none";
-        }
-
-        var reservation = document.querySelector("[data-cid='user_iunr3z03']");
-        if (reservation) {
-            reservation.style.display = 'none';
-        }
-
-            const agr = document.querySelector("[data-cid='user_835g4q5p']");
+			const agr = document.querySelector("[data-cid='user_835g4q5p']");
 			if (agr) {
 				agr.style.display = "none";
 			}
-
-    }
+		}
 
     }, 500);
-
-
-
-
 
 </script>

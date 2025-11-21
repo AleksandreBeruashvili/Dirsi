@@ -414,13 +414,18 @@ if($dealId){
     let oldStageFromService = '';
     let stageIdFromService = '';
     let dealIdForToolbar = (pathname[4] == undefined) ? (0) : (pathname[4]);
-    let catalog = document.getElementById('crm_scope_detail_c_deal__catalog');
 
 	url = <? echo json_encode($url); ?>;
 	userID = <? echo json_encode($userID); ?>;
 	Product = <? echo json_encode($Product); ?>;
 	deal = <? echo json_encode($deal); ?>;
 
+
+	// if(userID != 1){
+		moreBut= document.getElementById('crm_scope_detail_c_deal__more_button');
+		if (moreBut) moreBut.style.display = "none";
+
+	// }
 
 	setInterval(() => {
         fetch(`${location.origin}/rest/local/getDealStage.php?id=${dealIdForToolbar}`)
@@ -430,13 +435,75 @@ if($dealId){
             .then(data => {
                 stageIdFromService = data["deal_data"]["STAGE_ID"];
 
-				// if(userID!=1){
-					if (stageIdFromService === "NEW" || stageIdFromService === "PREPARATION" ) {
-						catalog.style.display = "none";
-					} else {
-						catalog.style.display = "";
-					}
-				// }
+					//ჩანართების დამალვა-გამოჩენა
+						let catalog = document.getElementById('crm_scope_detail_c_deal__catalog');
+						let ganvadeba = document.getElementById('crm_scope_detail_c_deal__tab_lists_20');
+
+						let kalulaciebi = document.getElementById('crm_scope_detail_c_deal__tab_lists_24');
+						let gadaxdebi = document.getElementById('crm_scope_detail_c_deal__tab_lists_21');
+						let grafDast = document.getElementById('crm_scope_detail_c_deal__tab_lists_23');
+						let docs = document.getElementById('crm_scope_detail_c_deal__tab_lists_19');
+						let restHistory = document.getElementById('crm_scope_detail_c_deal__tab_lists_25');
+
+						if (stageIdFromService === "NEW" || stageIdFromService === "PREPARATION") {
+							catalog.style.display = "none";
+							ganvadeba.style.display = "none";
+						} else {
+							catalog.style.display = "";
+							ganvadeba.style.display = "";
+						}
+
+
+						const hiddenStages = [
+							"NEW",
+							"PREPARATION",
+							"PREPAYMENT_INVOICE",
+							"UC_12CJ1Z",
+							"UC_2EW8VW", 
+							"UC_15207E", 
+							"EXECUTING",
+							"UC_BAUB5P",
+							"UC_F3FOBF",
+							"FINAL_INVOICE",
+						];
+
+						const elements = [kalulaciebi, gadaxdebi, grafDast, docs, restHistory];
+						const shouldHide = hiddenStages.includes(stageIdFromService);
+
+						elements.forEach(el => {
+							el.style.display = shouldHide ? "none" : "";
+						});
+
+
+
+						const hiddenStages1 = [
+							"NEW",
+							"PREPARATION",
+							"PREPAYMENT_INVOICE",
+							"UC_12CJ1Z",
+							"UC_2EW8VW", 
+							"UC_15207E", 
+							"EXECUTING",
+							"UC_BAUB5P",
+							"UC_F3FOBF",
+							"FINAL_INVOICE",
+							"1",
+							"2",
+							"3",
+							"4",
+							"WON", 
+						];
+
+						const elements1 = [kalulaciebi, grafDast, docs, restHistory];
+						const shouldHide1 = hiddenStages1.includes(stageIdFromService);
+
+						elements1.forEach(el => {
+							el.style.display = shouldHide1 ? "none" : "";
+						});
+
+					//
+
+
 
             })
             .catch(error => {
@@ -875,8 +942,6 @@ if($dealId){
 			window.reservationPopup = reservationPopup;
 		//
 
-
-
 		//კალკულატორი
 			if(Product){
 				if (((url[3] == "crm" && url[4] == "deal" && url[5] == "details") && (deal["STAGE_ID"] == "1" || deal["STAGE_ID"] == "2" ||  deal["STAGE_ID"] == "3" ||  deal["STAGE_ID"] == "4"))) {
@@ -955,109 +1020,129 @@ if($dealId){
 			});
 		}, 100);
 	}
+	if (pathname[1] == "crm" && pathname[2] == "deal" && pathname[4] != "0"  ) {
+		setInterval(() => {
 
-    setInterval(() => {
-
-		if (pathname[1] == "crm" && pathname[2] == "deal" && pathname[4] != "0" && ( deal["STAGE_ID"] == "NEW"  || deal["STAGE_ID"] == "PREPARATION" ||  deal["STAGE_ID"] == "PREPAYMENT_INVOICE") ) {
-
-			const realEstateSection = document.querySelector("[data-cid='user_qo1d69qy']");
-			if (realEstateSection) {
-				realEstateSection.style.display = "none";
+			if(deal["STAGE_ID"] == "NEW"  || deal["STAGE_ID"] == "PREPARATION" ){
+				const realEstateSection = document.querySelector("[data-cid='user_qo1d69qy']");
+				if (realEstateSection) {
+					realEstateSection.style.display = "none";
+				}
 			}
 
-			const agr = document.querySelector("[data-cid='user_835g4q5p']");
-			if (agr) {
-				agr.style.display = "none";
+
+			if(deal["STAGE_ID"] == "1"){
+				var reservation = document.querySelector("[data-cid='user_iunr3z03']");
+				if (reservation) {
+					reservation.style.display = '';
+				}
+			}else{
+				var reservation = document.querySelector("[data-cid='user_iunr3z03']");
+				if (reservation) {
+					reservation.style.display = 'none';
+				}
 			}
 
-			var reservation = document.querySelector("[data-cid='user_iunr3z03']");
-			if (reservation) {
-				reservation.style.display = 'none';
+
+			if(deal["STAGE_ID"] == "2" || deal["STAGE_ID"] == "3"  || deal["STAGE_ID"] == "4"  || deal["STAGE_ID"] == "WON"){
+			    var agr = document.querySelector("[data-cid='user_835g4q5p']");
+				if (agr) {
+					agr.style.display = "";
+				}
+			}else{
+			    var agr = document.querySelector("[data-cid='user_835g4q5p']");
+				if (agr) {
+					agr.style.display = "none";
+				}
 			}
+				
+		}, 500);
+	}
+
+
+
+
+	//ღირებულება-განვადება-სხვაობა
+
+		if (pathname[3] == "details") {
+
+
+			if (pathname[4] > 0) {
+				paymentsArr = <?php echo json_encode($paymentsArr); ?>;
+				approvedInstallment = <?php echo json_encode($approvedInstallment); ?>;
+
+
+				// for patments and payment plan lists
+				setTimeout(() => {
+						let paymantsBtn = document.getElementById("crm_scope_detail_c_deal__tab_lists_21");
+					let paymantPlanBtn = document.getElementById("crm_scope_detail_c_deal__tab_lists_20");
+
+					let addedToPayments = false;
+					let addedToPaymentPlan = false;
+
+					if(paymantsBtn) {
+						paymantsBtn.addEventListener("click", () => {
+							if(!addedToPayments) {
+								setTimeout(() => {
+									let forPaymentsInfo = document.querySelector("#container_lists_attached_crm_21");
+									if(forPaymentsInfo) {
+										let tempContainer = `
+														<div class="leac-title-menu">
+															<span style="font-weight: bold; color: #39c3ef; font-size: 17px;">
+																გადახდილი: ${paymentsArr["PAYMENTS_SUM_FORMATED"]} - ${paymentsArr["PAYMENTS_SUM_FORMATED_GEL"]}
+															</span>
+														</div>
+													`;
+
+										forPaymentsInfo.insertAdjacentHTML("beforebegin", tempContainer);
+										addedToPayments = true;
+									}
+								}, 1000);
+							}
+						});
+					}
+
+					if(paymantPlanBtn) {
+						paymantPlanBtn.addEventListener("click", () => {
+							if(!addedToPaymentPlan) {
+								setTimeout(() => {
+									let forPaymentPlanInfo = document.querySelector("#container_lists_attached_crm_20");
+									// <span style="font-weight: bold; color: #39c3ef; font-size: 17px;">
+									//             განვადების ტიპი: ${approvedInstallment["planType"]}; 
+									//         </span>
+									if(forPaymentPlanInfo) {
+										let paymentPlanInfo = `
+										<div class="leac-title-menu">
+								
+											<span style="font-weight: bold; color: #39c3ef; font-size: 17px;">
+												პროდუქტის ღირებულება: ${paymentsArr["OPPORTUNITY"]}; 
+											</span>
+											<span style="font-weight: bold; color: #39c3ef; font-size: 17px;">
+												განვადება: ${paymentsArr["PAYMENT_PLAN_SUM_FORMATED"]}; 
+											</span>
+											<span style="font-weight: bold; color: #39c3ef; font-size: 17px;">
+												სხვაობა: ${paymentsArr["diff"]}; 
+											</span>
+										</div>
+									`;
+
+										forPaymentPlanInfo.insertAdjacentHTML("beforebegin", paymentPlanInfo);
+
+										addedToPaymentPlan = true;
+									}
+								}, 600);
+							}
+						});
+					}
+				}, 400);
+
+
+
+			}
+
 		}
 
-    }, 500);
-
-
-    if (pathname[3] == "details") {
-
-
-        if (pathname[4] > 0) {
-            paymentsArr = <?php echo json_encode($paymentsArr); ?>;
-            approvedInstallment = <?php echo json_encode($approvedInstallment); ?>;
-
-
-            // for patments and payment plan lists
-            setTimeout(() => {
-                    let paymantsBtn = document.getElementById("crm_scope_detail_c_deal__tab_lists_21");
-                let paymantPlanBtn = document.getElementById("crm_scope_detail_c_deal__tab_lists_20");
-
-                let addedToPayments = false;
-                let addedToPaymentPlan = false;
-
-                if(paymantsBtn) {
-                    paymantsBtn.addEventListener("click", () => {
-                        if(!addedToPayments) {
-                            setTimeout(() => {
-                                let forPaymentsInfo = document.querySelector("#container_lists_attached_crm_21");
-                                if(forPaymentsInfo) {
-                                    let tempContainer = `
-                                                    <div class="leac-title-menu">
-                                                          <span style="font-weight: bold; color: #39c3ef; font-size: 17px;">
-                                                              გადახდილი: ${paymentsArr["PAYMENTS_SUM_FORMATED"]} - ${paymentsArr["PAYMENTS_SUM_FORMATED_GEL"]}
-                                                          </span>
-                                                      </div>
-                                                `;
-
-                                    forPaymentsInfo.insertAdjacentHTML("beforebegin", tempContainer);
-                                    addedToPayments = true;
-                                }
-                            }, 1000);
-                        }
-                    });
-                }
-
-                if(paymantPlanBtn) {
-                    paymantPlanBtn.addEventListener("click", () => {
-                        if(!addedToPaymentPlan) {
-                            setTimeout(() => {
-                                let forPaymentPlanInfo = document.querySelector("#container_lists_attached_crm_20");
-                                // <span style="font-weight: bold; color: #39c3ef; font-size: 17px;">
-                                //             განვადების ტიპი: ${approvedInstallment["planType"]}; 
-                                //         </span>
-                                if(forPaymentPlanInfo) {
-                                    let paymentPlanInfo = `
-                                    <div class="leac-title-menu">
-                               
-                                        <span style="font-weight: bold; color: #39c3ef; font-size: 17px;">
-                                            პროდუქტის ღირებულება: ${paymentsArr["OPPORTUNITY"]}; 
-                                        </span>
-                                        <span style="font-weight: bold; color: #39c3ef; font-size: 17px;">
-                                            განვადება: ${paymentsArr["PAYMENT_PLAN_SUM_FORMATED"]}; 
-                                        </span>
-                                        <span style="font-weight: bold; color: #39c3ef; font-size: 17px;">
-                                            სხვაობა: ${paymentsArr["diff"]}; 
-                                        </span>
-                                    </div>
-                                `;
-
-                                    forPaymentPlanInfo.insertAdjacentHTML("beforebegin", paymentPlanInfo);
-
-                                    addedToPaymentPlan = true;
-                                }
-                            }, 600);
-                        }
-                    });
-                }
-            }, 400);
-
-
-
-        }
-
-    }
-
-
+	//
 
 </script>
 

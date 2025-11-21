@@ -54,35 +54,16 @@ if ($USER->IsAuthorized()) {
                 }, 500);
             }
         //
+
+        
+        setTimeout(() => {
+            if (url[0] == "crm" && url[1] == "deal" && url[3] == "category") {
+                document.querySelectorAll('.crm-kanban-column-add-item-button').forEach(btn => {
+                    btn.style.display = 'none';
+                });
+            }
+        }, 200);
     }
-
-
-
-    // setTimeout(() => {
-    //     const settingsScript = document.createElement('script');
-    //     settingsScript.textContent = `
-    //         window.gtranslateSettings = {
-    //             "default_language":"en","languages":["ka","en","ru"],"wrapper_selector":".gtranslate_wrapper","flag_size":24};
-    //     `;
-    //     document.body.appendChild(settingsScript);
-
-    //     const gtranslateScript = document.createElement('script');
-    //     gtranslateScript.src = "https://cdn.gtranslate.net/widgets/latest/flags.js";
-    //     gtranslateScript.defer = true;
-    //     document.body.appendChild(gtranslateScript);
-
-    //     var logo = document.getElementsByClassName('menu-items-header');
-
-    //     if(logo){
-    //         var translatehtml = `
-    //                     <div class="gtranslate_wrapper"></div>
-    //                 `;
-    //         if(logo[0]){
-    //             logo[0].insertAdjacentHTML('afterbegin', translatehtml);
-    //         }
-
-    //     }
-    // }, 3000);
 
 
 setTimeout(() => {
