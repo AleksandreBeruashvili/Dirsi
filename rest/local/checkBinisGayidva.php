@@ -79,7 +79,24 @@ $deals = getDealsByFilterBINISGAYIDVA($arFilter);
 $deal_price = $deals[0]["OPPORTUNITY"];
 
 
+$arFilter=array(
+    "IBLOCK_ID" =>20,
+    "PROPERTY_DEAL" =>$deal_ID,
+);
 
+$ganvadebebi = getCIBlockElementsByFilterBINISGAYIDVA($arFilter);
+
+$ganvadebebisJami = 0;
+
+foreach($ganvadebebi as $ganvadeba){
+    $tanxa = str_replace("|USD", "", $ganvadeba["PROPERTY_TANXA_VALUE"]);
+    $tanxa = floatval(str_replace(",", "", $tanxa)); // აქ ვაქცევთ რიცხვად
+    $ganvadebebisJami += $tanxa;
+}
+
+//  printArr($deal_price);
+//  printArr($ganvadebebi);
+//  printArr($ganvadebebisJami);
 
 $contactID = $deals[0]["CONTACT_ID"];
 
@@ -128,7 +145,11 @@ $resArr=array();
 if($hasAllFieldsSelected == "no"){
     $resArr["status"] = 400;
     $resArr["message"] = "კონტაქტზე არაა შევსებული სავალდებულო ველები! $missingFieldsString";
-}else{
+} elseif (round(floatval($deal_price), 2) != round(floatval($ganvadebebisJami), 2)) {
+    $resArr["status"] = 400;
+    $resArr["message"] = "აღნიშნული გარიგების ფასი არ ემთხვევა განვადების ჯამს!";
+}
+else{
     $resArr["status"] = 200;
     $resArr["message"] = "Sold Succesfully";
 }
