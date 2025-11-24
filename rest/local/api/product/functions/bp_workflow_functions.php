@@ -100,18 +100,23 @@ function getDealInfoByID ($dealID) {
 function dealUpdate_163($dealId,$productData)
 {
 
-    $prodNumber = $productData["NUMBER"];
+    $prodNumber = $productData["Number"];
     $prodFLOOR = $productData["FLOOR"];
     $prodPRODUCT_TYPE = $productData["PRODUCT_TYPE"];
     $prodTOTAL_AREA = $productData["TOTAL_AREA"];
+    $arrForAdd ["UF_CRM_1761658559005"] = $prodNumber;     //ბინის N
+    $arrForAdd ["UF_CRM_1761658577987"] =$prodFLOOR; //სართული
+    $arrForAdd ["UF_CRM_1761658516561"] = $productData["PROJECT"];    //პროექტი
+    $arrForAdd ["UF_CRM_1762948106980"] = $productData["KORPUSIS_NOMERI_XE3NX2"];//ბლოკი
+    $arrForAdd ["UF_CRM_1761658503260"] = $productData["KVM_PRICE"];  //კვ/მ ფასი
+    $arrForAdd ["UF_CRM_1761658532158"] = $prodPRODUCT_TYPE;      //ფართის ტიპი
+    $arrForAdd ["UF_CRM_1761658608306"] = $prodTOTAL_AREA;    //საერთო ფართი
+    $arrForAdd ["UF_CRM_1762867479699"] = $productData["_15MYD6"];     //სადარბაზო   
+    $arrForAdd ["UF_CRM_1761658765237"]  = $productData["LIVING_SPACE"];    //საცხოვრებელი ფართი მ²   
+    $arrForAdd ["UF_CRM_1761658642424"] = $productData["PRICE"];     //სადარბაზო   
+    $arrForAdd ["UF_CRM_1761658662573"]  = $productData["KVM_PRICE"];    //საცხოვრებელი ფართი მ²   
 
 
-    $arrForAdd ["UF_CRM_1693385964548"] = $prodNumber;      //ბინის N
-    $arrForAdd ["UF_CRM_1709803989"] = $prodFLOOR;      //სართული
-    $arrForAdd ["UF_CRM_1693385948133"] = "";      //პროექტი
-    $arrForAdd ["UF_CRM_1693385992603"] = $prodPRODUCT_TYPE;      //ფართის ტიპი
-    $arrForAdd ["UF_CRM_1693386021079"] = $prodTOTAL_AREA;      //საერთო ფართი
-    $arrForAdd ["UF_CRM_1693398443196"] = date("d/m/Y");      //ხელშეკრულების გაფორმების თარიღი
 
     $Deal = new CCrmDeal();
     $result = $Deal->Update($dealId, $arrForAdd);

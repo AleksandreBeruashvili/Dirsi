@@ -439,11 +439,12 @@ if($dealId){
 						let catalog = document.getElementById('crm_scope_detail_c_deal__catalog');
 						let ganvadeba = document.getElementById('crm_scope_detail_c_deal__tab_lists_20');
 
-						let kalulaciebi = document.getElementById('crm_scope_detail_c_deal__tab_lists_24');
 						let gadaxdebi = document.getElementById('crm_scope_detail_c_deal__tab_lists_21');
-						let grafDast = document.getElementById('crm_scope_detail_c_deal__tab_lists_23');
 						let docs = document.getElementById('crm_scope_detail_c_deal__tab_lists_19');
 						let restHistory = document.getElementById('crm_scope_detail_c_deal__tab_lists_25');
+
+						let grafDast = document.getElementById('crm_scope_detail_c_deal__tab_lists_23');
+						let kalulaciebi = document.getElementById('crm_scope_detail_c_deal__tab_lists_24');
 
 						if (stageIdFromService === "NEW" || stageIdFromService === "PREPARATION") {
 							catalog.style.display = "none";
@@ -452,6 +453,20 @@ if($dealId){
 							catalog.style.display = "";
 							ganvadeba.style.display = "";
 						}
+
+						if (stageIdFromService != "NEW" || stageIdFromService != "PREPARATION") {
+						   if(Product){
+								kalulaciebi.style.display = "";
+								grafDast.style.display = "";
+						   }else{
+								kalulaciebi.style.display = "none";
+								grafDast.style.display = "none";
+						   }
+						}else{
+							kalulaciebi.style.display = "none";
+							grafDast.style.display = "none";
+						}
+
 
 
 						const hiddenStages = [
@@ -467,7 +482,7 @@ if($dealId){
 							"FINAL_INVOICE",
 						];
 
-						const elements = [kalulaciebi, gadaxdebi, grafDast, docs, restHistory];
+						const elements = [ gadaxdebi, docs, restHistory];
 						const shouldHide = hiddenStages.includes(stageIdFromService);
 
 						elements.forEach(el => {
@@ -494,7 +509,7 @@ if($dealId){
 							"WON", 
 						];
 
-						const elements1 = [kalulaciebi, grafDast, docs, restHistory];
+						const elements1 = [ docs, restHistory];
 						const shouldHide1 = hiddenStages1.includes(stageIdFromService);
 
 						elements1.forEach(el => {
@@ -944,9 +959,7 @@ if($dealId){
 
 		//კალკულატორი
 			if(Product){
-				if (((url[3] == "crm" && url[4] == "deal" && url[5] == "details") && (deal["STAGE_ID"] == "1" || deal["STAGE_ID"] == "2" ||  deal["STAGE_ID"] == "3" ||  deal["STAGE_ID"] == "4"))) {
-
-
+				if (((url[3] == "crm" && url[4] == "deal" && url[5] == "details") && (deal["STAGE_ID"] != "NEW" || deal["STAGE_ID"] != "PREPARATION" ))) {
 				// console.log("shemovida")
 
 					const observer = new MutationObserver(() => {
@@ -995,15 +1008,66 @@ if($dealId){
 				}
 			}
 		//
+
+
+		//ფინანსური რეპორტი
+			if(Product){
+				if (((url[3] == "crm" && url[4] == "deal" && url[5] == "details") && (deal["STAGE_ID"] == "1" ||   deal["STAGE_ID"] == "2" || deal["STAGE_ID"] == "3" ||  deal["STAGE_ID"] == "WON"))) {
+
+					const observer = new MutationObserver(() => {
+						const buttonContainer = createButtonContainer();
+						
+						if (buttonContainer && !document.getElementById('finansRep')) {
+							var finBut = document.createElement('button');
+							finBut.id = 'finansRep';
+							finBut.className = 'custom-action-btn';
+							finBut.style.cssText = `
+								background: linear-gradient(135deg, #8f99c4ff 0%, #427efeff 100%);
+								box-shadow: 0 4px 15px rgba(27, 55, 176, 0.4);
+							`;
+							finBut.innerHTML = `
+								<svg class="custom-action-icon" viewBox="0 0 24 24" fill="currentColor">
+									<path d="M3 3v18h18v-2H5V3H3zm8 6h2v9h-2V9zm4-4h2v13h-2V5zM7 12h2v6H7v-6z"/>
+								</svg>
+								<span>Financial Report</span>
+							`;
+							
+							finBut.onmouseover = function() {
+								this.style.boxShadow = '0 7px 25px rgba(102, 126, 234, 0.5)';
+							};
+							
+							finBut.onmouseout = function() {
+								this.style.boxShadow = '0 4px 15px rgba(27, 55, 176, 0.4)';
+							};
+							
+							// finBut.onclick = function () {
+							// 	calcOpenpop(dealIdForToolbar);
+								
+							// };
+							finBut.onclick = function() {
+								window.open(`/custom/reports/FinancialReport.php?login=yes&dealid=${dealIdForToolbar}`);
+							};
+														
+							buttonContainer.appendChild(finBut);
+							observer.disconnect();
+						}
+					});
+
+					observer.observe(document.body, { childList: true, subtree: true });
+
+					
+				}
+			}
+		//
 	//
 
-
+// 
 
 	// კონკრეტულ სთეიჯებზე გადატანის დაბლოკვა
-	if ( userID != 1 && url[3] == "crm" && url[4] == "deal" && url[5] == "details" ) {
+	if (url[3] == "crm" && url[4] == "deal" && url[5] == "details" ) {
 		setTimeout(function() {
 			// აიდების სია, რომლებიც უნდა დაიბლოკოს
-			const blockedIds = ["3", "4"];
+			const blockedIds = ["FINAL_INVOICE", "1"];
 
 			blockedIds.forEach(id => {
 				const element = document.querySelector(`[data-id="${id}"]`);
