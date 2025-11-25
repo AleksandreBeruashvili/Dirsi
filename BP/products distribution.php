@@ -1,7 +1,4 @@
 <?
-ob_start();
-require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
-
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/functions/bp_workflow_functions.php");
 

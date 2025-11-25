@@ -1,3 +1,5 @@
+<?
+
 require_once($_SERVER["DOCUMENT_ROOT"]."/functions/bp_workflow_functions.php");
 
 $root=$this->GetRootActivity();

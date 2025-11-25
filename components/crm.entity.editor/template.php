@@ -1039,17 +1039,7 @@ if (!empty($htmlEditorConfigs))
 			}
 		}
 
-
-
-		document.querySelectorAll('.crm-entity-section-status-step').forEach(step => {
-			const textEl = step.querySelector('.crm-entity-section-status-step-item-text');
-			if (!textEl) return;
-			if(textEl.style.color){
-				step.style.pointerEvents = 'none';
-                 step.style.opacity = '0.8';
-			}
-		});
-
     }, 500);
+
 
 </script>
