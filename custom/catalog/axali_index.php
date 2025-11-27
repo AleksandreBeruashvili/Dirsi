@@ -1390,7 +1390,7 @@ ob_end_clean();
     let projects = <?php echo json_encode($projects); ?>;
     let productProperties = <?php echo json_encode($productProperties); ?>;
     let openedOnDeal = false;
-    let allowedStages = ["PREPARATION", "PREPAYMENT_INVOICE", "EXECUTING"];
+    let allowedStages = ["PREPAYMENT_INVOICE", "UC_12CJ1Z", "UC_2EW8VW", "UC_15207E", "EXECUTING", "UC_BAUB5P", "UC_F3FOBF"];
     let inAllowedStages = true;
     let productsBoxWrapper = document.getElementById("productsBoxWrapper");
 
@@ -2131,7 +2131,7 @@ ob_end_clean();
 
             for (let f = 0; f < javshaniarr.length; f++) {
                 if (javshaniarr[f] !== '') {
-                    if (f==0) {
+                    if (f==1) {
                         queue = `<a href="/crm/deal/details/${javshaniarr[f]}/" target="_blank">${javshaniarr[f]}</a>`;
                     } else {
                         queue += `,<a href="/crm/deal/details/${javshaniarr[f]}/" target="_blank">${javshaniarr[f]}</a>`;
