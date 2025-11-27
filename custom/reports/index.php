@@ -94,7 +94,7 @@ function printArr($arr)
     <iframe 
     id="reportIframe" 
     title="Report Viewer" 
-    sandbox="allow-scripts allow-same-origin allow-downloads allow-popups allow-forms allow-top-navigation-by-user-activation">
+    sandbox="allow-scripts allow-same-origin allow-downloads allow-popups allow-forms">
 </iframe>
 
 </body>

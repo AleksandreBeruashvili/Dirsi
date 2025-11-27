@@ -488,6 +488,45 @@ ob_end_clean();
 
     }
 
+    #menu-items-block{
+        display:none;
+    }
+
+    #header{
+        display:none;
+
+    }
+
+    .page__toolbar{
+        display: none;
+    }
+
+    .app__page {
+        padding-left: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .page__workarea-content {
+        padding: 15px;
+        flex: 1;
+        background-color: var(--ui-color-background-primary);
+        border-radius: 0;
+        overflow: hidden;
+        position: relative;
+        height: 800px;
+        width: 100%;
+
+    }
+
+    .app__footer{
+
+    display:none;
+
+
+    }
+
     .excel-export-button {
         background-color: #4CAF50; /* Green background color */
         border: none;
