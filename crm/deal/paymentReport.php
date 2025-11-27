@@ -434,6 +434,7 @@ if($filter_for_element!=0) {
 
 
 }
+
 ob_end_clean();
 
 ?>

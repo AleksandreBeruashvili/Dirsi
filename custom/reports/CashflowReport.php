@@ -367,6 +367,8 @@ switch ($period) {
 }
 
 // printArr($dealsForExcel);
+ob_end_clean();
+
 ?>
 
 

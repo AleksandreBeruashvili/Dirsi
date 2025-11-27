@@ -222,8 +222,7 @@ else if(!empty($project)) {
 }
 
 
-
-
+ob_end_clean();
 
 
 ?>
