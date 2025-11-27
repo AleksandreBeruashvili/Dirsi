@@ -548,7 +548,7 @@ $nbgKursi = getNBGkursi($dateForNBG);
         <div class="form-field">
             <label>განვადების ტიპი</label>
             <select id="ganvadebaType" class="form-select green-border" onchange="changeType();">
-                <option value="mortgage">სტანდარტული</option>
+                <option value="mortgage">განვადება</option>
                 <option value="customType" selected>არასტანდარტული</option>
                 <option value="allCash">ერთიანი გადახდა</option>
                 <option value="bankLoan">ბანკის სესხი</option>
@@ -1088,9 +1088,11 @@ function fillData() {
     setValue('lastPayDate', '');
     setValue('discountNum', '');
     setValue('discountType', 'AMOUNT');
-    
-    // Set basic info
-    setValue('projectAndDate', CONFIG.scheduleTypeArr[selectedType]?.projEndDate || '');
+    if(document.getElementById('projectAndDate')){
+        if(document.getElementById('projectAndDate').value==''){
+            setValue('projectAndDate', CONFIG.scheduleTypeArr[selectedType]?.projEndDate || '');
+        }
+    }
     setHTML('DEALID', `<a href="/crm/deal/details/${CONFIG.dealID}/" target="_blank" style="color: black; text-decoration: none;">${CONFIG.dealID}</a>`);
     setValue('binisNomeri', CONFIG.binisNomeri);
     setValue('chabarebatype', <?= json_encode($chabarebatype) ?>);
