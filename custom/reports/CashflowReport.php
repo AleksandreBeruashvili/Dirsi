@@ -2,8 +2,6 @@
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 $APPLICATION->SetTitle("Cashflow Report");
 
-
-
 function printArr($arr) {
     echo "<pre>"; print_r($arr); echo "</pre>";
 }
@@ -25,8 +23,6 @@ function getDealsByFilter($arFilter, $project, $arSelect = array(), $arSort = ar
     }
     return (count($result["deals_IDs"]) > 0) ? $result : false;
 }
-
-
 
 function getDaricxvebiDaGadaxdebi($fromDate, $toDate, $deals_IDs, $deals_data){
     $daricxvebi = array();
@@ -52,7 +48,6 @@ function getDaricxvebiDaGadaxdebi($fromDate, $toDate, $deals_IDs, $deals_data){
         $arProps = $ob->GetProperties();
 
         $amount = (float) str_replace("|USD","",$arProps["TANXA"]["VALUE"]);
-        // $deals_data[$arProps["DEAL"]["VALUE"]]["daricxva"] += $amount;
 
         $daricxvebi[] = array(
             "DEAL_ID" => $arProps["DEAL"]["VALUE"],
@@ -116,13 +111,12 @@ function filterGadaxdebiByDates($fromDate, $toDate, $gadaxdebi) {
     $fromObj = DateTime::createFromFormat('Y-m-d', $fromDate);
     $toObj = DateTime::createFromFormat('Y-m-d', $toDate);
 
-    if (!$fromObj || !$toObj) return $gadaxdebi; // fallback if dates invalid
+    if (!$fromObj || !$toObj) return $gadaxdebi;
 
     $filtered_gadaxdebi = array_filter($gadaxdebi, function($item) use ($fromObj, $toObj) {
         $itemDateStr = $item["DATE"];
         if (!$itemDateStr) return false;
 
-        // Try multiple formats
         $formats = ['d/m/Y', 'Y-m-d', 'Y-m-d H:i:s'];
         $itemDate = false;
         foreach ($formats as $fmt) {
@@ -141,8 +135,6 @@ function filterGadaxdebiByDates($fromDate, $toDate, $gadaxdebi) {
     return $filtered_gadaxdebi;
 }
 
-
-
 $fromDate = !empty($_GET["from_date"]) ? $_GET["from_date"] : null;
 $toDate   = !empty($_GET["to_date"]) ? $_GET["to_date"] : null;
 $project = $_GET["project"];
@@ -155,19 +147,16 @@ if (!empty($fromDate) && !empty($toDate)) {
     if ($from && $to) {
         switch ($period) {
             case "month":
-                // include full months (from start of first month to end of last month)
                 $from->modify('first day of this month')->setTime(0, 0, 0);
                 $to->modify('last day of this month')->setTime(23, 59, 59);
                 break;
 
             case "year":
-                // include full years (from start of first year to end of last year)
                 $from->setDate($from->format('Y'), 1, 1)->setTime(0, 0, 0);
                 $to->setDate($to->format('Y'), 12, 31)->setTime(23, 59, 59);
                 break;
 
-            default: // day
-                // leave unchanged
+            default:
                 break;
         }
 
@@ -175,7 +164,6 @@ if (!empty($fromDate) && !empty($toDate)) {
         $toDate = $to->format('Y-m-d');
     }
 }
-
 
 $arFiler = array("STAGE_ID" => ["UC_TDFF5K", "UC_41XZPE", "WON"]);
 $Deals_data_and_IDs = getDealsByFilter($arFiler, $project);
@@ -185,192 +173,182 @@ $deals_IDs = $Deals_data_and_IDs["deals_IDs"];
 list($daricxvebi, $gadaxdebi, $deals_data) = getDaricxvebiDaGadaxdebi($fromDate, $toDate, $deals_IDs, $deals_data);
 
 $gadaxdebi = filterGadaxdebiByDates($fromDate, $toDate, $gadaxdebi);
-// $daricxvebi = filterGadaxdebiByDates($fromDate, $toDate, $daricxvebi);
 $dealsForExcel = getDealsForExcel($daricxvebi, $gadaxdebi, $deals_data);
 $grouped_daricxvebi = [];
 $grouped_gadaxdebi = [];
 
 // switch for daricxvebi
 switch ($period) {
-        case "day":
-            foreach ($daricxvebi as $item) {
-                $date = $item["DATE"];
-                $amount = $item["AMOUNT"];
+    case "day":
+        foreach ($daricxvebi as $item) {
+            $date = $item["DATE"];
+            $amount = $item["AMOUNT"];
 
-                if (!isset($grouped_daricxvebi[$date])) {
-                    $grouped_daricxvebi[$date] = 0;
-                }
-
-                $grouped_daricxvebi[$date] += $amount;
-                if (!isset($dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$date]["daricxva"])) {
-                    $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$date]["daricxva"] = 0;
-                }
-                $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$date]["daricxva"] += $amount;
+            if (!isset($grouped_daricxvebi[$date])) {
+                $grouped_daricxvebi[$date] = 0;
             }
 
-            uksort($grouped_daricxvebi, function($a, $b) {
-                return strtotime($a) - strtotime($b);
-            });
+            $grouped_daricxvebi[$date] += $amount;
+            if (!isset($dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$date]["daricxva"])) {
+                $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$date]["daricxva"] = 0;
+            }
+            $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$date]["daricxva"] += $amount;
+        }
 
-            // printArr($grouped_daricxvebi);
-            break;
+        // FIXED SORTING - convert d/m/Y format to timestamps
+        uksort($grouped_daricxvebi, function($a, $b) {
+            $dateA = DateTime::createFromFormat('d/m/Y', $a);
+            $dateB = DateTime::createFromFormat('d/m/Y', $b);
+            
+            if (!$dateA) $dateA = DateTime::createFromFormat('Y-m-d', $a);
+            if (!$dateB) $dateB = DateTime::createFromFormat('Y-m-d', $b);
+            
+            return $dateA <=> $dateB;
+        });
+        break;
 
-        case "month":
-            foreach ($daricxvebi as $item) {
-                if (empty($item["DATE"])) continue; // safety check
+    case "month":
+        foreach ($daricxvebi as $item) {
+            if (empty($item["DATE"])) continue;
 
-                $dateObj = DateTime::createFromFormat('d/m/Y', $item["DATE"]);
-                if (!$dateObj) continue;
+            $dateObj = DateTime::createFromFormat('d/m/Y', $item["DATE"]);
+            if (!$dateObj) continue;
 
-                $monthKey = $dateObj->format('Y-m'); // e.g. 2025-09
-                $amount = (float)$item["AMOUNT"];
+            $monthKey = $dateObj->format('Y-m');
+            $amount = (float)$item["AMOUNT"];
 
-                if (!isset($grouped_daricxvebi[$monthKey])) {
-                    $grouped_daricxvebi[$monthKey] = 0;
-                }
-                
-                $grouped_daricxvebi[$monthKey] += $amount;
-                if (!isset($dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$monthKey]["daricxva"])) {
-                    $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$monthKey]["daricxva"] = 0;
-                }
-                $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$monthKey]["daricxva"] += $amount;
+            if (!isset($grouped_daricxvebi[$monthKey])) {
+                $grouped_daricxvebi[$monthKey] = 0;
+            }
+            
+            $grouped_daricxvebi[$monthKey] += $amount;
+            if (!isset($dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$monthKey]["daricxva"])) {
+                $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$monthKey]["daricxva"] = 0;
+            }
+            $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$monthKey]["daricxva"] += $amount;
+        }
+
+        uksort($grouped_daricxvebi, function($a, $b) {
+            return strtotime($a) - strtotime($b);
+        });
+        break;
+
+    case "year":
+        foreach ($daricxvebi as $item) {
+            if (empty($item["DATE"])) continue;
+
+            $dateObj = DateTime::createFromFormat('d/m/Y', $item["DATE"]);
+            $yearKey = $dateObj ? $dateObj->format('Y') : '';
+            $amount = (float)$item["AMOUNT"];
+
+            if (!isset($grouped_daricxvebi[$yearKey])) {
+                $grouped_daricxvebi[$yearKey] = 0;
             }
 
-            // Sort months chronologically
-            uksort($grouped_daricxvebi, function($a, $b) {
-                return strtotime($a) - strtotime($b);
-            });
-
-            // printArr($grouped_daricxvebi);
-            break;
-
-        case "year":
-            // printArr($daricxvebi);
-            foreach ($daricxvebi as $item) {
-                if (empty($item["DATE"])) continue;
-
-                $dateObj = DateTime::createFromFormat('d/m/Y', $item["DATE"]);
-                $yearKey = $dateObj ? $dateObj->format('Y') : '';
-                $amount = (float)$item["AMOUNT"];
-
-                if (!isset($grouped_daricxvebi[$yearKey])) {
-                    $grouped_daricxvebi[$yearKey] = 0;
-                }
-
-                $grouped_daricxvebi[$yearKey] += $amount;
-                if (!isset($dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$yearKey]["daricxva"])) {
-                    $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$yearKey]["daricxva"] = 0;
-                }
-                $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$yearKey]["daricxva"] += $amount;
+            $grouped_daricxvebi[$yearKey] += $amount;
+            if (!isset($dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$yearKey]["daricxva"])) {
+                $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$yearKey]["daricxva"] = 0;
             }
+            $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$yearKey]["daricxva"] += $amount;
+        }
 
-            // Sort by year ascending
-            uksort($grouped_daricxvebi, function($a, $b) {
-                return $a - $b;
-            });
+        uksort($grouped_daricxvebi, function($a, $b) {
+            return $a - $b;
+        });
+        break;
 
-            // printArr($grouped_daricxvebi);
-
-            break;
-
-        default:
-            echo "Invalid period selected.";
-            break;
+    default:
+        echo "Invalid period selected.";
+        break;
 }
 
 // switch for gadaxdebi
 switch ($period) {
-        case "day":
-            foreach ($gadaxdebi as $item) {
-                $date = $item["DATE"];
-                $amount = $item["AMOUNT"];
+    case "day":
+        foreach ($gadaxdebi as $item) {
+            $date = $item["DATE"];
+            $amount = $item["AMOUNT"];
 
-                if (!isset($grouped_gadaxdebi[$date])) {
-                    $grouped_gadaxdebi[$date] = 0;
-                }
-
-                $grouped_gadaxdebi[$date] += $amount;
-                if (!isset($dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$date]["gadaxda"])) {
-                    $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$date]["gadaxda"] = 0;
-                }
-                $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$date]["gadaxda"] += $amount;
+            if (!isset($grouped_gadaxdebi[$date])) {
+                $grouped_gadaxdebi[$date] = 0;
             }
 
-            uksort($grouped_gadaxdebi, function($a, $b) {
-                return strtotime($a) - strtotime($b);
-            });
+            $grouped_gadaxdebi[$date] += $amount;
+            if (!isset($dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$date]["gadaxda"])) {
+                $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$date]["gadaxda"] = 0;
+            }
+            $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$date]["gadaxda"] += $amount;
+        }
 
-            // printArr($grouped_daricxvebi);
-            break;
+        // FIXED SORTING - convert d/m/Y format to timestamps
+        uksort($grouped_gadaxdebi, function($a, $b) {
+            $dateA = DateTime::createFromFormat('d/m/Y', $a);
+            $dateB = DateTime::createFromFormat('d/m/Y', $b);
+            
+            if (!$dateA) $dateA = DateTime::createFromFormat('Y-m-d', $a);
+            if (!$dateB) $dateB = DateTime::createFromFormat('Y-m-d', $b);
+            
+            return $dateA <=> $dateB;
+        });
+        break;
 
-        case "month":
-            foreach ($gadaxdebi as $item) {
-                if (empty($item["DATE"])) continue; // safety check
+    case "month":
+        foreach ($gadaxdebi as $item) {
+            if (empty($item["DATE"])) continue;
 
-                $dateObj = DateTime::createFromFormat('d/m/Y', $item["DATE"]);
-                if (!$dateObj) continue;
+            $dateObj = DateTime::createFromFormat('d/m/Y', $item["DATE"]);
+            if (!$dateObj) continue;
 
-                $monthKey = $dateObj->format('Y-m'); // e.g. 2025-09
-                $amount = (float)$item["AMOUNT"];
+            $monthKey = $dateObj->format('Y-m');
+            $amount = (float)$item["AMOUNT"];
 
-                if (!isset($grouped_gadaxdebi[$monthKey])) {
-                    $grouped_gadaxdebi[$monthKey] = 0;
-                }
-
-                $grouped_gadaxdebi[$monthKey] += $amount;
-                if (!isset($dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$monthKey]["gadaxda"])) {
-                    $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$monthKey]["gadaxda"] = 0;
-                }
-                $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$monthKey]["gadaxda"] += $amount;
+            if (!isset($grouped_gadaxdebi[$monthKey])) {
+                $grouped_gadaxdebi[$monthKey] = 0;
             }
 
-            // Sort months chronologically
-            uksort($grouped_gadaxdebi, function($a, $b) {
-                return strtotime($a) - strtotime($b);
-            });
+            $grouped_gadaxdebi[$monthKey] += $amount;
+            if (!isset($dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$monthKey]["gadaxda"])) {
+                $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$monthKey]["gadaxda"] = 0;
+            }
+            $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$monthKey]["gadaxda"] += $amount;
+        }
 
-            // printArr($grouped_daricxvebi);
-            break;
+        uksort($grouped_gadaxdebi, function($a, $b) {
+            return strtotime($a) - strtotime($b);
+        });
+        break;
 
-        case "year":
-            // printArr($daricxvebi);
-            foreach ($gadaxdebi as $item) {
-                if (empty($item["DATE"])) continue;
+    case "year":
+        foreach ($gadaxdebi as $item) {
+            if (empty($item["DATE"])) continue;
 
-                $dateObj = DateTime::createFromFormat('d/m/Y', $item["DATE"]);
-                $yearKey = $dateObj ? $dateObj->format('Y') : '';
-                $amount = (float)$item["AMOUNT"];
+            $dateObj = DateTime::createFromFormat('d/m/Y', $item["DATE"]);
+            $yearKey = $dateObj ? $dateObj->format('Y') : '';
+            $amount = (float)$item["AMOUNT"];
 
-                if (!isset($grouped_gadaxdebi[$yearKey])) {
-                    $grouped_gadaxdebi[$yearKey] = 0;
-                }
-
-                $grouped_gadaxdebi[$yearKey] += $amount;
-                if (!isset($dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$yearKey]["gadaxda"])) {
-                    $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$yearKey]["gadaxda"] = 0;
-                }
-                $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$yearKey]["gadaxda"] += $amount;
+            if (!isset($grouped_gadaxdebi[$yearKey])) {
+                $grouped_gadaxdebi[$yearKey] = 0;
             }
 
-            // Sort by year ascending
-            uksort($grouped_gadaxdebi, function($a, $b) {
-                return $a - $b;
-            });
+            $grouped_gadaxdebi[$yearKey] += $amount;
+            if (!isset($dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$yearKey]["gadaxda"])) {
+                $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$yearKey]["gadaxda"] = 0;
+            }
+            $dealsForExcel[$item["DEAL_ID"]]["gadaxdebi_and_daricxvebi_by_dates"][$yearKey]["gadaxda"] += $amount;
+        }
 
-            // printArr($grouped_daricxvebi);
+        uksort($grouped_gadaxdebi, function($a, $b) {
+            return $a - $b;
+        });
+        break;
 
-            break;
-
-        default:
-            echo "Invalid period selected.";
-            break;
+    default:
+        echo "Invalid period selected.";
+        break;
 }
 
-// printArr($dealsForExcel);
 ob_end_clean();
-
 ?>
-
 
 <!DOCTYPE html>
 <html lang="ka">
@@ -378,246 +356,302 @@ ob_end_clean();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cashflow Report</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f5f7fa;
-            color: #333;
+        * {
             margin: 0;
-            /* padding: 40px; */
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        h2 {
-            color: #1e3a8a;
-            font-weight: 600;
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .title {
+            font-size: 36px;
             text-align: center;
-            margin-top: 60px;
-            margin-bottom: 20px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            letter-spacing: -0.5px;
         }
 
         .form-container {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
-            background: #fff;
-            padding: 25px 30px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-            margin-bottom: 40px;
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            margin-bottom: 30px;
+            align-items: end;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 180px;
         }
 
         label {
-            font-weight: 500;
+            font-weight: 600;
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
+            color: #374151;
+            font-size: 14px;
         }
 
         input[type="date"], select {
-            width: 200px;
-            padding: 8px 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
             transition: all 0.2s ease;
             font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background: white;
         }
 
         input[type="date"]:hover, select:hover {
-            border-color: #2563eb;
+            border-color: #667eea;
+        }
+
+        input[type="date"]:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
         }
 
         input[type="submit"], button {
-            background-color: #2563eb;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             color: white;
-            padding: 9px 18px;
+            padding: 12px 24px;
             font-size: 14px;
-            border-radius: 8px;
+            font-weight: 600;
+            border-radius: 10px;
             cursor: pointer;
-            transition: background-color 0.2s ease, transform 0.15s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
         input[type="submit"]:hover, button:hover {
-            background-color: #1d4ed8;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
         }
 
         button.export-btn {
-            background-color: #16a34a;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
         }
 
         button.export-btn:hover {
-            background-color: #15803d;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
         }
 
-        #table {
-            width: 100%;
-            background: #fff;
-            border-radius: 12px;
+        .table-wrapper {
+            background: white;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
         }
 
-        th, td {
-            padding: 12px 16px;
-            text-align: center;
+        #excelTable {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Inter', sans-serif;
         }
 
-        th {
-            background: #2563eb;
+        #excelTable thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            font-weight: 500;
-            border-bottom: 2px solid #1e40af;
         }
 
-        tr:nth-child(even) td {
+        #excelTable th {
+            padding: 16px 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        #excelTable td {
+            padding: 14px 12px;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        #excelTable tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        #excelTable tbody tr:nth-child(even) {
             background: #f9fafb;
         }
 
-        tr:hover td {
-            background: #e0f2fe;
+        #excelTable tbody tr:hover {
+            background: #ede9fe;
+            transform: scale(1.01);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
         }
 
-        td {
-            border-bottom: 1px solid #e5e7eb;
-            transition: background 0.2s ease;
+        /* Make important columns stand out */
+        #excelTable td:nth-child(4),
+        #excelTable td:nth-child(5),
+        #excelTable td:nth-child(6) {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        /* Color coding for amounts */
+        .positive-amount {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .negative-amount {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        /* Loading state */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: white;
+            font-size: 18px;
         }
 
         @media (max-width: 768px) {
+            .title {
+                font-size: 24px;
+            }
+
             .form-container {
+                padding: 20px;
+            }
+
+            .form-group {
+                min-width: 100%;
+            }
+
+            .button-group {
+                width: 100%;
                 flex-direction: column;
             }
-            input[type="date"], select {
+
+            input[type="submit"], button {
                 width: 100%;
             }
-            table {
+
+            #excelTable {
                 font-size: 12px;
+            }
+
+            #excelTable th,
+            #excelTable td {
+                padding: 10px 6px;
             }
         }
 
-        .title {
-            font-size: 26px;
-            text-align: center;
-            font-weight: 600;
-            color: #1e3a8a;
-            margin-bottom: 15px;
+        /* Scrollbar styling */
+        .table-wrapper::-webkit-scrollbar {
+            height: 10px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 5px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        #excelTable a:hover {
+            color: #764ba2;
+            text-decoration: underline;
         }
     </style>
 </head>
 
 <body>
+    <div class="container">
+        <div class="title">💰 Cashflow Report</div>
 
-    <div class="title">💰 Cashflow Report</div>
+        <form method="get" id="newCalendarForm">
+            <div class="form-container">
+                <div class="form-group">
+                    <label>პერიოდი</label>
+                    <select name="period" id="period">
+                        <option value="day">დღე</option>
+                        <option value="month">თვე</option>
+                        <option value="year">წელი</option>
+                    </select>
+                </div>
 
-    <form method="get" id="newCalendarForm">
-        <div class="form-container">
-            <div>
-                <label>პერიოდი</label>
-                <select name="period" id="period" class="dropdown">
-                    <option value="day">დღე</option>
-                    <option value="month">თვე</option>
-                    <option value="year">წელი</option>
-                </select>
+                <div class="form-group">
+                    <label>დაწყების თარიღი</label>
+                    <input type="date" name="from_date" id="from_date">
+                </div>
+
+                <div class="form-group">
+                    <label>დამთავრების თარიღი</label>
+                    <input type="date" name="to_date" id="to_date">
+                </div>
+
+                <div class="form-group">
+                    <label>პროექტი</label>
+                    <select name="project" id="project">
+                        <option value="Park Boulevard">Park Boulevard</option>
+                    </select>
+                </div>
+
+                <div class="button-group">
+                    <input type="submit" value="🔍 ძებნა">
+                    <button type="button" class="export-btn" onclick="exportTableToExcel()">📊 Export to Excel</button>
+                </div>
             </div>
+        </form>
 
-            <div>
-                <label>დაწყების თარიღი</label>
-                <input type="date" name="from_date" id="from_date">
-            </div>
-
-            <div>
-                <label>დამთავრების თარიღი</label>
-                <input type="date" name="to_date" id="to_date">
-            </div>
-
-            <div>
-                <label>პროექტი</label>
-                <select name="project" id="project" class="dropdown">
-                    <option value="Park Boulevard">Park Boulevard</option>
-                </select>
-            </div>
-
-            <div style="display:flex; align-items:center; gap:10px; margin-top:25px;">
-                <input type="submit" value="ძებნა">
-                <button type="button" class="export-btn" onclick="exportTableToExcel()">Export to Excel</button>
-            </div>
+        <div class="table-wrapper" id="excelTableContainer">
+            <div class="loading">Loading data...</div>
         </div>
-    </form>
-
-    <?php if (!empty($grouped_daricxvebi) || !empty($grouped_gadaxdebi)): ?>
-        <?php
-            $allDates = array_unique(array_merge(array_keys($grouped_daricxvebi), array_keys($grouped_gadaxdebi)));
-            usort($allDates, function($a, $b) use ($period) {
-                if ($period === "year") return (int)$a <=> (int)$b;
-                elseif ($period === "month") return strtotime($a . "-01") <=> strtotime($b . "-01");
-                else return strtotime($a) <=> strtotime($b);
-            });
-        ?>
-        <h2>ფინანსური მოძრაობა</h2>
-        <table id="table">
-            <thead>
-                <tr>
-                    <?php
-                    // Georgian month names
-                    $geoMonths = [
-                        '01' => 'იანვარი', '02' => 'თებერვალი', '03' => 'მარტი',
-                        '04' => 'აპრილი', '05' => 'მაისი', '06' => 'ივნისი',
-                        '07' => 'ივლისი', '08' => 'აგვისტო', '09' => 'სექტემბერი',
-                        '10' => 'ოქტომბერი', '11' => 'ნოემბერი', '12' => 'დეკემბერი'
-                    ];
-
-                    foreach ($allDates as $date):
-                        $displayDate = $date; // fallback
-                        if ($period === "year") {
-                            $displayDate = $date;
-                        } elseif ($period === "month") {
-                            // format: YYYY-MM → ოქტომბერი 2025
-                            [$y, $m] = explode("-", $date);
-                            $displayDate = $geoMonths[$m] . " " . $y;
-                        } elseif ($period === "day") {
-                            // format: dd/mm/YYYY or YYYY-MM-DD
-                            $d = $m = $y = null;
-                            if (strpos($date, "/") !== false) {
-                                [$d, $m, $y] = explode("/", $date);
-                            } elseif (strpos($date, "-") !== false) {
-                                [$y, $m, $d] = explode("-", $date);
-                            }
-                            if ($d && $m && $y) {
-                                $displayDate = ltrim($d, "0") . " " . $geoMonths[$m] . " " . $y;
-                            }
-                        }
-                    ?>
-                        <th colspan="2"><?= htmlspecialchars($displayDate) ?></th>
-                    <?php endforeach; ?>
-                </tr>
-                <tr>
-                    <?php foreach ($allDates as $date): ?>
-                        <th>დარიცხვა ($)</th>
-                        <th>გადახდა ($)</th>
-                    <?php endforeach; ?>
-                </tr>
-            </thead>
-
-            <tbody>
-                <tr>
-                    <?php foreach ($allDates as $date): ?>
-                        <td><?= number_format($grouped_daricxvebi[$date] ?? 0, 2, '.', ',') ?></td>
-                        <td><?= number_format($grouped_gadaxdebi[$date] ?? 0, 2, '.', ',') ?></td>
-                    <?php endforeach; ?>
-                </tr>
-            </tbody>
-        </table>
-    <?php endif; ?>
-
-
+    </div>
 
 <script>
     let statistika = <?php echo json_encode($dealsForExcel, JSON_UNESCAPED_UNICODE); ?>;
-
     let project = <?php echo json_encode($project, JSON_UNESCAPED_UNICODE); ?>;
-
+    
     document.getElementById("project").value = project;
 
     let fromDate = <?php echo json_encode($fromDate); ?>;
@@ -626,6 +660,37 @@ ob_end_clean();
     if (fromDate) document.getElementById("from_date").value = fromDate;
     if (toDate) document.getElementById("to_date").value = toDate;
 
+    // Helper function to parse dates in multiple formats
+    function parseDate(dateStr) {
+        if (!dateStr) return null;
+        
+        // Try different date formats
+        const formats = [
+            // d/m/Y format (most common for days)
+            { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, parse: (m) => new Date(m[3], m[2] - 1, m[1]) },
+            // Y-m-d format
+            { regex: /^(\d{4})-(\d{2})-(\d{2})$/, parse: (m) => new Date(m[1], m[2] - 1, m[3]) },
+            // Y-m format (months)
+            { regex: /^(\d{4})-(\d{2})$/, parse: (m) => new Date(m[1], m[2] - 1, 1) },
+            // Y format (years)
+            { regex: /^(\d{4})$/, parse: (m) => new Date(m[1], 0, 1) }
+        ];
+
+        for (let format of formats) {
+            const match = dateStr.match(format.regex);
+            if (match) {
+                const date = format.parse(match);
+                // Validate the date is valid
+                if (!isNaN(date.getTime())) {
+                    return date;
+                }
+            }
+        }
+        
+        // Fallback
+        const fallbackDate = new Date(dateStr);
+        return isNaN(fallbackDate.getTime()) ? null : fallbackDate;
+    }
 
 
     function exportTableToExcel() {
@@ -636,7 +701,17 @@ ob_end_clean();
             Object.keys(dates).forEach(date => allDatesSet.add(date));
         });
 
-        const allDates = Array.from(allDatesSet).sort((a,b) => new Date(a) - new Date(b));
+        const allDates = Array.from(allDatesSet).sort((a, b) => {
+            const dateA = parseDate(a);
+            const dateB = parseDate(b);
+            
+            // Handle invalid dates
+            if (!dateA && !dateB) return 0;
+            if (!dateA) return 1;
+            if (!dateB) return -1;
+            
+            return dateA - dateB;
+        });
 
         const data = [];
 
@@ -673,6 +748,99 @@ ob_end_clean();
         XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
         XLSX.writeFile(wb, 'Report.xlsx');
     }
+
+    function renderExcelTable() {
+        const container = document.getElementById("excelTableContainer");
+        container.innerHTML = ""; // reset
+
+        const allDatesSet = new Set();
+
+        // collect all unique dates
+        Object.values(statistika).forEach(deal => {
+            const dates = deal.gadaxdebi_and_daricxvebi_by_dates || {};
+            Object.keys(dates).forEach(date => allDatesSet.add(date));
+        });
+
+        const allDates = Array.from(allDatesSet).sort((a, b) => {
+            const dateA = parseDate(a);
+            const dateB = parseDate(b);
+            
+            // Handle invalid dates
+            if (!dateA && !dateB) return 0;
+            if (!dateA) return 1;
+            if (!dateB) return -1;
+            
+            return dateA - dateB;
+        });
+
+        // Create table
+        const table = document.createElement("table");
+        table.id = "excelTable";
+
+        // Build header row 1
+        let header1 = "<tr>";
+        header1 += `
+            <th rowspan="2">კლიენტი</th>
+            <th rowspan="2">ხელშეკრულება</th>
+            <th rowspan="2">გაფორმების თარიღი</th>
+            <th rowspan="2">კონტრ. ღირებულება</th>
+            <th rowspan="2">გადაიხადა</th>
+            <th rowspan="2">დარჩენილი</th>
+        `;
+        allDates.forEach(date => {
+            header1 += `<th colspan="2">${date}</th>`;
+        });
+        header1 += `
+            <th rowspan="2">ჯამური დარიცხვა</th>
+            <th rowspan="2">ჯამური გადახდა</th>
+        `;
+        header1 += "</tr>";
+
+        // Build header row 2
+        let header2 = "<tr>";
+        allDates.forEach(() => {
+            header2 += `<th>დარიცხვა ($)</th><th>გადახდა ($)</th>`;
+        });
+        header2 += "</tr>";
+
+        table.innerHTML += `<thead>${header1}${header2}</thead>`;
+
+        // Build table body
+        let tbody = "<tbody>";
+        Object.values(statistika).forEach(deal => {
+            tbody += "<tr>";
+
+            const remaining = (deal.OPPORTUNITY || 0) - (deal.payment || 0);
+
+            tbody += `
+                <td><a href="/crm/contact/details/${deal.CONTACT_ID}/" target="_blank" style="color: #667eea; text-decoration: none; font-weight: 500;">${deal.CONTACT_FULL_NAME || ""}</a></td>
+                <td><a href="/crm/deal/details/${deal.ID}/" target="_blank" style="color: #667eea; text-decoration: none; font-weight: 500;">${deal.TITLE || ""}</a></td>
+                <td>${deal.UF_CRM_1762416342444 || ""}</td>
+                <td>${deal.OPPORTUNITY || 0}</td>
+                <td>${deal.payment || 0}</td>
+                <td>${remaining}</td>
+            `;
+
+            allDates.forEach(date => {
+                const daricxva = deal.gadaxdebi_and_daricxvebi_by_dates?.[date]?.daricxva || 0;
+                const gadaxda = deal.gadaxdebi_and_daricxvebi_by_dates?.[date]?.gadaxda || 0;
+                tbody += `<td>${daricxva}</td><td>${gadaxda}</td>`;
+            });
+
+            const totalDaricxva = Object.values(deal.gadaxdebi_and_daricxvebi_by_dates || {}).reduce((sum, v) => sum + (v.daricxva || 0), 0);
+            const totalGadaxda = Object.values(deal.gadaxdebi_and_daricxvebi_by_dates || {}).reduce((sum, v) => sum + (v.gadaxda || 0), 0);
+
+            tbody += `<td>${totalDaricxva}</td><td>${totalGadaxda}</td>`;
+            tbody += "</tr>";
+        });
+        tbody += "</tbody>";
+
+        table.innerHTML += tbody;
+        container.appendChild(table);
+    }
+
+    // Render table when page loads
+    document.addEventListener("DOMContentLoaded", renderExcelTable);
 
 
 </script>
