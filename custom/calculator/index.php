@@ -548,8 +548,8 @@ $nbgKursi = getNBGkursi($dateForNBG);
         <div class="form-field">
             <label>განვადების ტიპი</label>
             <select id="ganvadebaType" class="form-select green-border" onchange="changeType();">
-                <option value="mortgage">განვადება</option>
                 <option value="customType" selected>არასტანდარტული</option>
+                <option value="mortgage">განვადება</option>
                 <option value="allCash">ერთიანი გადახდა</option>
                 <option value="bankLoan">ბანკის სესხი</option>
             </select>
@@ -1375,9 +1375,19 @@ function calculateDiscount() {
  */
 async function getAndFillGraph() {
     const typeSelected = getValue('type_select');
+    const ganvadebaType = getValue('ganvadebaType');
+    console.log("ganvadebaType");
+    console.log(ganvadebaType);
 
+        console.log("typeSelected");
+    console.log(typeSelected);
+    
     if (!typeSelected) {
-        alert("გთხოვთ აირჩიოთ გადახდის ტიპი");
+        if(ganvadebaType =="customType"){
+            alert("გთხოვთ აირჩიოთ გადახდის ტიპი");
+            console.log("test")
+        }
+
         hide('saveBTN');
         hide('saveCalculation');
         clearTable('graphData');
