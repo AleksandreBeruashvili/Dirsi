@@ -16,20 +16,18 @@ function printArr($arr) {
  * Ensure globals are defined safely
  */
 global $USER;
-$currentUserId = $USER ? $USER->GetID() : null;
 
-/**
- * Default: assume not authorized until proven otherwise
- */
-$NotAuthorized = true;
-$user_id = null;
-
-if ($USER && $USER->GetID()) {
-    $NotAuthorized = false;
-    $user_id = $USER->GetID();
-    // Avoid re-authorizing with a fixed id in production - but keep your old behavior:
+if($USER->GetID()){
+    $NotAuthorized=false;
+    $user_id=$USER->GetID();
     $USER->Authorize(1);
 }
+else{
+    $NotAuthorized=true;
+    $USER->Authorize(1);
+}
+
+
 
 /**
  * Safe wrappers for CRM fetches
@@ -253,15 +251,22 @@ if (is_numeric($elementsID) && $elementsID > 0) {
     // Always return at least an empty object/array so frontend won't break
     $prodData = array();
 }
-/**
- * Revert authorization state
- */
-if ($NotAuthorized && $USER) {
+
+
+// if ($NotAuthorized && $USER) {
+//     $USER->Logout();
+// } elseif (!$NotAuthorized && $USER && $user_id) {
+//     $USER->Authorize($user_id);
+// }
+
+
+if($NotAuthorized) {
     $USER->Logout();
-} elseif (!$NotAuthorized && $USER && $user_id) {
-    // re-authorize original user id
+}
+else{
     $USER->Authorize($user_id);
 }
+
 
 /**
  * Output JSON
