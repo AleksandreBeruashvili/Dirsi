@@ -444,7 +444,7 @@ if($dealId){
         HIDDEN_STAGES_FOR_DOCS: [
             'NEW', 'PREPARATION', 'PREPAYMENT_INVOICE', 'UC_12CJ1Z',
             'UC_2EW8VW', 'UC_15207E', 'EXECUTING', 'UC_BAUB5P',
-            'UC_F3FOBF', 'FINAL_INVOICE', '1', '2', '3', '4', 'WON'
+            'UC_F3FOBF', 'FINAL_INVOICE', '1'
         ],
         
         // დაბლოკილი სტეიჯები გადატანისთვის
