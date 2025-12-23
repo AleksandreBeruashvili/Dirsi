@@ -237,6 +237,7 @@ ob_end_clean();
         /* ===================== FILTER BOX ===================== */
         #filterContainer {
             width: 220px;
+            height: fit-content;
             padding: 16px;
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(8px);
@@ -1412,7 +1413,7 @@ ob_end_clean();
         // only allow save and delete on allowed stages
         if (!allowedStages.includes(stage_id)) {
             inAllowedStages = false;
-            document.getElementById("extraFiltersDropdown").style.display = "none";
+            document.getElementById("saveBtn").style.display = "none";
         }
 
         // show products box
