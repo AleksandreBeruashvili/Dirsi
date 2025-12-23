@@ -119,7 +119,7 @@ if($contactID){
     $missingFields = [];
 
 
-    if(!$contact["UF_CRM_1761651998145"] || !$contact["UF_CRM_1761652010097"]){
+    if(!$contact["UF_CRM_1761651998145"] && !$contact["UF_CRM_1761652010097"]){
         $missingFields[] = "პირადი ნომერი|პასპორტი";
     }
     
