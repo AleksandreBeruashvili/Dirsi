@@ -204,7 +204,7 @@ if ($deal_id) {
     
     $arrForAdd ["UF_CRM_1761658503260"] = $KVM_PRICE;         //კვ.მ ღირებულება
     $arrForAdd ["UF_CRM_1761658516561"] = $project;      //პროექტი
-    $arrForAdd ["UF_CRM_1762948106980"] = $block;      //ბლოკი
+    $arrForAdd ["UF_CRM_1766560177934"] = $block;      //ბლოკი
     $arrForAdd ["UF_CRM_1761658532158"] = $PRODUCT_TYPE;         //ფართის ტიპი
     $arrForAdd ["UF_CRM_1762867479699"] = $sadarbazo;         // სადარბაზო
     $arrForAdd ["UF_CRM_1761658577987"]    = $prodFLOOR;         //სართული

@@ -107,7 +107,7 @@ function dealUpdate_163($dealId,$productData)
     $arrForAdd ["UF_CRM_1761658559005"] = $prodNumber;     //ბინის N
     $arrForAdd ["UF_CRM_1761658577987"] =$prodFLOOR; //სართული
     $arrForAdd ["UF_CRM_1761658516561"] = $productData["PROJECT"];    //პროექტი
-    $arrForAdd ["UF_CRM_1762948106980"] = $productData["KORPUSIS_NOMERI_XE3NX2"];//ბლოკი
+    $arrForAdd ["UF_CRM_1766560177934"] = $productData["KORPUSIS_NOMERI_XE3NX2"];//ბლოკი
     $arrForAdd ["UF_CRM_1761658503260"] = $productData["KVM_PRICE"];  //კვ/მ ფასი
     $arrForAdd ["UF_CRM_1761658532158"] = $prodPRODUCT_TYPE;      //ფართის ტიპი
     $arrForAdd ["UF_CRM_1761658608306"] = $prodTOTAL_AREA;    //საერთო ფართი

@@ -445,7 +445,7 @@ if($dealExists) {
                 if ($saveRes) {
                     if (!empty($dealsProduct)) freeProduct($dealsProduct, $dealId);
                     $arrForAdd ["UF_CRM_1761658516561"] = $project;      //პროექტი
-                    $arrForAdd ["UF_CRM_1718097224965"] = $korp;      //კორპუსი
+                    $arrForAdd ["UF_CRM_1766560177934"] = $korp;      //კორპუსი
                     $arrForAdd ["UF_CRM_1761658577987"]    = $prodFLOOR;         //სართული
                     $arrForAdd ["UF_CRM_1761658559005"] = $prodNumber;      //ბინის №
                     $arrForAdd ["UF_CRM_1761658608306"] = $prodTOTAL_AREA;      //საერთო ფართი მ²
@@ -523,7 +523,7 @@ if($dealExists) {
                     $resArray["error"] = "დილზე პროდუქტი არ არის მიბმული";
                 }
                 $arrForAdd ["UF_CRM_1761658516561"] = "";      //პროექტი
-                $arrForAdd ["UF_CRM_1718097224965"] = "";      //კორპუსი
+                $arrForAdd ["UF_CRM_1766560177934"] = "";      //კორპუსი
                 $arrForAdd ["UF_CRM_1761658577987"]    = "";         //სართული
                 $arrForAdd ["UF_CRM_1761658608306"] = "";      //საერთო ფართი მ²
                 $arrForAdd ["UF_CRM_1761658503260"] = "";      //კვ მ² ღირებულება
