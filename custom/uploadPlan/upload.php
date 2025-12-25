@@ -377,8 +377,8 @@ ob_end_clean();
             <p class="mb-0">DEAL-ები იძებნება პარამეტრებით:</p>
             <ul class="mb-0">
                 <li><strong>ფართის ტიპი</strong> (A სვეტი)</li>
-                <li><strong>სართული</strong> (B სვეტი)</li>
-                <li><strong>ბინის ნომერი</strong> (C სვეტი)</li>
+                <li><strong>ბინის ნომერი</strong> (B სვეტი)</li>
+                <li><strong>სართული</strong> (C სვეტი)</li>
             </ul>
         </div>
 
