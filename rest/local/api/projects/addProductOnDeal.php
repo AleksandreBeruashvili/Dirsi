@@ -372,6 +372,7 @@ if($dealExists) {
                 $productData = "";
                 $project = "";
                 $korp = "";
+                $building = "";
                 $prodFLOOR = "";
                 $prodNumber = "";
                 $prodTOTAL_AREA = "";
@@ -403,6 +404,8 @@ if($dealExists) {
                     $productData = getCIBlockElementsByID($related_product);
                     $project ? $project .= " /" . $productData["PROJECT"] : $project = $productData["PROJECT"];
                     $korp ? $korp .= " /" . $productData["KORPUSIS_NOMERI_XE3NX2"] : $korp = $productData["KORPUSIS_NOMERI_XE3NX2"];
+                    $building ? $building .= " /" . $productData["BUILDING_GJ4MWF"] : $building = $productData["BUILDING_GJ4MWF"];
+                    
                     $prodFLOOR ? $prodFLOOR .= " /" . $productData["FLOOR"] : $prodFLOOR = $productData["FLOOR"];
                     $prodNumber ? $prodNumber .= " /" . $productData["Number"] : $prodNumber = $productData["Number"];
                     $prodTOTAL_AREA ? $prodTOTAL_AREA .= " /" . $productData["TOTAL_AREA"] : $prodTOTAL_AREA = $productData["TOTAL_AREA"];
@@ -446,6 +449,7 @@ if($dealExists) {
                     if (!empty($dealsProduct)) freeProduct($dealsProduct, $dealId);
                     $arrForAdd ["UF_CRM_1761658516561"] = $project;      //პროექტი
                     $arrForAdd ["UF_CRM_1766560177934"] = $korp;      //კორპუსი
+                    $arrForAdd ["UF_CRM_1766736693236"] = $building;      //building
                     $arrForAdd ["UF_CRM_1761658577987"]    = $prodFLOOR;         //სართული
                     $arrForAdd ["UF_CRM_1761658559005"] = $prodNumber;      //ბინის №
                     $arrForAdd ["UF_CRM_1761658608306"] = $prodTOTAL_AREA;      //საერთო ფართი მ²
@@ -524,6 +528,7 @@ if($dealExists) {
                 }
                 $arrForAdd ["UF_CRM_1761658516561"] = "";      //პროექტი
                 $arrForAdd ["UF_CRM_1766560177934"] = "";      //კორპუსი
+                $arrForAdd ["UF_CRM_1766736693236"] = "";      //building
                 $arrForAdd ["UF_CRM_1761658577987"]    = "";         //სართული
                 $arrForAdd ["UF_CRM_1761658608306"] = "";      //საერთო ფართი მ²
                 $arrForAdd ["UF_CRM_1761658503260"] = "";      //კვ მ² ღირებულება

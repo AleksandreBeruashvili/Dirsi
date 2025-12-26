@@ -193,6 +193,8 @@ if ($deal_id) {
         $KVM_PRICE ? $KVM_PRICE .= " /" . $productData["KVM_PRICE"] : $KVM_PRICE = $productData["KVM_PRICE"];
         $project ? $project .= " /" . $productData["PROJECT"] : $project = $productData["PROJECT"];
         $block ? $block .= " /" . $productData["KORPUSIS_NOMERI_XE3NX2"] : $block = $productData["KORPUSIS_NOMERI_XE3NX2"];
+        $building ? $building .= " /" . $productData["BUILDING_GJ4MWF"] : $building = $productData["BUILDING_GJ4MWF"];
+    
         $PRODUCT_TYPE ? $PRODUCT_TYPE .= " /" . $productData["PRODUCT_TYPE"] : $PRODUCT_TYPE = $productData["PRODUCT_TYPE"];
         $sadarbazo ? $sadarbazo .= " /" . $productData["_15MYD6"] : $sadarbazo = $productData["_15MYD6"];
         $prodFLOOR ? $prodFLOOR .= " /" . $productData["FLOOR"] : $prodFLOOR = $productData["FLOOR"];
@@ -205,6 +207,7 @@ if ($deal_id) {
     $arrForAdd ["UF_CRM_1761658503260"] = $KVM_PRICE;         //კვ.მ ღირებულება
     $arrForAdd ["UF_CRM_1761658516561"] = $project;      //პროექტი
     $arrForAdd ["UF_CRM_1766560177934"] = $block;      //ბლოკი
+    $arrForAdd ["UF_CRM_1766736693236"] = $building;      //building
     $arrForAdd ["UF_CRM_1761658532158"] = $PRODUCT_TYPE;         //ფართის ტიპი
     $arrForAdd ["UF_CRM_1762867479699"] = $sadarbazo;         // სადარბაზო
     $arrForAdd ["UF_CRM_1761658577987"]    = $prodFLOOR;         //სართული
