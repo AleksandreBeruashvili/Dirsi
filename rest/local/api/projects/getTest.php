@@ -129,28 +129,30 @@ $resArray["products"] = getProducts($projId, $blockId);
 $blocks = [];
 $apartmentTypes = [];
 $statuses = [];
-$conditions = [];
+$buildings = [];
 if (!empty($resArray["products"])) {
     foreach ($resArray["products"] as $product) {
         if (isset($product["KORPUSIS_NOMERI_XE3NX2"]) && $product["KORPUSIS_NOMERI_XE3NX2"] !== null && $product["KORPUSIS_NOMERI_XE3NX2"] !== '') {
             $apartmentTypes[] = $product["PRODUCT_TYPE"];
             $statuses[] = $product["STATUS"];
-            $conditions[] = $product["_H8WF0T"];
+            $buildings[] = $product["BUILDING"];
             $blocks[] = $product["KORPUSIS_NOMERI_XE3NX2"];
         }
     }
     $apartmentTypes = array_values(array_unique($apartmentTypes)); 
     $statuses = array_values(array_unique($statuses)); 
-    $conditions = array_values(array_unique($conditions)); 
+    $buildings = array_values(array_unique($buildings)); 
     $blocks = array_values(array_unique($blocks)); 
 
     // Sort alphabetically and numerically
     natsort($blocks);          // Natural order sorting (numbers & letters)
+    natsort($buildings);
     $blocks = array_values($blocks); // Reindex after sorting
+    $buildings = array_values($buildings); // Reindex after sorting
 }
 $resArray["apartmentTypes"] = $apartmentTypes;
 $resArray["statuses"] = $statuses;
-$resArray["conditions"] = $conditions;
+$resArray["buildings"] = $buildings;
 $resArray["blocks"] = $blocks;
 // printArr($resArray);
 header('Content-Type: application/json; charset=utf-8');

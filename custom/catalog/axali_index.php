@@ -501,6 +501,7 @@ ob_end_clean();
             height: 30px;     
             border-radius: 6px; 
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             font-size: 10px;
@@ -509,6 +510,7 @@ ob_end_clean();
             cursor: pointer;
             transition: all 0.25s ease;
             box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+            gap: 3px;
         }
 
         .apt:hover {
@@ -1241,6 +1243,12 @@ ob_end_clean();
             <option value="" disabled selected>პროექტი<span style="color:red">*</span></option>
         </select>
 
+        <!-- BUILDING DROPDOWN (CHECKBOXES) -->
+        <div class="dropdown-checkbox" id="buildingFilter">
+            <div class="dropdown-header">Building</div>
+            <div class="dropdown-content"></div>
+        </div>
+
         <!-- BLOCK DROPDOWN (CHECKBOXES) -->
         <div class="dropdown-checkbox" id="blockFilter">
             <div class="dropdown-header">ბლოკი<span style="color:red">*</span></div>
@@ -1252,12 +1260,6 @@ ob_end_clean();
         <!-- STATUS DROPDOWN (CHECKBOXES) -->
         <div class="dropdown-checkbox" id="statusFilter">
             <div class="dropdown-header">სტატუსი</div>
-            <div class="dropdown-content"></div>
-        </div>
-
-        <!-- CONDITION DROPDOWN (CHECKBOXES) -->
-        <div class="dropdown-checkbox" id="conditionFilter">
-            <div class="dropdown-header">კონდიცია</div>
             <div class="dropdown-content"></div>
         </div>
 
@@ -1517,8 +1519,8 @@ ob_end_clean();
                             // Status filter
                             if (filters.status.length > 0 && !filters.status.includes(apartmentToUndim["STATUS"])) matchesFilters = false;
                             
-                            // Condition filter
-                            if (filters.condition.length > 0 && !filters.condition.includes(apartmentToUndim["_H8WF0T"])) matchesFilters = false;
+                            // Building filter
+                            // if (filters.building.length > 0 && !filters.building.includes(apartmentToUndim["BUILDING"])) matchesFilters = false;
                             
                             // Apartment type filter
                             if (filters.aptType.length > 0 && !filters.aptType.includes(apartmentToUndim["PRODUCT_TYPE"])) matchesFilters = false;
@@ -1620,7 +1622,7 @@ ob_end_clean();
             project: $("#projects").val(),
             blocks: getCheckboxValues("blockFilter"), // <- multi-select now
             status: getCheckboxValues("statusFilter"),
-            condition: getCheckboxValues("conditionFilter"),
+            building: getCheckboxValues("buildingFilter"),
             aptType: getCheckboxValues("apartmentTypeFilter"),
             aptRange: getRangeValues(),
             extraFilters: getExtraFilterValues()
@@ -1634,14 +1636,14 @@ ob_end_clean();
         // $("select").val("");
         
         // Clear checkboxes
-        $("#statusFilter input[type=checkbox], #conditionFilter input[type=checkbox], #apartmentTypeFilter input[type=checkbox]").prop("checked", false);
+        $("#statusFilter input[type=checkbox], #apartmentTypeFilter input[type=checkbox]").prop("checked", false);
         
         // Clear range inputs
         $("#aptMin, #aptMax").val("");
         
         // Reset dropdown headers to default text
         $("#statusFilter .dropdown-header").text("სტატუსი");
-        $("#conditionFilter .dropdown-header").text("კონდიცია");
+        // $("#buildingFilter .dropdown-header").text("building");
         $("#apartmentTypeFilter .dropdown-header").text("ფართის ტიპი");
         
         // Remove all extra filter chips
@@ -1678,6 +1680,7 @@ ob_end_clean();
     // loading projects for dropdown select
     const projectSelect = document.getElementById("projects");
     const blockSelect = document.getElementById("blockFilter");
+    const buildingSelect = document.getElementById("blockFilter");
 
     // PROJECTS DROPDOWN
     if (projects && Array.isArray(projects)) {
@@ -1690,11 +1693,16 @@ ob_end_clean();
     }
 
     // ================================ FETCH APARTMENTS ================================
+    let productsCache = []; // To Store fetched products for the selected block
+
     projectSelect.addEventListener("change", function() {
         const projId = this.value;
 
         // Clear previous blocks
         blockSelect.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
+
+        // Clear previous buildings
+        buildingSelect.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
 
         if (!projId) return;
 
@@ -1702,23 +1710,25 @@ ob_end_clean();
         fetch(`/rest/local/api/projects/getTest.php?projId=${projId}`)
             .then(res => res.json())
             .then(data => {
+                productsCache = data.products;
+                // Populate Buildings dropdown
+                if (data.buildings) {
+                    const buildingContainer = document.querySelector("#buildingFilter .dropdown-content");
+                    buildingContainer.innerHTML = ""; // clear old
+                    data.buildings
+                    .forEach(building => {
+                        const label = document.createElement("label");
+                        label.innerHTML = `<input type="checkbox" value="${building}"> ${building}`;
+                        buildingContainer.appendChild(label);
+                    });
+
+                }
+
                 // Populate Blocks dropdown
                 if (data.blocks) {
                     const blockContainer = document.querySelector("#blockFilter .dropdown-content");
                     blockContainer.innerHTML = ""; // clear old
                     data.blocks
-                    .sort((a, b) => {
-                        const numA = parseInt(a.match(/\d+/)[0], 10);
-                        const numB = parseInt(b.match(/\d+/)[0], 10);
-
-                        // First: sort by number
-                        if (numA !== numB) return numA - numB;
-
-                        // If numbers are equal: sort by letter
-                        const letterA = a.match(/[A-Z]+/)[0];
-                        const letterB = b.match(/[A-Z]+/)[0];
-                        return letterA.localeCompare(letterB);
-                    })
                     .forEach(block => {
                         const label = document.createElement("label");
                         label.innerHTML = `<input type="checkbox" value="${block}"> ${block}`;
@@ -1731,8 +1741,7 @@ ob_end_clean();
             .catch(err => console.error(err));
     });
 
-    let productsCache = []; // To Store fetched products for the selected block
-
+    let filteredProducts = [];
     // ======================== When a block is selected, fetch products from API ========================
     $(document).on("change", "#blockFilter input[type=checkbox]", function () {
         const projId = $("#projects").val();
@@ -1741,24 +1750,33 @@ ob_end_clean();
         if (!projId || selectedBlocks.length === 0) return;
 
         // Fetch all selected blocks at once
-        const params = new URLSearchParams();
-        params.append("projId", projId);
-        selectedBlocks.forEach(b => params.append("blockId[]", b));
+        filteredProducts = productsCache.filter(product =>
+            selectedBlocks.includes(product.KORPUSIS_NOMERI_XE3NX2)
+        );
 
-        fetch(`/rest/local/api/projects/getTest.php?${params.toString()}`)
-            .then(res => res.json())
-            .then(data => {
-                productsCache = data.products; 
-                renderProductsByBlock(productsCache, selectedBlocks, data.blockNames);
-                updateDynamicFilters(productsCache); 
-                })
-                .catch(err => console.error(err));
+        renderProductsByBlock(filteredProducts, selectedBlocks, "block");
+        updateDynamicFilters(filteredProducts); 
+    });
+
+    // ======================== When a building is selected, fetch products from API ========================
+    $(document).on("change", "#buildingFilter input[type=checkbox]", function () {
+        const projId = $("#projects").val();
+        const selectedBuildings = getCheckboxValues("buildingFilter");
+
+        if (!projId || selectedBuildings.length === 0) return;
+
+        filteredProducts = productsCache.filter(product =>
+            selectedBuildings.includes(product.BUILDING)
+        );
+
+        renderProductsByBlock(filteredProducts, selectedBuildings, "building");
+        updateDynamicFilters(filteredProducts); 
     });
 
 
     // =========================== DRAWING APARTMENTS ===========================
 
-    function renderProductsByBlock(products, selectedBlocks, blockNames = {}) {
+    function renderProductsByBlock(products, selectedBlocks, filterBy) {
         const container = document.getElementById("apsDisplay");
         container.innerHTML = ""; // clear old content
 
@@ -1766,8 +1784,6 @@ ob_end_clean();
             container.innerHTML = "<p style='color:#999;'>ბინები ვერ მოიძებნა.</p>";
             return;
         }
-
-
 
         // Calculate max apartments per block across all floors
         const maxApartmentsPerBlock = {};
@@ -1782,8 +1798,13 @@ ob_end_clean();
         // For each floor, count apartments per block
         Object.values(byFloor).forEach(floorApartments => {
             const blockCounts = {};
+            let blockName = '';
             floorApartments.forEach(apartment => {
-                const blockName = apartment["KORPUSIS_NOMERI_XE3NX2"];
+                if (filterBy === "block") {
+                    blockName = apartment["KORPUSIS_NOMERI_XE3NX2"];
+                } else {
+                    blockName = apartment["BUILDING"];
+                }
                 blockCounts[blockName] = (blockCounts[blockName] || 0) + 1;
             });
 
@@ -1839,7 +1860,11 @@ ob_end_clean();
             });
 
             Object.values(floor).forEach(apartment => {
-                blocks[apartment["KORPUSIS_NOMERI_XE3NX2"]].push(apartment);
+                if (filterBy === "block") {
+                    blocks[apartment["KORPUSIS_NOMERI_XE3NX2"]].push(apartment);
+                } else {
+                    blocks[apartment["BUILDING"]].push(apartment);
+                }
             });
 
             let floorDiv = `<div class="floor-row">`;
@@ -1864,22 +1889,27 @@ ob_end_clean();
                             case "NFS": statusClass="status-notforsale"; break;
                         }
 
+                        if (filterBy === "block") {
+                            blockThingy = apartment["KORPUSIS_NOMERI_XE3NX2"];
+                        } else {
+                            blockThingy = apartment["BUILDING"];
+                        }
                         if (productsIds && productsIds.includes(apartment["ID"])) {
-                            blockOnFloorDiv += `<div class="apt ${statusClass}"
+                            blockOnFloorDiv += `<div class="apt ${statusClass} dimmed"
                                         data-id="${apartment["ID"]}"
                                         data-status="${apartment["STATUS"]}"
                                         data-floor="${apartment["FLOOR"]}"
-                                        data-block="${apartment["KORPUSIS_NOMERI_XE3NX2"]}"
+                                        data-block="${blockThingy}"
                                         style="transform: scale(1.2); outline: 2px solid #ff343a;">
-                                        <div>${apartment["Number"]}</div>
+                                        <div style="font-size: 8px;">${apartment["Number"]}</div> <div>${apartment["TOTAL_AREA"]}</div>
                                 </div>`;
                         } else {
                             blockOnFloorDiv += `<div class="apt ${statusClass}"
                                             data-id="${apartment["ID"]}"
                                             data-status="${apartment["STATUS"]}"
                                             data-floor="${apartment["FLOOR"]}"
-                                            data-block="${apartment["KORPUSIS_NOMERI_XE3NX2"]}">
-                                            <div>${apartment["Number"]}</div>
+                                            data-block="${blockThingy}">
+                                            <div style="font-size: 8px;">${apartment["Number"]}</div> <div>${apartment["TOTAL_AREA"]}</div>
                                     </div>`;
                         }
 
@@ -1910,12 +1940,12 @@ ob_end_clean();
 
         // Collect unique values for each filter
         const statusSet = new Set();
-        const conditionSet = new Set();
+        // const buildingSet = new Set();
         const typeSet = new Set();
 
         products.forEach(p => {
             if (p["STATUS"]) statusSet.add(p["STATUS"]);       // Status
-            if (p["_H8WF0T"]) conditionSet.add(p["_H8WF0T"]);   // Condition
+            // if (p["BUILDING"]) buildingSet.add(p["BUILDING"]);   // Building
             if (p["PRODUCT_TYPE"]) typeSet.add(p["PRODUCT_TYPE"]);        // Apartment type
         });
 
@@ -1935,14 +1965,14 @@ ob_end_clean();
 
         // Populate each filter
         buildDropdown("#statusFilter", statusSet, "სტატუსი");
-        buildDropdown("#conditionFilter", conditionSet, "კონდიცია");
+        // buildDropdown("#buildingFilter", buildingSet, "building");
         buildDropdown("#apartmentTypeFilter", typeSet, "ფართის ტიპი");
 
         // Reattach checkbox change handler to update headers
         $(".dropdown-content input[type=checkbox]").off("change").on("change", function() {
             const parentId = $(this).closest(".dropdown-checkbox").attr("id");
             const defaultText = parentId === "statusFilter" ? "სტატუსი" :
-                                parentId === "conditionFilter" ? "კონდიცია" :
+                                // parentId === "buildingFilter" ? "building" :
                                 parentId === "apartmentTypeFilter" ? "ფართის ტიპი" : "";
             updateDropdownHeader(parentId, defaultText);
 
@@ -1950,6 +1980,13 @@ ob_end_clean();
                 const values = getCheckboxValues("blockFilter");
                 if (values.length === 0) {
                     document.querySelector("#blockFilter .dropdown-header").textContent = "ბლოკი";
+                }
+            }
+
+            if (parentId === "buildingFilter") {
+                const values = getCheckboxValues("buildingFilter");
+                if (values.length === 0) {
+                    document.querySelector("#buildingFilter .dropdown-header").textContent = "Building";
                 }
             }
         });
@@ -1961,7 +1998,7 @@ ob_end_clean();
 
         document.querySelectorAll("#apsDisplay .apt").forEach(aptEl => {
             const aptId = aptEl.dataset.id; // fetches the data-id attribute
-            const apartment = productsCache.find(p => p["ID"] == aptId);
+            const apartment = filteredProducts.find(p => p["ID"] == aptId);
 
             if (!apartment) return;
 
@@ -1970,8 +2007,8 @@ ob_end_clean();
             // Status filter
             if (filters.status.length > 0 && !filters.status.includes(apartment["STATUS"])) match = false;
 
-            // Condition filter
-            if (filters.condition.length > 0 && !filters.condition.includes(apartment["_H8WF0T"])) match = false;
+            // building filter
+            // if (filters.building.length > 0 && !filters.building.includes(apartment["BUILDING"])) match = false;
 
             // Apartment type filter
             if (filters.aptType.length > 0 && !filters.aptType.includes(apartment["PRODUCT_TYPE"])) match = false;
@@ -1988,13 +2025,43 @@ ob_end_clean();
 
             // Extra filters
             for (const [key, val] of Object.entries(filters.extraFilters)) {
-                const prop = apartment[key]; 
-                if (typeof val === "object") { // range
-                    if ((val.min !== null && prop < val.min) || (val.max !== null && prop > val.max)) {
+                const prop = apartment[key];
+                
+                if (Array.isArray(val)) {
+                    // Checkbox filter - check if apartment's value is in selected values
+                    // Handle both empty values and actual comparisons
+                    if (val.length === 0) {
+                        continue; // Skip empty filters
+                    }
+                    
+                    if (!prop || prop === '' || prop === null || prop === undefined) {
+                        match = false;
+                        console.log(`Apartment ${aptId} failed filter ${key}: property is empty/null`);
+                        break;
+                    }
+                    
+                    // Convert both to strings and compare
+                    const propStr = String(prop).trim();
+                    const matched = val.some(v => String(v).trim() === propStr);
+                    
+                    if (!matched) {
+                        console.log(`Apartment ${aptId} (${apartment["NUMBER"]}) failed filter ${key}: "${propStr}" not in [${val.map(v => `"${v}"`).join(', ')}]`);
                         match = false;
                         break;
                     }
-                } else { // text
+                } else if (typeof val === "object" && val !== null) {
+                    // Range filter
+                    const numProp = parseFloat(prop);
+                    if (isNaN(numProp)) {
+                        match = false;
+                        break;
+                    }
+                    if ((val.min !== null && numProp < val.min) || (val.max !== null && numProp > val.max)) {
+                        match = false;
+                        break;
+                    }
+                } else {
+                    // Text filter (fallback)
                     if (!prop || !prop.toString().toLowerCase().includes(val.toLowerCase())) {
                         match = false;
                         break;
@@ -2075,7 +2142,7 @@ ob_end_clean();
             apartment = products.find(p => p["ID"] == apartmentInfo.id);
             inProdBox = true;
         } else {
-            apartment = productsCache.find(p => p["ID"] == apartmentInfo.id);
+            apartment = filteredProducts.find(p => p["ID"] == apartmentInfo.id);
         }
         // reset UI
         document.getElementById("popupTitle").innerText = `${apartment["PRODUCT_TYPE"]} N${apartment["Number"] || "-"}`;
@@ -2157,7 +2224,7 @@ ob_end_clean();
         const moreDetailsList = document.getElementById("popupDetailsMore");
         moreDetailsList.innerHTML = `
             <li><b>საძინებლების რაოდენობა: </b> ${apartment["Bedrooms"] || "—"}</li>
-            <li><b>კონდიცია: </b> ${apartment["_H8WF0T"] || "—"}</li>
+            <li><b>building: </b> ${apartment["BUILDING"] || "—"}</li>
             <li><b>პროექტის დასრულების თარიღი: </b> ${apartment["projEndDate"] || "—"}</li>
         `;
         
@@ -2249,7 +2316,7 @@ ob_end_clean();
         const parentId = $(this).closest(".dropdown-checkbox").attr("id");
 
         const defaultText = parentId === "statusFilter" ? "სტატუსი" :
-                            parentId === "conditionFilter" ? "კონდიცია" :
+                            parentId === "buildingFilter" ? "building" :
                             parentId === "apartmentTypeFilter" ? "ფართის ტიპი" :
                             parentId === "blockFilter" ? "ბლოკი" : "";
         updateDropdownHeader(parentId, defaultText);
@@ -2262,7 +2329,6 @@ ob_end_clean();
 
         range_filters = ['61', '62', '63', '64', '74', '76', '77', '78', '83', '84', '85', '86', '87', '88', '89', '103', '105', '106', '107'];
         // Create chip element
-
         const chip = document.createElement("div");
         chip.className = "filter-chip";
         if(range_filters.includes(id)){
@@ -2277,11 +2343,68 @@ ob_end_clean();
                 </div>
             `;
         } else {
-            chip.innerHTML = `
-                <input type="text" id="textFilter" placeholder="${value}">
-            `;
-        }
+            filterArray = new Set();
 
+            filteredProducts.forEach(p => {
+                for (const key in p) {    
+                    if (key === code) {             
+                        filterArray.add(p[key]);
+                    }
+                }
+            });
+
+            const diffFilter = document.createElement("div");
+            diffFilter.style.marginBottom = "0";
+            diffFilter.className = "dropdown-checkbox";
+            diffFilter.id = `${code}_filter`;
+
+            const header = document.createElement("div");
+            header.className = "dropdown-header";
+            header.textContent = value;
+
+            const content = document.createElement("div");
+            content.className = "dropdown-content";
+            
+            Array.from(filterArray).forEach(val => {
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+
+                const label = document.createElement("label");
+                label.textContent = val;
+                label.prepend(checkbox);
+
+                content.appendChild(label);
+            });
+
+            diffFilter.appendChild(header);
+            diffFilter.appendChild(content);
+            chip.appendChild(diffFilter);
+
+            // Add event listener to make dropdown work
+            header.addEventListener("click", function(event) {
+                event.stopPropagation();
+                
+                // Close all other dropdowns (both in filter panel and extra filter chips)
+                document.querySelectorAll(".dropdown-content").forEach(dropdown => {
+                    if (dropdown !== content) {
+                        dropdown.style.display = "none";
+                    }
+                });
+                
+                // Toggle this dropdown
+                if (content.style.display === "flex") {
+                    content.style.display = "none";
+                } else {
+                    content.style.display = "flex";
+                }
+            });
+            
+            // Prevent closing when clicking inside content
+            content.addEventListener("click", function(event) {
+                event.stopPropagation();
+            });
+        }
+        
         // Color button element when added
         buttonElement.style.background = "#f88"; // visual feedback
         buttonElement.disabled = true;
@@ -2318,7 +2441,7 @@ ob_end_clean();
         container.innerHTML = ""; // clear previous
 
         if (!Array.isArray(productProperties)) return;
-        allowedExtraFilters = ['61', '62', '63', '64', '74', '75', '76', '77', '78', '83', '84', '85', '86', '87', '88', '89', '103', '105', '106', '107', '108']
+        allowedExtraFilters = ['61', '62', '63', '64', '74', '75', '76', '77', '78', '83', '84', '85', '86', '87', '88', '89', '103', '105', '106', '107', '108', '213'];
 
         productProperties.forEach(prop => {
             // skip if not allowed
@@ -2327,7 +2450,7 @@ ob_end_clean();
             // else append
             const button = document.createElement("button");
             button.className = "extraFilters";
-            button.dataset.id = prop.CODE; // store ID in data attribute
+            button.dataset.id = prop.CODE; 
             button.textContent = prop.NAME;
 
             // Add click listener to append filter
@@ -2383,7 +2506,6 @@ ob_end_clean();
 
         document.querySelectorAll("#extraFilterChips .filter-chip").forEach(chip => {
             const rangeInput = chip.querySelector(".range-filter");
-            const textInput = chip.querySelector("input[type=text]");
 
             if (rangeInput) {
                 const min = parseFloat(chip.querySelector("input[id$='_Min']").value);
@@ -2392,14 +2514,23 @@ ob_end_clean();
                 const input = document.querySelector('.filter-chip input');
                 const code = input.id.split("_")[0];
                 extraFilters[code] = { min: isNaN(min) ? null : min, max: isNaN(max) ? null : max };
-            } else if (textInput) {
-                const value = textInput.value.trim();
-                const input = document.querySelector('.filter-chip input');
-                const code = input.id.split("_")[0];
-                if (value) extraFilters[code] = value;
+            } else {
+                const dropdownCheckbox = chip.querySelector(".dropdown-checkbox");
+                if (dropdownCheckbox) {
+                    const code = dropdownCheckbox.id.replace("_filter", "");
+                    const checkboxes = dropdownCheckbox.querySelectorAll("input[type='checkbox']:checked");
+                    
+                    if (checkboxes.length > 0) {
+                        const selectedValues = [];
+                        checkboxes.forEach(cb => {
+                            selectedValues.push(cb.parentElement.textContent.trim());
+                        });
+                        
+                        extraFilters[code] = selectedValues;
+                    }
+                }
             }
         });
-
         return extraFilters;
     }
 
@@ -2471,7 +2602,7 @@ ob_end_clean();
             if (apartmentToUndim) {
                 // Check if it should still be dimmed by filters
                 const filters = getAllFilters();
-                const apartment = productsCache.find(p => p["ID"] == apartmentId);
+                const apartment = filteredProducts.find(p => p["ID"] == apartmentId);
                 
                 let matchesFilters = true;
                 
@@ -2479,8 +2610,8 @@ ob_end_clean();
                     // Status filter
                     if (filters.status.length > 0 && !filters.status.includes(apartment["STATUS"])) matchesFilters = false;
                     
-                    // Condition filter
-                    if (filters.condition.length > 0 && !filters.condition.includes(apartment["_H8WF0T"])) matchesFilters = false;
+                    // building filter
+                    // if (filters.building.length > 0 && !filters.building.includes(apartment["BUILDING"])) matchesFilters = false;
                     
                     // Apartment type filter
                     if (filters.aptType.length > 0 && !filters.aptType.includes(apartment["PRODUCT_TYPE"])) matchesFilters = false;
@@ -2640,7 +2771,7 @@ ob_end_clean();
         if (e.target.id === "popupImg" && e.target.src) {
             document.querySelector(".gtranslate_wrapper").style.display = "none";;
             const apartmentId = document.getElementById("popupTitle").dataset.id;
-            const apartment = productsCache.find(p => p["ID"] == apartmentId) || 
+            const apartment = filteredProducts.find(p => p["ID"] == apartmentId) || 
                             products.find(p => p["ID"] == apartmentId);
             
             if (apartment) {
