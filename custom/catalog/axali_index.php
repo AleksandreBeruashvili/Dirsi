@@ -2441,7 +2441,7 @@ ob_end_clean();
         container.innerHTML = ""; // clear previous
 
         if (!Array.isArray(productProperties)) return;
-        allowedExtraFilters = ['61', '62', '63', '64', '74', '75', '76', '77', '78', '83', '84', '85', '86', '87', '88', '89', '103', '105', '106', '107', '108', '213'];
+        allowedExtraFilters = ['61', '62', '63', '64', '73', '74', '75', '76', '77', '78', '83', '84', '85', '86', '87', '88', '89', '103', '105', '106', '107', '108', '213'];
 
         productProperties.forEach(prop => {
             // skip if not allowed
@@ -2467,7 +2467,7 @@ ob_end_clean();
         const buttons = document.querySelectorAll("#filterButtonsContainer .extraFilters");
         
         buttons.forEach(button => {
-            const name = button.textContent;
+            const name = button.textContent.toLowerCase(); // Convert to lowercase for comparison
             if (name.includes(searchTerm)) {
                 button.style.display = "block";
             } else {
