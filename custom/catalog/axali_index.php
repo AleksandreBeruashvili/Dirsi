@@ -1249,6 +1249,12 @@ ob_end_clean();
             <div class="dropdown-content"></div>
         </div>
 
+        <!-- BLOCK DROPDOWN (CHECKBOXES) -->
+        <div class="dropdown-checkbox" id="blockFilter">
+            <div class="dropdown-header">ბლოკი</div>
+            <div class="dropdown-content"></div>
+        </div>
+
         <!-- STATUS DROPDOWN (CHECKBOXES) -->
         <div class="dropdown-checkbox" id="statusFilter">
             <div class="dropdown-header">სტატუსი</div>
@@ -1511,8 +1517,8 @@ ob_end_clean();
                             // Status filter
                             if (filters.status.length > 0 && !filters.status.includes(apartmentToUndim["STATUS"])) matchesFilters = false;
                             
-                            // Building filter
-                            // if (filters.building.length > 0 && !filters.building.includes(apartmentToUndim["BUILDING"])) matchesFilters = false;
+                            // Block filter
+                            if (filters.block.length > 0 && !filters.block.includes(apartmentToUndim["KORPUSIS_NOMERI_XE3NX2"])) matchesFilters = false; 
                             
                             // Apartment type filter
                             if (filters.aptType.length > 0 && !filters.aptType.includes(apartmentToUndim["PRODUCT_TYPE"])) matchesFilters = false;
@@ -1612,6 +1618,7 @@ ob_end_clean();
             status: getCheckboxValues("statusFilter"),
             building: getCheckboxValues("buildingFilter"),
             aptType: getCheckboxValues("apartmentTypeFilter"),
+            block: getCheckboxValues("blockFilter"),
             aptRange: getRangeValues(),
             extraFilters: getExtraFilterValues()
         };
@@ -1624,14 +1631,14 @@ ob_end_clean();
         // $("select").val("");
         
         // Clear checkboxes
-        $("#statusFilter input[type=checkbox], #apartmentTypeFilter input[type=checkbox]").prop("checked", false);
+        $("#statusFilter input[type=checkbox], #apartmentTypeFilter input[type=checkbox], #blockFilter input[type=checkbox]").prop("checked", false);
         
         // Clear range inputs
         $("#aptMin, #aptMax").val("");
         
         // Reset dropdown headers to default text
         $("#statusFilter .dropdown-header").text("სტატუსი");
-        // $("#buildingFilter .dropdown-header").text("building");
+        $("#blockFilter .dropdown-header").text("ბლოკი");
         $("#apartmentTypeFilter .dropdown-header").text("ფართის ტიპი");
         
         // Remove all extra filter chips
@@ -1915,7 +1922,7 @@ ob_end_clean();
         let floor = document.getElementById("block-labels");
         let apsDisplay = document.getElementById("apsDisplay");
         let floorsDiv = document.getElementById("floors");
-        if (parseInt(getComputedStyle(floor).width) > parseInt(getComputedStyle(apsDisplay).maxWidth)) {
+        if (parseInt(getComputedStyle(floor).width) > parseInt(getComputedStyle(apsDisplay).width)) {
             floorsDiv.style.paddingBottom = "16px";
         } else {
             floorsDiv.style.paddingBottom = "9px";
@@ -1928,12 +1935,12 @@ ob_end_clean();
 
         // Collect unique values for each filter
         const statusSet = new Set();
-        // const buildingSet = new Set();
+        const blockSet = new Set();
         const typeSet = new Set();
 
         products.forEach(p => {
             if (p["STATUS"]) statusSet.add(p["STATUS"]);       // Status
-            // if (p["BUILDING"]) buildingSet.add(p["BUILDING"]);   // Building
+            if (p["KORPUSIS_NOMERI_XE3NX2"]) blockSet.add(p["KORPUSIS_NOMERI_XE3NX2"]);   // Block
             if (p["PRODUCT_TYPE"]) typeSet.add(p["PRODUCT_TYPE"]);        // Apartment type
         });
 
@@ -1953,14 +1960,14 @@ ob_end_clean();
 
         // Populate each filter
         buildDropdown("#statusFilter", statusSet, "სტატუსი");
-        // buildDropdown("#buildingFilter", buildingSet, "building");
+        buildDropdown("#blockFilter", blockSet, "ბლოკი");
         buildDropdown("#apartmentTypeFilter", typeSet, "ფართის ტიპი");
 
         // Reattach checkbox change handler to update headers
         $(".dropdown-content input[type=checkbox]").off("change").on("change", function() {
             const parentId = $(this).closest(".dropdown-checkbox").attr("id");
             const defaultText = parentId === "statusFilter" ? "სტატუსი" :
-                                // parentId === "buildingFilter" ? "building" :
+                                parentId === "blockFilter" ? "ბლოკი" :
                                 parentId === "apartmentTypeFilter" ? "ფართის ტიპი" : "";
             updateDropdownHeader(parentId, defaultText);
 
@@ -2001,8 +2008,8 @@ ob_end_clean();
             // Apartment type filter
             if (filters.aptType.length > 0 && !filters.aptType.includes(apartment["PRODUCT_TYPE"])) match = false;
 
-            // Blocks filter
-            // if (filters.blocks.length > 0 && !filters.blocks.includes(apartment["KORPUSIS_NOMERI_XE3NX2"])) match = false;
+            // Block filter
+            if (filters.block.length > 0 && !filters.block.includes(apartment["KORPUSIS_NOMERI_XE3NX2"])) match = false;
 
             // Apartment range filter
             const min = parseInt(filters.aptRange.min);
@@ -2225,7 +2232,7 @@ ob_end_clean();
             document.getElementById("popupSelectBtn").style.display = "flex";                
         }
 
-        let floor2 = document.getElementById("block-labels");
+        let floor2 = document.querySelector(".floor-row");
         let apsDisplay2 = document.getElementById("apsDisplay");
         let floorsDiv2 = document.getElementById("floors");
         if (parseInt(getComputedStyle(floor2).width) > parseInt(getComputedStyle(apsDisplay2).maxWidth)) {
@@ -2305,8 +2312,8 @@ ob_end_clean();
 
         const defaultText = parentId === "statusFilter" ? "სტატუსი" :
                             parentId === "buildingFilter" ? "building" :
-                            parentId === "apartmentTypeFilter" ? "ფართის ტიპი" : "";
-                            // parentId === "blockFilter" ? "ბლოკი" 
+                            parentId === "apartmentTypeFilter" ? "ფართის ტიპი" :
+                            parentId === "blockFilter" ? "ბლოკი" : "";
         updateDropdownHeader(parentId, defaultText);
     });
 
@@ -2605,7 +2612,7 @@ ob_end_clean();
                     if (filters.aptType.length > 0 && !filters.aptType.includes(apartment["PRODUCT_TYPE"])) matchesFilters = false;
                     
                     // Blocks filter
-                    // if (filters.blocks.length > 0 && !filters.blocks.includes(apartment["KORPUSIS_NOMERI_XE3NX2"])) matchesFilters = false;
+                    if (filters.block.length > 0 && !filters.block.includes(apartment["KORPUSIS_NOMERI_XE3NX2"])) matchesFilters = false;
                     
                     // Apartment range filter
                     const min = parseInt(filters.aptRange.min);
