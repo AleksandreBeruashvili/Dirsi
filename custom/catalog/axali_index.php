@@ -1249,14 +1249,6 @@ ob_end_clean();
             <div class="dropdown-content"></div>
         </div>
 
-        <!-- BLOCK DROPDOWN (CHECKBOXES) -->
-        <div class="dropdown-checkbox" id="blockFilter">
-            <div class="dropdown-header">ბლოკი<span style="color:red">*</span></div>
-            <div class="dropdown-content">
-                <!-- dynamically filled via JS -->
-            </div>
-        </div>
-
         <!-- STATUS DROPDOWN (CHECKBOXES) -->
         <div class="dropdown-checkbox" id="statusFilter">
             <div class="dropdown-header">სტატუსი</div>
@@ -1525,9 +1517,6 @@ ob_end_clean();
                             // Apartment type filter
                             if (filters.aptType.length > 0 && !filters.aptType.includes(apartmentToUndim["PRODUCT_TYPE"])) matchesFilters = false;
                             
-                            // Blocks filter
-                            if (filters.blocks.length > 0 && !filters.blocks.includes(apartmentToUndim["KORPUSIS_NOMERI_XE3NX2"])) matchesFilters = false;
-                            
                             // Apartment range filter
                             const min = parseInt(filters.aptRange.min);
                             const max = parseInt(filters.aptRange.max);
@@ -1620,7 +1609,6 @@ ob_end_clean();
     function getAllFilters() {
         return {
             project: $("#projects").val(),
-            blocks: getCheckboxValues("blockFilter"), // <- multi-select now
             status: getCheckboxValues("statusFilter"),
             building: getCheckboxValues("buildingFilter"),
             aptType: getCheckboxValues("apartmentTypeFilter"),
@@ -1679,8 +1667,8 @@ ob_end_clean();
 
     // loading projects for dropdown select
     const projectSelect = document.getElementById("projects");
-    const blockSelect = document.getElementById("blockFilter");
-    const buildingSelect = document.getElementById("blockFilter");
+    // const blockSelect = document.getElementById("blockFilter");
+    const buildingSelect = document.getElementById("buildingFilter");
 
     // PROJECTS DROPDOWN
     if (projects && Array.isArray(projects)) {
@@ -1699,7 +1687,7 @@ ob_end_clean();
         const projId = this.value;
 
         // Clear previous blocks
-        blockSelect.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
+        // blockSelect.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
 
         // Clear previous buildings
         buildingSelect.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
@@ -1725,38 +1713,38 @@ ob_end_clean();
                 }
 
                 // Populate Blocks dropdown
-                if (data.blocks) {
-                    const blockContainer = document.querySelector("#blockFilter .dropdown-content");
-                    blockContainer.innerHTML = ""; // clear old
-                    data.blocks
-                    .forEach(block => {
-                        const label = document.createElement("label");
-                        label.innerHTML = `<input type="checkbox" value="${block}"> ${block}`;
-                        blockContainer.appendChild(label);
-                    });
+                // if (data.blocks) {
+                //     const blockContainer = document.querySelector("#blockFilter .dropdown-content");
+                //     blockContainer.innerHTML = ""; // clear old
+                //     data.blocks
+                //     .forEach(block => {
+                //         const label = document.createElement("label");
+                //         label.innerHTML = `<input type="checkbox" value="${block}"> ${block}`;
+                //         blockContainer.appendChild(label);
+                //     });
 
 
-                }
+                // }
             })
             .catch(err => console.error(err));
     });
 
     let filteredProducts = [];
     // ======================== When a block is selected, fetch products from API ========================
-    $(document).on("change", "#blockFilter input[type=checkbox]", function () {
-        const projId = $("#projects").val();
-        const selectedBlocks = getCheckboxValues("blockFilter");
+    // $(document).on("change", "#blockFilter input[type=checkbox]", function () {
+    //     const projId = $("#projects").val();
+    //     const selectedBlocks = getCheckboxValues("blockFilter");
 
-        if (!projId || selectedBlocks.length === 0) return;
+    //     if (!projId || selectedBlocks.length === 0) return;
 
-        // Fetch all selected blocks at once
-        filteredProducts = productsCache.filter(product =>
-            selectedBlocks.includes(product.KORPUSIS_NOMERI_XE3NX2)
-        );
+    //     // Fetch all selected blocks at once
+    //     filteredProducts = productsCache.filter(product =>
+    //         selectedBlocks.includes(product.KORPUSIS_NOMERI_XE3NX2)
+    //     );
 
-        renderProductsByBlock(filteredProducts, selectedBlocks, "block");
-        updateDynamicFilters(filteredProducts); 
-    });
+    //     renderProductsByBlock(filteredProducts, selectedBlocks, "block");
+    //     updateDynamicFilters(filteredProducts); 
+    // });
 
     // ======================== When a building is selected, fetch products from API ========================
     $(document).on("change", "#buildingFilter input[type=checkbox]", function () {
@@ -1976,12 +1964,12 @@ ob_end_clean();
                                 parentId === "apartmentTypeFilter" ? "ფართის ტიპი" : "";
             updateDropdownHeader(parentId, defaultText);
 
-            if (parentId === "blockFilter") {
-                const values = getCheckboxValues("blockFilter");
-                if (values.length === 0) {
-                    document.querySelector("#blockFilter .dropdown-header").textContent = "ბლოკი";
-                }
-            }
+            // if (parentId === "blockFilter") {
+            //     const values = getCheckboxValues("blockFilter");
+            //     if (values.length === 0) {
+            //         document.querySelector("#blockFilter .dropdown-header").textContent = "ბლოკი";
+            //     }
+            // }
 
             if (parentId === "buildingFilter") {
                 const values = getCheckboxValues("buildingFilter");
@@ -2014,7 +2002,7 @@ ob_end_clean();
             if (filters.aptType.length > 0 && !filters.aptType.includes(apartment["PRODUCT_TYPE"])) match = false;
 
             // Blocks filter
-            if (filters.blocks.length > 0 && !filters.blocks.includes(apartment["KORPUSIS_NOMERI_XE3NX2"])) match = false;
+            // if (filters.blocks.length > 0 && !filters.blocks.includes(apartment["KORPUSIS_NOMERI_XE3NX2"])) match = false;
 
             // Apartment range filter
             const min = parseInt(filters.aptRange.min);
@@ -2317,8 +2305,8 @@ ob_end_clean();
 
         const defaultText = parentId === "statusFilter" ? "სტატუსი" :
                             parentId === "buildingFilter" ? "building" :
-                            parentId === "apartmentTypeFilter" ? "ფართის ტიპი" :
-                            parentId === "blockFilter" ? "ბლოკი" : "";
+                            parentId === "apartmentTypeFilter" ? "ფართის ტიპი" : "";
+                            // parentId === "blockFilter" ? "ბლოკი" 
         updateDropdownHeader(parentId, defaultText);
     });
 
@@ -2617,7 +2605,7 @@ ob_end_clean();
                     if (filters.aptType.length > 0 && !filters.aptType.includes(apartment["PRODUCT_TYPE"])) matchesFilters = false;
                     
                     // Blocks filter
-                    if (filters.blocks.length > 0 && !filters.blocks.includes(apartment["KORPUSIS_NOMERI_XE3NX2"])) matchesFilters = false;
+                    // if (filters.blocks.length > 0 && !filters.blocks.includes(apartment["KORPUSIS_NOMERI_XE3NX2"])) matchesFilters = false;
                     
                     // Apartment range filter
                     const min = parseInt(filters.aptRange.min);
