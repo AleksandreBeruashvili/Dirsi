@@ -1226,11 +1226,11 @@ function fillEndDateByLastPayDate() {
     const lastPayDate = getValue('lastPayDate');
     const period = parseInt(getValue('period'));
     
-    if (lastPayDate) {
-        setValue('endDate', dateAddMonth(lastPayDate, -period));
-    } else {
-        setValue('endDate', projEndDate);
-    }
+    // if (lastPayDate) {
+    //     setValue('endDate', dateAddMonth(lastPayDate, -period));
+    // } else {
+    //     setValue('endDate', projEndDate);
+    // }
 }
 
 /**

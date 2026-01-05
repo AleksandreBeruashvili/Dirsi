@@ -229,6 +229,63 @@ function addArrayWithSuffix(&$variables, $array, $suffix) {
     }
 }
 
+function getLatestSchedule($dealId) {
+    if (!$dealId) return null;
+
+    $arFilter = [
+        "IBLOCK_ID" => 23,
+        "PROPERTY_DEAL" => $dealId,
+        "PROPERTY_DASTURI" => "დადასტურებული",
+    ];
+    
+    $res = CIBlockElement::GetList(
+        ["PROPERTY_dadasturebisDro" => "DESC"],
+        $arFilter,
+        false,
+        ["nPageSize" => 1],
+        ["ID", "PROPERTY_JSON"]
+    );
+
+    if ($element = $res->GetNext()) {
+        return $element["PROPERTY_JSON_VALUE"] ?? null;
+    }
+
+    return null;
+}
+
+function generateSimpleScheduleTable($jsonString) {
+    if (empty($jsonString)) return '';
+    
+    $json1 = str_replace("&quot;", "\"", $jsonString);
+    $data = json_decode($json1, true);
+    
+    if (!$data || empty($data["data"])) return '';
+    
+    $html = "<table style='border-collapse: collapse; width:100%; font-family: sylfaen;'>";
+    
+    $rowNum = 1;
+    foreach ($data["data"] as $row) {
+        $amount = (float)($row["amount"] ?? 0);
+        $date = $row["date"] ?? '';
+        
+        // ფორმატირება: 800 USD ან 53 577.6 USD
+        $formattedAmount = number_format($amount, ($amount == floor($amount)) ? 0 : 1, '.', ' ') . ' USD';
+        
+        $html .= "<tr>
+            <td style='border: 1px solid black; font-size:11px; padding:3px 8px; text-align:left;'>{$rowNum})</td>
+            <td style='border: 1px solid black; font-size:11px; padding:3px 8px; text-align:center;'>{$formattedAmount}</td>
+            <td style='border: 1px solid black; font-size:11px; padding:3px 8px; text-align:center;'>{$date}</td>
+        </tr>";
+        
+        $rowNum++;
+    }
+    
+    $html .= "</table>";
+    
+    return $html;
+}
+
+
 function buildDocumentVariables($dealId) {
     $variables = [];
     $deal = getDealInfo($dealId);
@@ -329,6 +386,12 @@ function buildDocumentVariables($dealId) {
                 addVariable($variables, '$' . $key . '_2$', $value);
             }
         }
+    }
+
+    $jsonData = getLatestSchedule($dealId);
+    if ($jsonData) {
+        $scheduleTable = generateSimpleScheduleTable($jsonData);
+        addVariable($variables, '$' . 'grafiki' . '$', $scheduleTable);
     }
     
     return $variables;

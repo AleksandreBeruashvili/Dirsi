@@ -56,7 +56,7 @@ $deal = getDealInfoByIDToolbar($dealId);
 
         <div class="form-group">
             <label for="contractDate" class="required">ხელშეკრულების გაფორმების თარიღი</label>
-            <input type="date" id="contractDate" name="contractDate" style="width: 20%;" required >
+            <input type="date" id="contractDate" name="contractDate" style="width: 30%;" required >
             <div class="error" id="contractDate-error">გთხოვთ მიუთითოთ თარიღი</div>
         </div>
 
@@ -74,8 +74,8 @@ $deal = getDealInfoByIDToolbar($dealId);
         </div>
 
         <div class="form-group">
-            <label for="clientDesc" class="required">კლიენტის დახასიათება</label>
-            <textarea id="clientDesc" name="clientDesc" rows="3" required></textarea>
+            <label for="clientDesc" >კლიენტის დახასიათება</label>
+            <textarea id="clientDesc" name="clientDesc" rows="3" ></textarea>
             <div class="error" id="clientDesc-error">გთხოვთ შეიყვანოთ აღწერა</div>
         </div>
 
@@ -88,6 +88,17 @@ $deal = getDealInfoByIDToolbar($dealId);
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
+
+// თარიღის კონვერტაცია DD/MM/YYYY -> YYYY-MM-DD ფორმატში
+var rawDate = <?php echo json_encode($deal["UF_CRM_1762416342444"], JSON_UNESCAPED_UNICODE); ?>;
+if (rawDate) {
+    var parts = rawDate.split('/');
+    if (parts.length === 3) {
+        // DD/MM/YYYY -> YYYY-MM-DD
+        document.getElementById('contractDate').value = parts[2] + '-' + parts[1] + '-' + parts[0];
+    }
+}
+
 function closePopup() {
     if (window.BX && BX.SidePanel) {
         BX.SidePanel.Instance.close();
@@ -142,7 +153,7 @@ $(document).ready(function() {
 
     function validateForm() {
         let valid = true;
-        ["contractDate", "sellFlat", "sellAttach", "clientDesc"].forEach(id => {
+        ["contractDate", "sellFlat", "sellAttach"].forEach(id => {
             let el = $("#" + id)[0];
             if (!el) return; // თუ არ არსებობს, გამოტოვე
             
