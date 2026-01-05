@@ -419,7 +419,7 @@ if($filter_for_element!=0) {
 
 
 }
-ob_end_clean();
+// ob_end_clean();
 
 ?>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
@@ -486,7 +486,7 @@ ob_end_clean();
         border-radius: 4px;
     }
 
-    .app__footer{
+    /* .app__footer{
 
 display:none;
 
@@ -504,7 +504,7 @@ display:none;
 
     .page__toolbar{
         display: none;
-    }
+    } */
 
     /* Hover effect */
     .excel-export-button:hover {
