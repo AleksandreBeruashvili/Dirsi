@@ -446,6 +446,14 @@ if (!empty($_POST)) {
             $fileName = getFileNameFromDiskObject($fileObject["NAME"]);
             $generatedFile = generateDocument($fileContent, $variables, $isPdf);
             
+            // ავტორიზაციის აღდგენა ჩამოტვირთვამდე
+            if($NotAuthorized) {
+                $USER->Logout();
+            }
+            else{
+                $USER->Authorize($user_id);
+            }
+            
             outputFile($generatedFile, $fileName, $isPdf);
             
         } catch (Exception $e) {
@@ -547,6 +555,7 @@ else{
                     <select id="language" required class="form-select" onchange="filterDocuments()">
                         <option value="geo">GEO</option>
                         <option value="eng">ENG</option>
+                        <option value="rus">RUS</option>
                     </select>
                 </div>
 

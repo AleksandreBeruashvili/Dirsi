@@ -206,6 +206,21 @@ if(is_numeric($json["dealId"])) {
 
     $arrForAdd["COMMENTS"] = $comment;
     $arrForAdd ["OPPORTUNITY"] = $prodPriceUSD;      //დილის ფასი
+
+    // პირველი შენატანის დამატება
+    if(isset($json["data"][0])){
+        $firstPaymentAmount = $json["data"][0]["amount"];
+
+        // if($transactionCurrency == "GEL" && $exchangeRate && is_numeric($exchangeRate)){
+        //     $firstPaymentAmount = round($firstPaymentAmount / $exchangeRate, 2);
+        // }
+        $arrForAdd["UF_CRM_1767011506"] = $firstPaymentAmount;        // პირველი შენატანი
+        $arrForAdd["UF_CRM_1767011536"] = $json["data"][0]["date"];   // პირველი შენატანის თარიღი
+    }
+    else{
+        $arrForAdd["UF_CRM_1767011506"] = 0;
+        $arrForAdd["UF_CRM_1767011536"] = "";
+    }
     $arrForAdd ["UF_CRM_1625580191451"] = $prodPriceUSD;      // დარჩენილი თანხა
     $arrForAdd ["UF_CRM_1735030244"] = putCommasInNum($prodPriceUSD);      //დილის ფასი მძიმეებით
     $arrForAdd ["UF_CRM_1709821902793"] = $prodPriceGEL;      //ფასი ლარი

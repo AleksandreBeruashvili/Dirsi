@@ -404,7 +404,7 @@ if($dealExists) {
                     $productData = getCIBlockElementsByID($related_product);
                     $project ? $project .= " /" . $productData["PROJECT"] : $project = $productData["PROJECT"];
                     $korp ? $korp .= " /" . $productData["KORPUSIS_NOMERI_XE3NX2"] : $korp = $productData["KORPUSIS_NOMERI_XE3NX2"];
-                    $building ? $building .= " /" . $productData["BUILDING_GJ4MWF"] : $building = $productData["BUILDING_GJ4MWF"];
+                    $building ? $building .= " /" . $productData["BUILDING"] : $building = $productData["BUILDING"];
                     
                     $prodFLOOR ? $prodFLOOR .= " /" . $productData["FLOOR"] : $prodFLOOR = $productData["FLOOR"];
                     $prodNumber ? $prodNumber .= " /" . $productData["Number"] : $prodNumber = $productData["Number"];

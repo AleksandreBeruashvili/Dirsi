@@ -193,7 +193,7 @@ if ($deal_id) {
         $KVM_PRICE ? $KVM_PRICE .= " /" . $productData["KVM_PRICE"] : $KVM_PRICE = $productData["KVM_PRICE"];
         $project ? $project .= " /" . $productData["PROJECT"] : $project = $productData["PROJECT"];
         $block ? $block .= " /" . $productData["KORPUSIS_NOMERI_XE3NX2"] : $block = $productData["KORPUSIS_NOMERI_XE3NX2"];
-        $building ? $building .= " /" . $productData["BUILDING_GJ4MWF"] : $building = $productData["BUILDING_GJ4MWF"];
+        $building ? $building .= " /" . $productData["BUILDING"] : $building = $productData["BUILDING"];
     
         $PRODUCT_TYPE ? $PRODUCT_TYPE .= " /" . $productData["PRODUCT_TYPE"] : $PRODUCT_TYPE = $productData["PRODUCT_TYPE"];
         $sadarbazo ? $sadarbazo .= " /" . $productData["_15MYD6"] : $sadarbazo = $productData["_15MYD6"];
