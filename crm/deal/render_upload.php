@@ -27,88 +27,84 @@ function getciblockelementsbyfilter($arFilter = array(), $limit = 9999999)
 }
 
 if (!empty($_POST)) {
-    
     $fileType = $_POST["file_type"];
     $flatNumbers = $_POST["flat_numbers"];
     $ptoNumber = $_POST["pto_number"];
+    $building = $_POST["building"];
     $floor = $_POST["floor"];
     $project = $_POST["project"];
     $block = $_POST["block"];
-    $flat_type = $_POST["flat_type"];
-
+    
+    // Note: Ensure these variable names match your form names
+    $flat_type = $_POST["flat_type"]; 
 
     $file = $_FILES["file"];
-
-
-    // Split flat numbers by comma and trim whitespace
     $flatNumbersArray = array_map('trim', explode(',', $flatNumbers));
 
-    // Prepare the base filter
     $baseFilter = array(
         "IBLOCK_ID" => 14,
-        "IBLOCK_SECTION_ID" => $project,
+        "SECTION_ID" => $project, // Changed from IBLOCK_SECTION_ID for better GetList compatibility
         "PROPERTY_60" => $flat_type,
         "PROPERTY_73" => $block,
         "PROPERTY_214" => $ptoNumber,
+        "PROPERTY_213" => $building,
         "PROPERTY_61" => $floor
-
     );
 
     $successCount = 0;
     $errors = array();
 
-    // Process the uploaded file once
     $filePath = $_SERVER["DOCUMENT_ROOT"] . "/upload/" . time() . "_" . $file["name"];
 
     if (move_uploaded_file($file["tmp_name"], $filePath)) {
-        // Process each flat number
         foreach ($flatNumbersArray as $flatNumber) {
-            // Add flat number to filter
             $filter = $baseFilter;
             $filter["PROPERTY_65"] = $flatNumber;
 
-            // Get elements using your function
             $elements = getciblockelementsbyfilter($filter);
 
             if (!empty($elements)) {
-                // Create a new file array for each element
                 $fileArray = CFile::MakeFileArray($filePath);
-                $fileArray['del'] = 'Y'; // This allows overwriting existing files
-                $fileArray['old_file'] = ''; // Clear old file reference
 
                 if ($fileArray && !isset($fileArray["error"])) {
-                    // Determine field based on file type
-                    $fieldCode = ($fileType == "3d_render") ? "DETAIL_PICTURE" : "PREVIEW_PICTURE";
-
-                    // Update each found element
                     foreach ($elements as $element) {
-                        $el = new CIBlockElement;
-
-                        $updateFields = array(
-                            $fieldCode => $fileArray
-                        );
-
-                        $updateResult = $el->Update($element["ID"], $updateFields);
-
-                        if ($updateResult) {
+                        // Determine which property to update based on file_type
+                        if ($fileType == "3d_render") {
+                            // Update Property 104 (3D Render)
+                            CIBlockElement::SetPropertyValuesEx(
+                                $element["ID"], 
+                                14, 
+                                array("104" => $fileArray)
+                            );
+                            $successCount++;
+                        } elseif ($fileType == "floor_plan") {
+                            // Update Property 102 (Floor Planning)
+                            CIBlockElement::SetPropertyValuesEx(
+                                $element["ID"], 
+                                14, 
+                                array("102" => $fileArray)
+                            );
                             $successCount++;
                         } else {
-                            $errors[] = "Failed to update element ID: " . $element["ID"] . " - " . $el->LAST_ERROR;
+                            // Fallback: If neither is selected, update the standard PREVIEW_PICTURE
+                            $el = new CIBlockElement;
+                            $updateResult = $el->Update($element["ID"], array("PREVIEW_PICTURE" => $fileArray));
+                            
+                            if ($updateResult) {
+                                $successCount++;
+                            } else {
+                                $errors[] = "Error updating ID " . $element["ID"] . ": " . $el->LAST_ERROR;
+                            }
                         }
                     }
-                } else {
-                    $errors[] = "File processing error for flat $flatNumber: " . print_r($fileArray["error"], true);
                 }
             } else {
-                $errors[] = "No elements found for flat number: " . $flatNumber;
+                $errors[] = "No elements found for flat: " . $flatNumber;
             }
         }
-
-        // Clean up the file after processing all flats
         @unlink($filePath);
-
     } else {
-        $errors[] = "Failed to move uploaded file to " . $filePath;
+        $errors[] = "Failed to move uploaded file.";
     }
 
     // Output results
@@ -121,7 +117,7 @@ if (!empty($_POST)) {
 }
 ?>
 
-<!-- HTML form with PTO field -->
+<!-- HTML form with Building and PTO fields -->
 
 <html>
 
@@ -154,7 +150,7 @@ if (!empty($_POST)) {
 
             <div class="mb-3">
                 <label for="block" class="form-label">Block</label>
-                <select name="block" id="block" class="form-select" required>
+                <select name="block" id="block" class="form-select">
                     <option value="">Select block</option>
                     <option value="A">A</option>
                     <option value="B">B</option>
@@ -163,21 +159,40 @@ if (!empty($_POST)) {
                 </select>
             </div>
 
+
+            <div class="mb-3">
+                <label for="flat_type" class="form-label">Property type</label>
+                <select name="flat_type" id="flat_type" class="form-select">
+                    <option value="">Select type</option>
+                    <option value="Commercial">Commercial</option>
+                    <option value="Flat">Flat</option>
+        
+                </select>
+            </div>
+
+            
+
             <div class="mb-3">
                 <label for="flat_numbers" class="form-label">Flat Numbers (comma separated)</label>
-                <input type="text" class="form-control" id="flat_numbers" name="flat_numbers" required>
+                <input type="text" class="form-control" id="flat_numbers" name="flat_numbers">
                 <div class="form-text">Enter multiple flat numbers separated by commas (e.g., 101, 102, 103)</div>
             </div>
 
             <div class="mb-3">
+                <label for="building" class="form-label">Building</label>
+                <input type="text" class="form-control" id="building" name="building" required>
+                <div class="form-text">Enter the building identifier</div>
+            </div>
+
+            <div class="mb-3">
                 <label for="pto_number" class="form-label">PTO</label>
-                <input type="text" class="form-control" id="pto_number" name="pto_number" required>
+                <input type="text" class="form-control" id="pto_number" name="pto_number">
                 <div class="form-text">Enter a single PTO number</div>
             </div>
 
             <div class="mb-3">
                 <label for="floor" class="form-label">Floor</label>
-                <input type="text" class="form-control" id="floor" name="floor" required>
+                <input type="text" class="form-control" id="floor" name="floor">
                 <div class="form-text">Enter the floor number (e.g., 1, 2, 3)</div>
             </div>
 

@@ -19,9 +19,9 @@ function getCIBlockElementsByFilter($arFilter = array())
             $arPushs[$key] = $arFild;
         foreach ($arProps as $key => $arProp)
             $arPushs[$key] = $arProp["VALUE"];
-        $arPushs["sartulinew"] = CFile::GetPath($arPushs["sartulinew"]);
-        $arPushs["floorplan"] = CFile::GetPath($arPushs["floorplan"]);
-        $arPushs["threedrender"] = CFile::GetPath($arPushs["threedrender"]);
+        $arPushs["binis_naxazi"] = CFile::GetPath($arPushs["binis_naxazi"]);
+        $arPushs["binis_gegmareba"] = CFile::GetPath($arPushs["binis_gegmareba"]);
+        $arPushs["render_3D"] = CFile::GetPath($arPushs["render_3D"]);
         $arPushs["xedi_1"] = CFile::GetPath($arPushs["xedi_1"]);
         $arPushs["xedi_2"] = CFile::GetPath($arPushs["xedi_2"]);
         $arPushs["xedi_3"] = CFile::GetPath($arPushs["xedi_3"]);
@@ -124,9 +124,9 @@ $kvmterasa = $product[0]['terraceprice_per'];
 
 $totalprice = round($product[0]['PRICE']);
 
-$sartulinew = $product[0]["sartulinew"];
-$floorplan = $product[0]['floorplan'];
-$threeD = $product[0]["threedrender"];
+$sartulinew = $product[0]["binis_naxazi"];
+$floorplan = $product[0]['binis_gegmareba'];
+$threeD = $product[0]["render_3D"];
 
 $xedi_1 = $product[0]['xedi_1'];
 $xedi_2 = $product[0]["xedi_2"];
@@ -846,10 +846,19 @@ if (document.getElementById("kvmterasa")) {
 }
     document.getElementById("totalprice").innerText = ` $ ${totalpriceFormated} `;
 
-
+    
+    if (threeD) {
     document.getElementById("threeDRender").innerHTML = `<img src='${threeD}' alt='project picture' >`;
+    }
+
+
+    if (floorplan) {
     document.getElementById("floorplan").innerHTML = `<img src='${floorplan}' alt='2D render'>`;
+    }
+
+    if (sartulinew) {
     document.getElementById("sartulinew").innerHTML = `<img src='${sartulinew}' alt='2D render'>`;
+    }
 
 
     if (xedi_1) {
