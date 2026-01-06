@@ -159,6 +159,7 @@ if ($deal_id) {
     $KVM_PRICE = "";
     $project = "";
     $block = "";
+    $building = "";
     $PRODUCT_TYPE = "";
     $sadarbazo = "";
     $prodFLOOR = "";
@@ -190,10 +191,12 @@ if ($deal_id) {
         ];
 
         // update deal info
-        $KVM_PRICE ? $KVM_PRICE .= " /" . $productData["KVM_PRICE"] : $KVM_PRICE = $productData["KVM_PRICE"];
-        $project ? $project .= " /" . $productData["PROJECT"] : $project = $productData["PROJECT"];
-        $block ? $block .= " /" . $productData["KORPUSIS_NOMERI_XE3NX2"] : $block = $productData["KORPUSIS_NOMERI_XE3NX2"];
-        $building ? $building .= " /" . $productData["BUILDING"] : $building = $productData["BUILDING"];
+        $KVM_PRICE ? $KVM_PRICE .= " /" . ($productData["KVM_PRICE"] ?? "") : $KVM_PRICE = ($productData["KVM_PRICE"] ?? "");
+        $project ? $project .= " /" . ($productData["PROJECT"] ?? "") : $project = ($productData["PROJECT"] ?? "");
+        $blockVal = $productData["KORPUSIS_NOMERI_XE3NX2"] ?? "";
+        $block ? $block .= " /" . $blockVal : $block = $blockVal;
+        $buildingVal = $productData["BUILDING"] ?? "";
+        $building ? $building .= " /" . $buildingVal : $building = $buildingVal;
     
         $PRODUCT_TYPE ? $PRODUCT_TYPE .= " /" . $productData["PRODUCT_TYPE"] : $PRODUCT_TYPE = $productData["PRODUCT_TYPE"];
         $sadarbazo ? $sadarbazo .= " /" . $productData["_15MYD6"] : $sadarbazo = $productData["_15MYD6"];

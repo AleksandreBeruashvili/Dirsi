@@ -253,7 +253,7 @@ function getLatestSchedule($dealId) {
     return null;
 }
 
-function generateSimpleScheduleTable($jsonString) {
+function generateSimpleScheduleTable($jsonString, $language = 'geo') {
     if (empty($jsonString)) return '';
     
     $json1 = str_replace("&quot;", "\"", $jsonString);
@@ -261,7 +261,7 @@ function generateSimpleScheduleTable($jsonString) {
     
     if (!$data || empty($data["data"])) return '';
     
-    $html = "<table style='border-collapse: collapse; width:100%; font-family: sylfaen;'>";
+    $html = "<table style='border-collapse: collapse; width:100%; font-family: sylfaen;'><tbody>";
     
     $rowNum = 1;
     foreach ($data["data"] as $row) {
@@ -280,9 +280,7 @@ function generateSimpleScheduleTable($jsonString) {
         $rowNum++;
     }
     
-    $html .= "</table>";
-    
-    return $html;
+    return $html . "</tbody></table>";
 }
 
 
@@ -390,8 +388,8 @@ function buildDocumentVariables($dealId) {
 
     $jsonData = getLatestSchedule($dealId);
     if ($jsonData) {
-        $scheduleTable = generateSimpleScheduleTable($jsonData);
-        addVariable($variables, '$' . 'grafiki' . '$', $scheduleTable);
+
+        $variables[] = ['VarName' => '$grafiki$', 'VarValue' => generateSimpleScheduleTable($jsonData), 'VarType' => 'T'];
     }
     
     return $variables;
