@@ -229,7 +229,7 @@ if ($deal_id) {
     }
     
     $resArray["status"] = 200;
-    $resArray["message"] = "ბინები შენახულია";
+    $resArray["message"] = "ცვლილება შენახულია";
 
 } else {
     $resArray["status"] = 400;

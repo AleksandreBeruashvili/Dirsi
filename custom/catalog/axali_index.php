@@ -78,7 +78,7 @@ function getDealProds($dealID) {
                 $each[0]["DEAL_RESPONSIBLE_NAME"] = getUserName($each[0]["DEAL_RESPONSIBLE"]);
             }
 
-            $image = CFile::GetPath($each[0]['binis_naxazi']);
+            $image = CFile::GetPath($each[0]['render_3D']);
             if ($image) {
                 $image = $_SERVER["REQUEST_SCHEME"] . "://" . $_SERVER["HTTP_HOST"] . $image;
             } else {
@@ -94,7 +94,7 @@ function getDealProds($dealID) {
             }
             $each[0]['image2'] = $image2;
 
-            $image3 = CFile::GetPath($each[0]['render_3D']);
+            $image3 = CFile::GetPath($each[0]['binis_naxazi']); 
             if ($image3) {
                 $image3 = $_SERVER["REQUEST_SCHEME"] . "://" . $_SERVER["HTTP_HOST"] . $image3;
             } else {
@@ -592,7 +592,7 @@ ob_end_clean();
             top: 0;
             right: -400px;
             width: 380px;
-            height: 100%;
+            height: 95%;
             background: rgba(255,255,255,0.95);
             box-shadow: -4px 0 16px rgba(0,0,0,0.22);
             border-radius: 12px 0 0 12px;
@@ -1223,6 +1223,7 @@ ob_end_clean();
         #popupImg {
             cursor: pointer;
             transition: transform 0.2s ease;
+            width: 100%;
         }
 
         #popupImg:hover {
@@ -1245,7 +1246,7 @@ ob_end_clean();
 
         <!-- BUILDING DROPDOWN (CHECKBOXES) -->
         <div class="dropdown-checkbox" id="buildingFilter">
-            <div class="dropdown-header">Building</div>
+            <div class="dropdown-header">კორპუსი</div>
             <div class="dropdown-content"></div>
         </div>
 
@@ -2736,7 +2737,7 @@ ob_end_clean();
         settingsScript.textContent = `
             window.gtranslateSettings = {
                 "default_language": "ka",
-                "languages": ["ka", "en", "ru"],
+                "languages": ["ka", "en", "ru", "az"],
                 "wrapper_selector": ".gtranslate_wrapper",
                 "flag_size": 24
             };

@@ -83,7 +83,7 @@ function getProducts($projId = null, $blockId = null) {
             $arPushs["DEAL_RESPONSIBLE_NAME"] = getUserName($arPushs["DEAL_RESPONSIBLE"]);
         }
 
-        $image = CFile::GetPath($arPushs['binis_naxazi']);
+        $image = CFile::GetPath($arPushs['render_3D']); 
         if ($image) {
             $image = $_SERVER["REQUEST_SCHEME"] . "://" . $_SERVER["HTTP_HOST"] . $image;
         } else {
@@ -99,7 +99,7 @@ function getProducts($projId = null, $blockId = null) {
         }
         $arPushs['image2'] = $image2;
 
-        $image3 = CFile::GetPath($arPushs['render_3D']);
+        $image3 = CFile::GetPath($arPushs['binis_naxazi']);
         if ($image3) {
             $image3 = $_SERVER["REQUEST_SCHEME"] . "://" . $_SERVER["HTTP_HOST"] . $image3;
         } else {
