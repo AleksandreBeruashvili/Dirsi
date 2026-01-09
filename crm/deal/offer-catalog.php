@@ -758,7 +758,7 @@ if (count($bade)) {
 <div style="page-break-before: always;"></div>
 
 <div class="sartulinew" id="sartulinew"> </div>
-<div class="floorplan" id="floorplan"></div>
+<div style="margin-bottom:500px;" class="floorplan" id="floorplan"></div>
 <div class="threeDRender" id="threeDRender"></div>
 
 
