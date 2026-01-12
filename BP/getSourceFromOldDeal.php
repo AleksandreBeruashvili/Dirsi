@@ -7,6 +7,20 @@ function printArr($arr) {
     echo "<pre>"; print_r($arr); echo "</pre>";
 }
 
+
+function getContactInfo($contactId) {
+    $arContact = array();
+    $res = CCrmContact::GetList(array("ID" => "ASC"), array("ID" => $contactId), array());
+    if($arContact = $res->Fetch()){
+        $PHONE=\CCrmFieldMulti::GetList(array(), array('ENTITY_ID' => 'CONTACT','TYPE_ID' => 'PHONE', 'VALUE_TYPE' => 'MOBILE|WORK', "ELEMENT_ID" => $arContact["ID"]))->Fetch();
+        $MAIL=\CCrmFieldMulti::GetList(array(), array('ENTITY_ID' => 'CONTACT','TYPE_ID' => 'EMAIL', 'VALUE_TYPE' => 'HOME|WORK', "ELEMENT_ID" => $arContact["ID"]))->Fetch();
+        $arContact["PHONE"] = $PHONE["VALUE"];
+        $arContact["EMAIL"] = $MAIL["VALUE"];
+        return $arContact;
+    }
+    return $arContact;
+}
+
 // function getPipelineById($categoryId) {
 //     if($categoryId == "0") return "SALES";
 //     else if($categoryId == "4") return "AFTER SALE";
@@ -31,9 +45,13 @@ function printArr($arr) {
 function getDealsByFilter($arFilter, $arSelect = array(), $arSort = array("ID"=>"DESC")) {
 
     $arDeals = array();
-    $arSelect=array("ID","SOURCE_ID");
+    $arSelect=array("ID","SOURCE_ID", "CONTACT_ID");
     $res = CCrmDeal::GetListEx($arSort, $arFilter, false, Array("nPageSize"=>1), $arSelect);
-    while($arDeal = $res->Fetch()) array_push($arDeals, $arDeal);
+
+    while($arDeal = $res->Fetch()) {
+        $arDeal["CONTACT_INFO"] = getContactInfo($arDeal["CONTACT_ID"]);
+        array_push($arDeals, $arDeal);
+    }
     return (count($arDeals) > 0) ? $arDeals : false;
 }
 
@@ -76,19 +94,24 @@ function ckeckDeals($mobileNumber, $dealId) {
 }
 
 $root   = $this->GetRootActivity();
-$dealID = $root->GetVariable("DEAL_ID");
+$dealID = $root->GetVariable("dealID");
+$arFilter = array(
+    "ID" => $dealID,
+);
+$deal = getDealsByFilter($arFilter);
+$rawPhone = $deal[0]["CONTACT_INFO"]["PHONE"];
+
+$cleanedPhone = trim($rawPhone);
+$cleanedPhone = preg_replace('/\D/', '', $cleanedPhone);
+$cleanedPhone = substr($cleanedPhone, -10);
 
 
-$dealId = $_GET["dealId"];
-$rawPhone = $_GET["phone"] ?? '';
-$cleanedPhone = preg_replace('/\D/', '', $rawPhone); // ყველა არასაციფრო სიმბოლოს მოცილება
 
 $resArray = [];
 
 if (strlen($cleanedPhone) >= 9) {
-    $searchPhone = substr($cleanedPhone, -10); // ბოლო 10 ციფრი – რუსულზე მუშაობს
 
-    $resDeals = ckeckDeals($searchPhone, $dealId);
+    $resDeals = ckeckDeals($cleanedPhone, $dealID);
 
     $resArray["status"] = 200;
     $resArray["message"] = "OK";
