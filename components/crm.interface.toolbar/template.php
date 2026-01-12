@@ -411,6 +411,10 @@ if($dealId){
 <script>
 (function() {
     'use strict';
+
+    if (window.__dealToolbarInitialized) return;
+    window.__dealToolbarInitialized = true;
+
     
     // ===== კონფიგურაცია =====
     const CONFIG = {
@@ -754,6 +758,22 @@ if($dealId){
 
     // ===== ღილაკების მენეჯერი =====
     const ButtonManager = {
+
+
+        _observer: null,
+
+        initObserver() {
+            if (this._observer) return;
+
+            this._observer = new MutationObserver(() => {
+                this.initButtons();
+            });
+
+            this._observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        },
         buttonsAdded: new Set(),
         
         addButton(config) {
@@ -972,6 +992,9 @@ if($dealId){
         },
         
         setupPaymentsTab() {
+            if (this._paymentsBound) return;
+            this._paymentsBound = true;
+
             const paymentsBtn = document.getElementById('crm_scope_detail_c_deal__tab_lists_21');
             if (!paymentsBtn) return;
             
@@ -994,6 +1017,11 @@ if($dealId){
         },
         
         setupPaymentPlanTab() {
+
+            if (this._paymentPlanBound) return;
+            this._paymentPlanBound = true;
+
+
             const planBtn = document.getElementById('crm_scope_detail_c_deal__tab_lists_20');
             if (!planBtn) return;
             
@@ -1039,26 +1067,38 @@ if($dealId){
             }
         },
         
+        // startPolling() {
+        //     setInterval(() => this.update(), CONFIG.POLL_INTERVAL);
+        // }
+
         startPolling() {
-            setInterval(() => this.update(), CONFIG.POLL_INTERVAL);
+            if (this._started) return;
+            this._started = true;
+
+            this._timer = setInterval(() => {
+                this.update();
+            }, CONFIG.POLL_INTERVAL);
         }
+
     };
 
     // ===== UI მონიტორი =====
     const UIMonitor = {
         startPolling() {
-            // Termination popup მონიტორინგი
-            setInterval(() => {
+            if (this._started) return;
+            this._started = true;
+
+            this._terminationTimer = setInterval(() => {
                 DOMManager.hideTerminationAcceptButton();
             }, 100);
-            
-            // სექციების ხილვადობის მონიტორინგი
+
             if (pathname[1] === 'crm' && pathname[2] === 'deal' && pathname[4] !== '0') {
-                setInterval(() => {
+                this._sectionTimer = setInterval(() => {
                     TabVisibilityManager.updateSectionVisibility(deal['STAGE_ID']);
                 }, CONFIG.POLL_INTERVAL);
             }
         }
+
     };
 
     // ===== ინიციალიზაცია =====
@@ -1069,11 +1109,11 @@ if($dealId){
         // More ღილაკის დამალვა
         DOMManager.hideMoreButton();
         
-        // ღილაკების ინიციალიზაცია
-        const observer = new MutationObserver(() => {
-            ButtonManager.initButtons();
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
+
+        // const observer = new MutationObserver(() => {
+        //     ButtonManager.initButtons();
+        // });
+        // observer.observe(document.body, { childList: true, subtree: true });
         
         // სტეიჯების ბლოკირება
         StageBlocker.init();
@@ -1086,6 +1126,10 @@ if($dealId){
         // მონიტორინგის დაწყება
         StageMonitor.startPolling();
         UIMonitor.startPolling();
+
+
+        ButtonManager.initObserver();
+
     }
 
     // დოკუმენტის მზადყოფნის შემდეგ
