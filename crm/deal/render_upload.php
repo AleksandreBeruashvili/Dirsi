@@ -85,7 +85,15 @@ if (!empty($_POST)) {
                                 array("102" => $fileArray)
                             );
                             $successCount++;
-                        } else {
+                        } elseif ($fileType == "flat_plan") {
+                            // Update Property 101 (flat Planning)
+                            CIBlockElement::SetPropertyValuesEx(
+                                $element["ID"], 
+                                14, 
+                                array("101" => $fileArray)
+                            );
+                            $successCount++;
+                        }else {
                             // Fallback: If neither is selected, update the standard PREVIEW_PICTURE
                             $el = new CIBlockElement;
                             $updateResult = $el->Update($element["ID"], array("PREVIEW_PICTURE" => $fileArray));
@@ -136,6 +144,8 @@ if (!empty($_POST)) {
                     <option value="">Select file type</option>
                     <option value="3d_render">3D Render</option>
                     <option value="floor_plan">Floor Planning</option>
+                    <option value="flat_plan">Flat Planning</option>
+
                 </select>
             </div>
 
