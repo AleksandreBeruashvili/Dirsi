@@ -1466,32 +1466,74 @@ function createLeadsChart() {
         window.open(url, "_blank"); // ან გამოიყენე: window.location.href = url;
     }
     document.addEventListener('DOMContentLoaded', function () {
-        const startDateInput = document.getElementById("startDate");
-        const endDateInput = document.getElementById("endDate");
+    const startDateInput = document.getElementById("startDate");
+    const endDateInput = document.getElementById("endDate");
 
-        // Helper: dd/mm/yyyy → yyyy-mm-dd
-        function convertToInputDateFormat(dateStr) {
-            const [day, month, year] = dateStr.split('/');
-            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    // Helper: dd/mm/yyyy → yyyy-mm-dd with validation
+    function convertToInputDateFormat(dateStr) {
+        // Check if dateStr is valid
+        if (!dateStr || typeof dateStr !== 'string') {
+            console.warn('Invalid date string:', dateStr);
+            return '';
         }
-
-        if (startDateInput && datestartfilter1) {
-            startDateInput.value = convertToInputDateFormat(datestartfilter1);
+        
+        const parts = dateStr.split('/');
+        
+        // Validate that we have exactly 3 parts
+        if (parts.length !== 3) {
+            console.warn('Invalid date format:', dateStr);
+            return '';
         }
-
-        if (endDateInput && dateandfilter1) {
-            endDateInput.value = convertToInputDateFormat(dateandfilter1);
+        
+        const [day, month, year] = parts;
+        
+        // Validate each part exists
+        if (!day || !month || !year) {
+            console.warn('Missing date components:', dateStr);
+            return '';
         }
+        
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
 
-        // გლობალურ ცვლადებში ვინახავთ Date ობიექტებად
+    // Set start date with fallback
+    if (startDateInput) {
+        const convertedStart = convertToInputDateFormat(datestartfilter1);
+        if (convertedStart) {
+            startDateInput.value = convertedStart;
+        } else {
+            // Fallback to first day of current month
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            startDateInput.value = firstDay.toISOString().split('T')[0];
+        }
+    }
+
+    // Set end date with fallback
+    if (endDateInput) {
+        const convertedEnd = convertToInputDateFormat(dateandfilter1);
+        if (convertedEnd) {
+            endDateInput.value = convertedEnd;
+        } else {
+            // Fallback to today
+            const today = new Date();
+            endDateInput.value = today.toISOString().split('T')[0];
+        }
+    }
+
+    // Set global date variables
+    if (startDateInput.value) {
         const startParts = startDateInput.value.split('-'); // yyyy-mm-dd
-        const endParts = endDateInput.value.split('-');
-
         datestartfilter = new Date(startParts[0], startParts[1] - 1, startParts[2]);
+    }
+    
+    if (endDateInput.value) {
+        const endParts = endDateInput.value.split('-');
         dateandfilter = new Date(endParts[0], endParts[1] - 1, endParts[2]);
+    }
 
-        updateReport();
-    });
+    updateReport();
+});
 
 
 </script>
