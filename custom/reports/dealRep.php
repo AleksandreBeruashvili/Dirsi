@@ -80,7 +80,7 @@ function divideIntoMonths($start_date, $end_date) {
 
 function getDealsByFilter($arFilter, $arSelect = array(), $arSort = array("ID"=>"DESC")) {
     $arDeals = array();
-    $arSelect = array("ID","OPPORTUNITY", "STAGE_ID", "DATE_CREATE", "SOURCE_ID", "ASSIGNED_BY_ID", "UF_CRM_1734504938483");
+    $arSelect = array("ID","OPPORTUNITY", "STAGE_ID", "DATE_CREATE", "SOURCE_ID", "ASSIGNED_BY_ID", "UF_CRM_1761575156657");
     
     // Validate filter dates before querying
     if (isset($arFilter[">=DATE_CREATE"]) && empty($arFilter[">=DATE_CREATE"])) {
@@ -142,14 +142,9 @@ if (!empty($startDateParam)) {
     $startdateineed = $firstDayOfMonth->format('d.m.Y');
 }
 
-// CRITICAL: Verify dates are not empty
-if (empty($startdateineed) || empty($dateineed)) {
-    die("Fatal Error: Date initialization failed. Start: '$startdateineed', End: '$dateineed'");
-}
-
-// For display in JavaScript
-$formattedCurrentDate1 = $currentDate->format('d/m/Y');
-$formattedFirstMonday1 = $firstDayOfMonth->format('d/m/Y');
+// DEBUG: Log the dates being used
+error_log("Start date for query: " . $startdateineed);
+error_log("End date for query: " . $dateineed);
 
 // Create filter with verified dates
 $arfilter = array(
@@ -158,21 +153,21 @@ $arfilter = array(
     "CATEGORY_ID" => 0,
 );
 
-// Debug output - check your PHP error log
-error_log("=== Date Filter Debug ===");
-error_log("Start Date Input: " . $startDateParam);
-error_log("End Date Input: " . $endDateParam);
-error_log("Formatted Start: " . $startdateineed);
-error_log("Formatted End: " . $dateineed);
-error_log("Filter Array: " . print_r($arfilter, true));
+// DEBUG: Check what the filter looks like
+error_log("Filter being used: " . print_r($arfilter, true));
 
 $deals = getDealsByFilter($arfilter);
 
-if ($deals === false) {
-    error_log("No deals found for filter: " . print_r($arfilter, true));
-}
-    // printArr(count($deals));
+// DEBUG: Check results
+error_log("Deals returned: " . (is_array($deals) ? count($deals) : 'false/null'));
 
+if ($deals === false || empty($deals)) {
+    error_log("WARNING: No deals found!");
+    // Try a simpler query to test
+    $testFilter = array("CATEGORY_ID" => 0);
+    $testDeals = getDealsByFilter($testFilter);
+    error_log("Test query (all deals in category 0): " . (is_array($testDeals) ? count($testDeals) : 'none'));
+}
 
     $fbData = array(
         "Leads" => 0,
@@ -193,7 +188,7 @@ $sources = [];
 
 $reasonMap = [];
 
-$rsEnum = \CUserFieldEnum::GetList([], ['USER_FIELD_NAME' => 'UF_CRM_1734504938483']);
+$rsEnum = \CUserFieldEnum::GetList([], ['USER_FIELD_NAME' => 'UF_CRM_1761575156657']);
 while ($arEnum = $rsEnum->GetNext()) {
     $reasonMap[$arEnum['ID']] = $arEnum['VALUE'];
 }
@@ -206,7 +201,7 @@ if ($deals) {
 
         $fbData["Leads"]++;
 
-        $reasonId = $deal['UF_CRM_1734504938483'];
+        $reasonId = $deal['UF_CRM_1761575156657'];
 
         if (is_array($reasonId)) {
             $reasonNames = array_map(function($id) use ($reasonMap) {
@@ -625,7 +620,7 @@ $user_id = $USER->GetID();
             <label for="endDate">To:</label>
             <input type="date" id="endDate" name="endDate">
             <button type="submit" class="refresh-btn" onclick="updateReport()">Refresh</button>
-            <button type="button" class="redirect-btn" onclick="redirectToLifeCycle()">Go to Lifecycle Report</button>
+            <button style="display:none;" type="button" class="redirect-btn" onclick="redirectToLifeCycle()">Go to Lifecycle Report</button>
         </form>
     </div>
     </div>
@@ -1469,32 +1464,33 @@ function createLeadsChart() {
     const startDateInput = document.getElementById("startDate");
     const endDateInput = document.getElementById("endDate");
 
-    // Helper: dd/mm/yyyy → yyyy-mm-dd with validation
-    function convertToInputDateFormat(dateStr) {
-        // Check if dateStr is valid
-        if (!dateStr || typeof dateStr !== 'string') {
-            console.warn('Invalid date string:', dateStr);
-            return '';
-        }
-        
-        const parts = dateStr.split('/');
-        
-        // Validate that we have exactly 3 parts
-        if (parts.length !== 3) {
-            console.warn('Invalid date format:', dateStr);
-            return '';
-        }
-        
-        const [day, month, year] = parts;
-        
-        // Validate each part exists
-        if (!day || !month || !year) {
-            console.warn('Missing date components:', dateStr);
-            return '';
-        }
-        
-        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+function convertToInputDateFormat(dateStr) {
+    // Check if dateStr is valid
+    if (!dateStr || typeof dateStr !== 'string') {
+        console.warn('Invalid date string:', dateStr);
+        return '';
     }
+    
+    // Replace dots with slashes to handle both formats
+    const normalizedDate = dateStr.replace(/\./g, '/');
+    const parts = normalizedDate.split('/');
+    
+    // Validate that we have exactly 3 parts
+    if (parts.length !== 3) {
+        console.warn('Invalid date format:', dateStr);
+        return '';
+    }
+    
+    const [day, month, year] = parts;
+    
+    // Validate each part exists
+    if (!day || !month || !year) {
+        console.warn('Missing date components:', dateStr);
+        return '';
+    }
+    
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+}
 
     // Set start date with fallback
     if (startDateInput) {
