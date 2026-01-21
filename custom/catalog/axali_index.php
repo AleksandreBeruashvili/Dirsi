@@ -479,8 +479,8 @@ ob_end_clean();
             font-weight: 600;
             color: #333;
             border-right: 3px solid #5a7dff;
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -497,14 +497,14 @@ ob_end_clean();
 
         /* ===================== APARTMENT TILE ===================== */
         .apt {
-            width: 30px;     
-            height: 30px;     
+            width: 40px;     
+            height: 40px;     
             border-radius: 6px; 
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 10px;
+            font-size: 12px;
             font-weight: 600;
             color: #fff;
             cursor: pointer;
@@ -520,8 +520,9 @@ ob_end_clean();
 
         /* when filtered - dim down */
         .dimmed {
-            opacity: 0.35;        /* dim the apartment */
-            filter: grayscale(60%); /* optional: add subtle gray */
+            display: none;
+            /* opacity: 0.35;  
+            filter: grayscale(60%);  */
             pointer-events: none;  /* optional: prevent click */
         }
 
@@ -1815,14 +1816,14 @@ ob_end_clean();
         // Calculate width for each block (30px per apt + 5px gap between apts)
         const blockWidths = {};
         Object.entries(maxApartmentsPerBlock).forEach(([blockName, maxCount]) => {
-            blockWidths[blockName] = (maxCount * 30) + ((maxCount - 1) * 5);
+            blockWidths[blockName] = (maxCount * 40) + ((maxCount - 1) * 5);
         });
 
         // Render block labels with calculated widths
         let blockLabel = `<div class="floor-row" id="block-labels">`;
         selectedBlocks.forEach(block => {
             const width = blockWidths[block] || 350; // fallback to 350px if no data
-            blockLabel += `<div id="label-div" style="width: ${width}px; display: flex; align-items: center; justify-content: center; gap: 5px; height: 30px; flex-shrink: 0;"><div>${block}</div></div>`;
+            blockLabel += `<div id="label-div" style="width: ${width}px; display: flex; align-items: center; justify-content: center; gap: 5px; height: 40px; flex-shrink: 0;"><div>${block}</div></div>`;
         });
         blockLabel += `</div>`;
         container.innerHTML += blockLabel;
@@ -1872,7 +1873,7 @@ ob_end_clean();
                         class="blockOnFloor"
                         data-floor="${floor[0]["FLOOR"]}"
                         data-block="${blockName}"
-                        style="height:30px; width: ${width}px; flex-shrink: 0;">`;
+                        style="height:40px; width: ${width}px; flex-shrink: 0;">`;
 
                 if (blockOnFloor.length > 0) {
                     blockOnFloor.forEach(apartment => {
@@ -1897,7 +1898,7 @@ ob_end_clean();
                                         data-floor="${apartment["FLOOR"]}"
                                         data-block="${blockThingy}"
                                         style="transform: scale(1.2); outline: 2px solid #ff343a;">
-                                        <div style="font-size: 8px;">${apartment["Number"]}</div> <div>${apartment["TOTAL_AREA"]}</div>
+                                        <div style="font-size: 10px;">${apartment["Number"]}</div> <div>${apartment["TOTAL_AREA"]}</div>
                                 </div>`;
                         } else {
                             blockOnFloorDiv += `<div class="apt ${statusClass}"
@@ -1905,7 +1906,7 @@ ob_end_clean();
                                             data-status="${apartment["STATUS"]}"
                                             data-floor="${apartment["FLOOR"]}"
                                             data-block="${blockThingy}">
-                                            <div style="font-size: 8px;">${apartment["Number"]}</div> <div>${apartment["TOTAL_AREA"]}</div>
+                                            <div style="font-size: 10px;">${apartment["Number"]}</div> <div>${apartment["TOTAL_AREA"]}</div>
                                     </div>`;
                         }
 
