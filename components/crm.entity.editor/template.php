@@ -1018,11 +1018,82 @@ if (!empty($htmlEditorConfigs))
 <script>
     pathname = window.location.pathname.split("/");
 
+	if(pathname[1] == "crm" && pathname[2] == "deal" ){
+
+		setInterval(() => {
+
+			var mindobili ;
+
+			mindobiliField = document.querySelectorAll("[name='UF_CRM_1768474313814']")[1];
+
+			if(mindobiliField){
+				mindobili=mindobiliField.checked;
+			}else{
+
+				mindobiliBlock = document.querySelector("[data-cid='UF_CRM_1768474313814']")?.children[3];
+				if(!mindobiliBlock) {
+					mindobiliBlock = document.querySelector("[data-cid='UF_CRM_1768474313814']")?.children[2];
+				}
+
+				if(mindobiliBlock){
+					if(mindobiliBlock.childElementCount > 0){
+						mindobiliText=mindobiliBlock.children[0].children[0].innerText;
+						if(mindobiliText == "no"){
+							mindobili=false;
+						}else{
+							mindobili=true;
+						}
+					}else{
+						mindobili=false; //field is empty წერია
+					}
+				}
 
 
 
-    setInterval(() => {
-		if (pathname[1] == "crm" && pathname[2] == "deal" && pathname[4] == "0") {
+			}
+
+			if( mindobili == false){
+				user_przgbwsb = document.querySelector("[data-cid='user_przgbwsb']");
+				if (user_przgbwsb) {
+					user_przgbwsb.style.display = "none";
+				}
+			}else{
+				user_przgbwsb = document.querySelector("[data-cid='user_przgbwsb']");
+				if (user_przgbwsb) {
+					user_przgbwsb.style.display = "";
+				}
+			}
+
+
+
+			// let powerOfAttorneyCheckbox = document.querySelector('input[name="UF_CRM_1768474313814"]');
+			// if (powerOfAttorneyCheckbox) {
+			// 	powerOfAttorneyCheckbox.addEventListener('change', function() {
+			// 		if (this.checked) {
+			// 			console.log("მოინიშნა");
+			// 			user_przgbwsb = document.querySelector("[data-cid='user_przgbwsb']");
+			// 			if (user_przgbwsb) {
+			// 				user_przgbwsb.style.display = "";
+			// 			}
+
+			// 		}else{
+			// 			user_przgbwsb = document.querySelector("[data-cid='user_przgbwsb']");
+			// 			if (user_przgbwsb) {
+			// 				user_przgbwsb.style.display = "none";
+			// 			}
+
+			// 		}
+			// 	});
+			// }
+		}, 1000);
+
+	}
+
+
+
+	if (pathname[1] == "crm" && pathname[2] == "deal" && pathname[4] == "0") {
+
+		setInterval(() => {
 			const realEstateSection = document.querySelector("[data-cid='user_qo1d69qy']");
 			if (realEstateSection) {
 				realEstateSection.style.display = "none";
@@ -1037,9 +1108,7 @@ if (!empty($htmlEditorConfigs))
 			if (agr) {
 				agr.style.display = "none";
 			}
-		}
-
-    }, 500);
-
+		}, 500);
+	}
 
 </script>

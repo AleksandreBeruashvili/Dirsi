@@ -20,12 +20,28 @@ if ($USER->IsAuthorized()) {
     const userID = <?php echo $userID; ?>;
 	url = <? echo json_encode($url); ?>;
 
+
     if(userID !== 1){
-        // ვერ შეცვალონ ეტაპი გარე ხედვით
-            console.log(url)
             if (url[0] == "crm" && url[1] == "deal"){ 
-                console.log("kanban")
                 setInterval(() => {
+
+                    header=document.getElementById("air-header-menu");
+                    if(header){
+                        header.style.display = "none";
+                    }
+                    sidePanel=document.querySelector(".menu-items-body");
+                    if(sidePanel){
+                        sidePanel.style.display = "none";
+                    }
+
+                    sidePanel2=document.querySelector(".menu-items-footer");
+                    if(sidePanel2){
+                        sidePanel2.style.display = "none";
+                    }
+
+
+
+
                     // ლისტ ხედვა
                     stageCvlileba=document.querySelectorAll('.crm-list-stage-bar-table');
                     if(stageCvlileba){        
@@ -66,43 +82,43 @@ if ($USER->IsAuthorized()) {
     }
 
 
-setTimeout(() => {
-    // CSS დამატება loader-ის დასამალად
-    const style = document.createElement('style');
-    style.textContent = `
-        .gt_loader,
-        .gt-loading,
-        .gtranslate-loading,
-        .skiptranslate .goog-te-spinner-pos,
-        .goog-te-spinner-animation {
-            display: none !important;
+    setTimeout(() => {
+        // CSS დამატება loader-ის დასამალად
+        const style = document.createElement('style');
+        style.textContent = `
+            .gt_loader,
+            .gt-loading,
+            .gtranslate-loading,
+            .skiptranslate .goog-te-spinner-pos,
+            .goog-te-spinner-animation {
+                display: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        const settingsScript = document.createElement('script');
+        settingsScript.textContent = `
+            window.gtranslateSettings = {
+                "default_language":"en",
+                "languages":["ka","en","ru"],
+                "wrapper_selector":".gtranslate_wrapper",
+                "flag_size":24
+            };
+        `;
+        document.body.appendChild(settingsScript);
+
+        const gtranslateScript = document.createElement('script');
+        gtranslateScript.src = "https://cdn.gtranslate.net/widgets/latest/flags.js";
+        gtranslateScript.defer = true;
+        document.body.appendChild(gtranslateScript);
+
+        var logo = document.getElementsByClassName('menu-items-header');
+
+        if(logo && logo[0]){
+            var translatehtml = `<div class="gtranslate_wrapper"></div>`;
+            logo[0].insertAdjacentHTML('afterbegin', translatehtml);
         }
-    `;
-    document.head.appendChild(style);
-
-    const settingsScript = document.createElement('script');
-    settingsScript.textContent = `
-        window.gtranslateSettings = {
-            "default_language":"en",
-            "languages":["ka","en","ru"],
-            "wrapper_selector":".gtranslate_wrapper",
-            "flag_size":24
-        };
-    `;
-    document.body.appendChild(settingsScript);
-
-    const gtranslateScript = document.createElement('script');
-    gtranslateScript.src = "https://cdn.gtranslate.net/widgets/latest/flags.js";
-    gtranslateScript.defer = true;
-    document.body.appendChild(gtranslateScript);
-
-    var logo = document.getElementsByClassName('menu-items-header');
-
-    if(logo && logo[0]){
-        var translatehtml = `<div class="gtranslate_wrapper"></div>`;
-        logo[0].insertAdjacentHTML('afterbegin', translatehtml);
-    }
-}, 3000);
+    }, 3000);
 
 </script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
