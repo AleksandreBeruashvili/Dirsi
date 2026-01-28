@@ -21,27 +21,27 @@ if ($USER->IsAuthorized()) {
 	url = <? echo json_encode($url); ?>;
 
 
+
+
     if(userID !== 1){
+        setInterval(() => {
+    
+            header=document.getElementById("air-header-menu");
+            if(header){
+                header.style.display = "none";
+            }
+            sidePanel=document.querySelector(".menu-items-body");
+            if(sidePanel){
+                sidePanel.style.display = "none";
+            }
+
+            sidePanel2=document.querySelector(".menu-items-footer");
+            if(sidePanel2){
+                sidePanel2.style.display = "none";
+            }
+
             if (url[0] == "crm" && url[1] == "deal"){ 
-                setInterval(() => {
-
-                    header=document.getElementById("air-header-menu");
-                    if(header){
-                        header.style.display = "none";
-                    }
-                    sidePanel=document.querySelector(".menu-items-body");
-                    if(sidePanel){
-                        sidePanel.style.display = "none";
-                    }
-
-                    sidePanel2=document.querySelector(".menu-items-footer");
-                    if(sidePanel2){
-                        sidePanel2.style.display = "none";
-                    }
-
-
-
-
+                
                     // ლისტ ხედვა
                     stageCvlileba=document.querySelectorAll('.crm-list-stage-bar-table');
                     if(stageCvlileba){        
@@ -67,8 +67,9 @@ if ($USER->IsAuthorized()) {
                         }, true);
                     });
                         
-                }, 500);
+                
             }
+        }, 500);
         //
 
         
