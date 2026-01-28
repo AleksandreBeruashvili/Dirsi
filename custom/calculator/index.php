@@ -974,6 +974,7 @@ function initializeEventListeners() {
  * ფაილის ატვირთვა
  */
 async function handleFileUpload(event) {
+
     const file = event.target.files[0];
     if (!file) return;
     
@@ -992,6 +993,7 @@ async function handleFileUpload(event) {
         
         if (data.status === 200) {
             showMessage('', 'success');
+     
             fillGraph(data);
             
             if (CONFIG.hasProduct) {
@@ -1477,6 +1479,46 @@ async function getAndFillGraph() {
  * გრაფიკის შევსება
  */
 function fillGraph(data) {
+
+    let fasdaklebaTanxa=0;
+    if(data.PRICE && CONFIG.oldPrice){
+        fasdaklebaTanxa=parseFormattedNumber(CONFIG.oldPrice)-parseFormattedNumber(data.PRICE);
+        setValue('discountNum', formatNumber(fasdaklebaTanxa));
+    }
+
+
+    if(data.PRICE) {
+        const newPrice = parseFormattedNumber(data.PRICE);
+        const totalKVM = parseFormattedNumber(getValue('total_kvm')) || 1;
+        const kvmPrice = totalKVM > 0 ? (newPrice / totalKVM) : 0;
+        
+        setValue('price', formatNumber(newPrice));
+        setValue('priceGel', formatNumber(newPrice * CONFIG.nbgKursi));
+        setValue('kvmPrice', formatNumber(kvmPrice));
+        setValue('kvmPriceGel', formatNumber(kvmPrice * CONFIG.nbgKursi));
+
+        // მშობელი form-row-ის დამალვა
+        const bookPayDateField = document.getElementById('bookPayDate');
+        if (bookPayDateField) {
+            const formRow = bookPayDateField.closest('.form-row');
+            if (formRow) {
+                formRow.classList.add('hidden');
+                formRow.style.display = 'none';
+            }
+        }
+        const bookPaymentField = document.getElementById('bookPayment');
+        if (bookPaymentField) {
+            const formRow = bookPaymentField.closest('.form-row');
+            if (formRow) {
+                formRow.classList.add('hidden');
+                formRow.style.display = 'none';
+            }
+        }
+
+    }
+
+
+
     const selectedType = document.getElementById('type_select').value;
     const isEditable = selectedType === "customType";
     
