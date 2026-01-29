@@ -667,14 +667,14 @@ $nbgKursi = getNBGkursi($dateForNBG);
 
     <!-- გადახდების თარიღები და თანხები -->
     <div class="form-row element-to-hide">
-        <div class="form-field">
+        <div class="form-field"  style="display: none;">
             <label>ჯავშნის თარიღი</label>
             <input id="bookPayDate" class="form-control green-border" type="text" 
                    placeholder="dd/mm/YYYY" autocomplete="off"
                    onclick="BX.calendar({node: this, field: this, bTime: false, bSetFocus: false})">
         </div>
 
-        <div class="form-field">
+        <div class="form-field"  style="display: none;">
             <label>ჯავშნის ავანსი $</label>
             <input id="bookPayment" class="form-control green-border" 
                    oninput="validateNumericInput(event,this)" 
