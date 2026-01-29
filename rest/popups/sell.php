@@ -68,7 +68,7 @@ $deal = getDealInfoByIDToolbar($dealId);
         </div>
 
         <div id="SellAttachDiv" class="bizproc-modern-type-control-container documentsSell" style="margin: 20px 0 17px 0;">
-            <span style="display: block; margin: 0 0 15px 0; font-size: 13px; color: #80868e;">დანართი:</span>
+            <span style="display: block; margin: 0 0 15px 0; font-size: 13px; color: #80868e;">დოკუმენტის ასლი:</span>
             <input id="sellAttach" type="file" onchange="fileShetvirtva('sellAttach')" />
             <input id="sellAttachText" type="hidden" />
         </div>
@@ -215,6 +215,8 @@ $(document).ready(function() {
 });
 
 
+    if (!window.gtranslateInitialized) {
+        window.gtranslateInitialized = true;
         setTimeout(() => {
             // დავამატოთ GTranslate-ის პარამეტრები
             const settingsScript = document.createElement('script');
@@ -245,7 +247,7 @@ $(document).ready(function() {
                 reservationForm.parentNode.insertBefore(translateHtml, reservationForm);
             }
         }, 3000);
-
+    }
 
 </script>
 </body>

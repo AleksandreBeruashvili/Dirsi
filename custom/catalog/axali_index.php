@@ -2208,12 +2208,12 @@ ob_end_clean();
         }
 
         if (apartment["OWNER_CONTACT"]) {
-            linkshtmlContact = `<a href="//146.255.242.182/crm/contact/details/${apartment["OWNER_CONTACT"]}/" target="_blank">${apartment["OWNER_CONTACT_NAME"]}</a>`;
+            linkshtmlContact = `<a href="//https://crmasgroup.ge/crm/contact/details/${apartment["OWNER_CONTACT"]}/" target="_blank">${apartment["OWNER_CONTACT_NAME"]}</a>`;
             detailsList.innerHTML += `<li><b>კონტაქტი: </b><span>${linkshtmlContact}</span></li>`;
         }
         
         if (apartment["DEAL_RESPONSIBLE"]) {
-            linkshtmlResponsible = `<a href="//146.255.242.182/company/personal/user/${apartment["DEAL_RESPONSIBLE"]}/" target="_blank">${apartment["DEAL_RESPONSIBLE_NAME"]}</a>`;
+            linkshtmlResponsible = `<a href="//https://crmasgroup.ge/company/personal/user/${apartment["DEAL_RESPONSIBLE"]}/" target="_blank">${apartment["DEAL_RESPONSIBLE_NAME"]}</a>`;
             detailsList.innerHTML += `<li><b>პასუხისმგებელი: </b><span>${linkshtmlResponsible}</span></li>`;
         }
         
