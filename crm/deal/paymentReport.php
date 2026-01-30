@@ -118,21 +118,24 @@ function get_contacts_for_filter($wonDealsContactIDs){
     return $contacts;
 }
 
-function get_deals_for_filter(){
+function get_deals_for_filter($project = null){
     $arSelect=array("TITLE","ID","CONTACT_ID");
     $arrFilter["STAGE_ID"] = "WON";
-    $arrFilter["UF_CRM_1702019032102"] = "322";
-
-    if($_GET["project"]){
-        $arrFilter["UF_CRM_1761658516561"] = $_GET["project"];
+    $arrFilter["UF_CRM_1702019032102"] = "323";
+    
+    // Use the project parameter if provided
+    if($project){
+        $arrFilter["UF_CRM_1761658516561"] = $project;
     }else{
         $arrFilter["UF_CRM_1761658516561"] = "ვარკეთილი 2";
     }
+    
     $arr_deals = CCrmDeal::GetList(array("ID" => "ASC"), $arrFilter, $arSelect);
-    $dealsForFilter[0]="აირჩიეთ კონტაქტი";
+    $dealsForFilter[0]="აირჩიეთ ხელშეკრულება";
     $wonDealsIDs = array();
     $CONTACT_ID = array();
     while($arClnt  = $arr_deals->Fetch()) {
+//    printArr($arClnt);
         $dealsForFilter[$arClnt["ID"]]=$arClnt["TITLE"];
         array_push($wonDealsIDs,$arClnt["ID"]);
         array_push($CONTACT_ID,$arClnt["CONTACT_ID"]);
@@ -160,7 +163,7 @@ function getCIBlockElementsByFilter($arFilter = array(),$sort=array()) {
 
 
 function getDealInfo ($dealID) {
-    $res = CCrmDeal::GetList(array("ID" => "ASC"), array("ID" => $dealID), array("TITLE","ASSIGNED_BY_ID","STAGE_ID","UF_CRM_1693398443196","OPPORTUNITY","CONTACT_ID","CONTACT_FULL_NAME","COMPANY_ID","COMPANY_TITLE","UF_CRM_PB_HOUSE","UF_CRM_1660738949084","UF_CRM_1761658516561","UF_CRM_1712920188845"));
+    $res = CCrmDeal::GetList(array("ID" => "ASC"), array("ID" => $dealID), array("TITLE","ASSIGNED_BY_ID","STAGE_ID","UF_CRM_1693398443196","OPPORTUNITY","CONTACT_ID","CONTACT_FULL_NAME","COMPANY_ID","COMPANY_TITLE","UF_CRM_PB_HOUSE","UF_CRM_1660738949084","UF_CRM_1761658516561","UF_CRM_1712920188845","UF_CRM_1707309740747","UF_CRM_1702018321416","UF_CRM_1702650885089","UF_CRM_1702650778297", "UF_CRM_1693385814530"));
 
     $resArr = array();
     if($arDeal = $res->Fetch()){
@@ -175,7 +178,6 @@ function get_client_debt($arr_dealIDs)
     $CLIENTS_DEBT = array();
     $nextPaymentDate = 0;
     $count = 0;
-    $gadaxdebiCount = 0;
     foreach ($arr_dealIDs as $dealID) {
    
         $array = array();
@@ -187,6 +189,12 @@ function get_client_debt($arr_dealIDs)
         //----------------------------------deal info--------------------------//
         $deal_info = getDealInfo($dealID);
         if($deal_info){
+            $prods = CCrmDeal::LoadProductRows($dealID);
+            $prodID = $prods[0]["PRODUCT_ID"];
+            $arfilter=array("ID"=>$prodID);
+            $product=getCIBlockElementsByFilter($arfilter);
+            $array["product"] = $product;
+
             $userName=getUserName($deal_info["ASSIGNED_BY_ID"]);
             $deal_info["responsName"] = $userName;
         }
@@ -203,15 +211,13 @@ function get_client_debt($arr_dealIDs)
             $nextPaymentDate = 0;
             foreach ($arr_daricxvebi as $arr_daricxva) {
                 if (strtotime(str_replace("/",".",$arr_daricxva["TARIGI"]))<strtotime(date("d.m.Y"))){
-                    if($arr_daricxva["amount_GEL"]){
-                        $array["planedTillToDay"] +=   $arr_daricxva["amount_GEL"];
-                    }
+                    $array["planedTillToDay"] +=  str_replace("|USD", "", $arr_daricxva["TANXA"]);
                 }
                 else if($nextPaymentDate==0){
                     $nextPaymentDate = $arr_daricxva["TARIGI"];
                 }
-                
-                $tanxa = is_numeric($arr_daricxva["amount_GEL"])?$arr_daricxva["amount_GEL"]:0;
+
+                $tanxa = str_replace("|USD", "", $arr_daricxva["TANXA"]);
                 $array["daricxvebi"] += $tanxa;
             }
 
@@ -227,13 +233,14 @@ function get_client_debt($arr_dealIDs)
             $array["GADAXDILI"] = 0;
 
             foreach ($arr_gadaxdebi as $arr_gadaxda) {
+           
                 if($arr_gadaxda["refund"] == "YES"){
-                    $array["GADAXDILI"] -= $arr_gadaxda["tanxa_gel"];
+                    $array["GADAXDILI"] -= str_replace("|USD", "", $arr_gadaxda["TANXA"]);
 
                 }else{
-                    $array["GADAXDILI"] += $arr_gadaxda["tanxa_gel"];
+                    $array["GADAXDILI"] += str_replace("|USD", "", $arr_gadaxda["TANXA"]);
                 }
-                $gadaxdebiCount ++;
+                
             }
 
             $overdue = round($array["planedTillToDay"]-$array["GADAXDILI"],2);
@@ -252,7 +259,7 @@ function get_client_debt($arr_dealIDs)
 
                 foreach ($arr_daricxvebi as $arr_daricxva) {
                    
-                        $hadToPay +=   $arr_daricxva["amount_GEL"];
+                        $hadToPay +=  str_replace("|USD", "", $arr_daricxva["TANXA"]);
 
                         // // printArr($hadToPay);
                         // echo '</br>h: '.$hadToPay.' A:'.$alreadyPayed;
@@ -290,7 +297,6 @@ function get_client_debt($arr_dealIDs)
         }
     }
 
-printArr($gadaxdebiCount);
     return $CLIENTS_DEBT;
 }
 
@@ -344,25 +350,19 @@ function get_sum($array){
     $arr_sum["planedTillToDay"]=0;
     $arr_sum["OPPORTUNITY"]=0;
     $arr_sum["GADAXDILI"]=0;
+    $arr_sum["overdue"] =0;
     for($i=0;$i<count($array);$i++) {
-        if($array[$i]["daricxvebi"]){
-            $arr_sum["daricxvebi"] += $array[$i]["daricxvebi"];
-        }
-        if($array[$i]["daricxvebi"]){
-            $arr_sum["OPPORTUNITY"] += $array[$i]["daricxvebi"];
-        }
-        if($array[$i]["GADAXDILI"]){
-            $arr_sum["GADAXDILI"] += $array[$i]["GADAXDILI"];
-        }
-        if($array[$i]["planedTillToDay"]){
-            $arr_sum["planedTillToDay"] += $array[$i]["planedTillToDay"];
-        }        
+        $arr_sum["daricxvebi"] += $array[$i]["daricxvebi"];
+        $arr_sum["OPPORTUNITY"] += $array[$i]["daricxvebi"];
+        $arr_sum["GADAXDILI"] += $array[$i]["GADAXDILI"];
+        $arr_sum["planedTillToDay"] += $array[$i]["planedTillToDay"];
         if($array[$i]["overdue"]){
             $arr_sum["overdue"] += $array[$i]["overdue"];
         }
+      
     }
-//    printArr($arr_sum["daricxvebi"]);
-    return $arr_sum;
+//    printArr($array);
+    return $arr_sum;    
 }
 
 //======================================code=======================================//
@@ -370,28 +370,28 @@ function get_sum($array){
 $DARICXVA_IBLOCK_ID = 20;
 $PAYMENT_IBLOCK_ID  = 21;
 $IBLOCK_ARR         = array($PAYMENT_IBLOCK_ID,$DARICXVA_IBLOCK_ID);
+
+// Get project parameter with default value
+$project = $_GET["project"] ? $_GET["project"] : "Park Boulevard";
 $client   = $_GET["CLIENT"];
 $contract = $_GET["contract"];
+
+$filter["project"] = $project;
 $filter["CLIENT"]=$client;
 $filter["contract"]=$contract;
 
-$wonDeals       =   get_deals_for_filter();
+// Pass project to get_deals_for_filter
+$wonDeals       =   get_deals_for_filter($project);
 $wonDealsIDs       =  $wonDeals["wonDealsIDs"];
-// printArr($wonDealsIDs);
-if(count($wonDealsIDs)>0){
-    $wonDealsIDs       =  $wonDeals["wonDealsIDs"];
-    $DEALS_FOR_FILTER       =  $wonDeals["dealsForFilter"];
-    $wonDealsContactIDs       =  $wonDeals["CONTACT_ID"];
-    $CONTACTS_FOR_FILTER    =   get_contacts_for_filter($wonDealsContactIDs);
-    $filter_for_element        =   get_elements_filter($IBLOCK_ARR,$client,$contract,$wonDealsIDs);
-}
+$DEALS_FOR_FILTER       =  $wonDeals["dealsForFilter"];
+$wonDealsContactIDs       =  $wonDeals["CONTACT_ID"];
+$CONTACTS_FOR_FILTER    =   get_contacts_for_filter($wonDealsContactIDs);
 
 
-
-
+$filter_for_element        =   get_elements_filter($IBLOCK_ARR,$client,$contract,$wonDealsIDs);
 
 $clients_debt=array();
-$ARR_HEADER=array("კლიენტი","პროექტი", "დილის ID","კომენტარი","ვადაგადაცილების. თარიღი","შემდეგი გადახდა", "კონტრ. ღირებულება","დარიცხული","მიმდ. დავალიანება", "გადახდილი", "დარჩენილი","ვადაგადაცილება (დღე)");
+$ARR_HEADER=array("კლიენტი","პროექტი", "დილის ID","ვადაგადაცილების. თარიღი","შემდეგი გადახდა", "კონტრ. ღირებულება","დარიცხული","მიმდ. დავალიანება", "გადახდილი", "დარჩენილი","ვადაგადაცილება (დღე)");
 if($filter_for_element!=0) {
     $daricxva_gadaxda_elements = getCIBlockElementsByFilter($filter_for_element);
 
@@ -406,16 +406,11 @@ if($filter_for_element!=0) {
             $dealInfo = getDealInfo($element["DEAL"]);
 
             if($dealInfo["STAGE_ID"]=="WON") {
-                $prods = CCrmDeal::LoadProductRows($element["DEAL"]);
-                $prodID=$prods[0]["PRODUCT_ID"];
-                $arFilter = array(
-                    "ID" => $prodID,
-                );
-                $product = getProductProject($arFilter);
-                $productProject=$product[0]['IBLOCK_SECTION_ID'];
-            
-                array_push($arr_deals_with_daricxva_gadaxda, $element["DEAL"]);
+             
 
+
+                array_push($arr_deals_with_daricxva_gadaxda, $element["DEAL"]);
+          
                             
             }
         }
@@ -432,23 +427,20 @@ if($filter_for_element!=0) {
     $JAMEBI["darchenili"]   =round($JAMEBI["OPPORTUNITY"]-$JAMEBI["GADAXDILI"],2);
 
 
-
 }
-
 ob_end_clean();
 
 ?>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>  <!-- delete column-->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
-<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+<script src="/crm/deal/js/xlsx.full.min.js"></script>
 
 <style>
     .head2{
         position: sticky;
         top: 0;
-        z-index: 1000; /* Ensure it's above other content */
+        z-index: 1000;
     }
     .tabler {
         border: 1px solid #242424;
@@ -463,7 +455,6 @@ ob_end_clean();
     }
     .tabler thead tr th {
         border: 1px solid #fdfcfc;
-
         padding: 10px;
         background: #585858;
         color: #ffffff;
@@ -484,51 +475,10 @@ ob_end_clean();
         border-radius: 5px;
         margin-left: 10px;
         font-size: 16px;
-
-
-    }
-
-    #menu-items-block{
-        display:none;
-    }
-
-    #header{
-        display:none;
-
-    }
-
-    .page__toolbar{
-        display: none;
-    }
-
-    .app__page {
-        padding-left: 0;
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-    }
-
-    .page__workarea-content {
-        padding: 15px;
-        flex: 1;
-        background-color: var(--ui-color-background-primary);
-        border-radius: 0;
-        overflow: hidden;
-        position: relative;
-        height: 800px;
-        width: 100%;
-
-    }
-
-    .app__footer{
-
-    display:none;
-
-
     }
 
     .excel-export-button {
-        background-color: #4CAF50; /* Green background color */
+        background-color: #4CAF50;
         border: none;
         color: white;
         padding: 10px 20px;
@@ -540,16 +490,13 @@ ob_end_clean();
         border-radius: 4px;
     }
 
-    /* Hover effect */
     .excel-export-button:hover {
-        background-color: #45a049; /* Darker green background color */
+        background-color: #45a049;
     }
 
-    /* Active (clicked) state */
     .excel-export-button:active {
-        background-color: #3e8e41; /* Even darker green background color */
+        background-color: #3e8e41;
     }
-
     .header{
         display: flex;
         justify-content: center;
@@ -559,25 +506,21 @@ ob_end_clean();
 </style>
 
 <div style="width: 100%;height: 70px">
-    <form>
+    <form method="get">
         <table>
             <tr>
                 <td><label>პროექტი: </label></td>
                 <td><label>კლიენტი: </label></td>
                 <td><label>ხელშეკრულება: </label></td>
-                <td><label>ვადაგადაცილება: </label></td>
             </tr>
             <tr>
-            <td>
-                    <select name="project" class="dropdown" id="project" >
+                <td>
+                    <select name="project" class="dropdown" id='project' onchange="handleProjectChange()">
                         <option value="Park Boulevard">Park Boulevard</option>
-               
-
-
                     </select>
                 </td>
                 <td>
-                    <select name="CLIENT" id="CLIENT" class="CLIENT dropdown">
+                    <select name="CLIENT" id="CLIENT" class="CLIENT dropdown" onchange="handleClientChange()">
                     </select>
                 </td>
 
@@ -585,13 +528,7 @@ ob_end_clean();
                     <select name="contract" id="contract" CLASS="CONTRACT dropdown">
                     </select>
                 </td>
-                <td>
-                    <select name="Overdue" id="Overdue" CLASS="Overdue dropdown" onchange="selectOverdues()">
-                        <option value="all" selected>ყველა</option>
-                        <option value="Overdue">ვადაგადაცილებული</option>
-                        <option value="OnTime">გეგმიური</option>
-                    </select>
-                </td>
+                
                 <td>
                     <input type="submit" CLASS="submitBTN" value="ძიება">
                 </td>
@@ -599,99 +536,128 @@ ob_end_clean();
         </table>
     </form>
 </div>
-<!-- <div class="header"> დავალიანების რეპორტი ლარებში </div> -->
 <div id="count"></div>
+
+<div>ვადაგადაცილება</div>
+<select name="Overdue" id="Overdue" CLASS="Overdue dropdown" onchange="selectOverdues()">
+    <option value="all" selected>ყველა</option>
+    <option value="Overdue">ვადაგადაცილებული</option>
+    <option value="OnTime">გეგმიური</option>
+</select>
+
+<div class="header"> დავალიანების რეპორტი დოლარებში </div>
 <div style="float: right" >
     <button onclick="exportProd1();" id="exportBtn" class="excel-export-button" hidden><i>Export</i></button>
 </div>
 
+<div>
 <div style="max-height: 400px; overflow-y: auto; scroll-behavior: smooth;">
+
     <table class="tabler" id="table">
-        <thead>
-            <tr id="head1" style="border-bottom: 7px solid white"></tr>
-            <tr id="head2" class="head2"></tr>
-        </thead>
-        <tbody id="body1"></tbody>
+    <thead >
+    <tr id="head1" style="border-bottom: 7px solid white"> </tr>
+    <tr id="head2" class = "head2"> </tr>
+    </thead>
+    <tbody id="body1"></tbody>
     </table>
 </div>
 
-
 <script>
+    // Store all deals for filtering
+    var allDealsData = <?php echo json_encode($DEALS_FOR_FILTER); ?>;
+    var allContactsData = <?php echo json_encode($CONTACTS_FOR_FILTER); ?>;
+    var clientsDebtData = <?php echo json_encode($clients_debt,JSON_UNESCAPED_UNICODE);?>;
 
     fillClient();
     fillContract();
     fillHead1();
     fillHead2();
     fillBody();
-    // delete_empty_coll();
 
     $arParams=<?echo json_encode($filter,JSON_UNESCAPED_UNICODE);?>;
 
-    $("select[name='CLIENT']").val($arParams["CLIENT"]);
-    $("select[name='contract']").val($arParams["contract"]);
+    // Set selected values after dropdowns are populated
+    setTimeout(function() {
+        if($arParams["project"]) $("#project").val($arParams["project"]).trigger('change');
+        if($arParams["CLIENT"]) $("#CLIENT").val($arParams["CLIENT"]).trigger('change');
+        if($arParams["contract"]) $("#contract").val($arParams["contract"]).trigger('change');
+    }, 100);
 
     $('.daricxvebi_tr td').click(function(){
         var td = this.cellIndex
         console.log(td)
     })
 
-
     $(document).ready(function() {
         $('.CLIENT').select2();
         $('.CONTRACT').select2();
     });
 
-
-
+    // Get URL parameters
     project = <?echo json_encode($_GET["project"],JSON_UNESCAPED_UNICODE);?>;
     client = <?echo json_encode($_GET["CLIENT"],JSON_UNESCAPED_UNICODE);?>;
     contract = <?echo json_encode($_GET["contract"],JSON_UNESCAPED_UNICODE);?>;
     Overdue = <?echo json_encode($_GET["Overdue"],JSON_UNESCAPED_UNICODE);?>;
 
-    document.getElementById("project").value = project;
-    document.getElementById("CLIENT").value = client;
-    document.getElementById("contract").value = contract;
-    document.getElementById("Overdue").value = Overdue;
-
+    if(project) document.getElementById("project").value = project;
+    if(Overdue) document.getElementById("Overdue").value = Overdue;
 
     //=====================================function=============================================
 
+    function handleProjectChange() {
+        // When project changes, reload page with new project to get fresh data
+        var projectVal = document.getElementById("project").value;
+        window.location.href = window.location.pathname + '?project=' + encodeURIComponent(projectVal);
+    }
 
-
-    // function numberWithCommas(x) {
-    //     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-    // }
+    function handleClientChange() {
+        // Filter contracts based on selected client
+        var selectedClient = document.getElementById("CLIENT").value;
+        var contractSelect = document.getElementById("contract");
+        
+        // Clear current contracts
+        contractSelect.innerHTML = '<option value="0">აირჩიეთ ხელშეკრულება</option>';
+        
+        if(selectedClient && selectedClient != "0") {
+            // Filter deals by client from the data
+            var filteredDeals = clientsDebtData.filter(function(debt) {
+                return debt.deal_info && debt.deal_info.CONTACT_ID == selectedClient;
+            });
+            
+            // Add filtered contracts
+            filteredDeals.forEach(function(debt) {
+                var option = document.createElement("option");
+                option.value = debt.deal_info.ID;
+                option.textContent = debt.deal_info.TITLE;
+                contractSelect.appendChild(option);
+            });
+        } else {
+            // Show all contracts if no client selected
+            fillContract();
+        }
+        
+        // Reinitialize select2
+        $(contractSelect).select2('destroy');
+        $(contractSelect).select2();
+    }
 
     function numberWithCommas(x)  {
         x = parseFloat(x).toFixed(2);
         if(x.toString() != 'NaN') return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         else return '--- ';
     }
-    function numberformat ( tanxa ) {
-        tanxa=tanxa.replace("$", "");
-        tanxa="$"+tanxa;
-        return tanxa;
-    }
-
-    function numberUSDformat(x){
-
-    }
 
     function sortTable(e) {
-        // console.log(e.rows);
         var a=document.getElementById("table");
         for(var i=0;i<a.rows[0].cells.length;i++){
             if(a.rows[1].cells[i].innerText==e.innerText) {
-                // console.log(i);
                 sortTable1(i);
                 break;
             }
         }
     }
 
-
     function selectOverdues(){
-
         let status=document.getElementById("Overdue").value;
 
         if(status=='Overdue'){
@@ -699,15 +665,10 @@ ob_end_clean();
         }
         else if(status=='OnTime'){
             fillBodyOnTime();
-           
         }else if(status=='all'){
             fillBody();
         }
-
-        // console.log(status);
-        
     }
-
 
     function sortTable1(n) {
         var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
@@ -718,7 +679,6 @@ ob_end_clean();
         while (switching) {
             switching = false;
             rows = table.rows;
-            // console.log(1,n);
             for (i = 2; i < (rows.length - 1); i++) {
                 shouldSwitch = false;
                 x = rows[i].getElementsByTagName("TD")[n];
@@ -749,19 +709,6 @@ ob_end_clean();
         }
     }
 
-
-    function delete_empty_coll(){
-        var table=document.getElementById("table");
-
-        for( var i=0;i<table.rows[0].cells.length;i++){
-            if(table.rows[0].cells[i].innerText=="0.00") {
-                $('.tabler tr').find('th:eq(' + i + '),td:eq(' + i + ')' ).remove();
-                i--;
-            }
-        }
-    }
-
-
     function fillHead1(){
         var head1 = <? echo json_encode($ARR_HEADER,JSON_UNESCAPED_UNICODE);?>;
         var jamebi = <? echo json_encode($JAMEBI,JSON_UNESCAPED_UNICODE);?>;
@@ -771,26 +718,26 @@ ob_end_clean();
             if(i<6) {
                 th += "<th style='background-color: white'></th>";
             }
-            else if(i==6){
+            else if(i==5){
                 th += "<th>"+numberWithCommas(jamebi["OPPORTUNITY"])+"</th>";
             }
-            else if(i==7){
+            else if(i==6){
                 th += "<th>"+numberWithCommas(jamebi["planedTillToDay"])+"</th>";
             }
-            else if(i==8){
+            else if(i==7){
                 th += "<th>"+numberWithCommas(jamebi["overdue"])+"</th>";
             }
-            else if(i==9){
+            else if(i==8){
                 th += "<th>"+numberWithCommas(jamebi["GADAXDILI"])+"</th>";
             }
-            else if(i==10){
+            else if(i==9){
                 th += "<th>"+numberWithCommas(jamebi["darchenili"])+"</th>";
             }
-            else if(i==11){
+            else if(i==10){
                 th += "<th></th>";
             }
             else{
-                th += "<th>"+numberWithCommas(jamebi["daricxvebi"][i-11])+"</th>";
+                th += "<th>"+numberWithCommas(jamebi["daricxvebi"][i-10])+"</th>";
             }
         }
         document.getElementById("head1").innerHTML=th;
@@ -812,12 +759,10 @@ ob_end_clean();
     }
 
     function fillBody(){
-
-        var body1 = <? echo json_encode($clients_debt,JSON_UNESCAPED_UNICODE);?>;
+        var body1 = clientsDebtData;
         var tr="";
-
-        // vadagadacileba='<p1 style=color:"red">123<p1>';
         let count = 0;
+
         for(var i=0;i<body1.length;i++){
             count++;
             if(body1[i]["deal_info"]["UF_CRM_1712920188845"]){
@@ -827,13 +772,12 @@ ob_end_clean();
             }
 
             var davalianeba = parseFloat(body1[i]["daricxvebi"])-parseFloat(body1[i]["GADAXDILI"]);
-            // console.log(body1[i]["deal_info"]["TITLE"], "გადახდილი", body1[i]["GADAXDILI"], "დარიცხული:",body1[i]["daricxva_till_today"] );
+            
             if(body1[i]["overdue"]>0) {
                 tr +="<tr class='daricxvebi_tr'><td><img src='/images/icons/redX.png'  width='30' height='30'></td>";
             }
             else{
                 tr +="<tr class='daricxvebi_tr'><td ><img src='/images/icons/greenV.jpg'  width='30' height='30'></td>";
-
             }
 
             if(body1[i]["deal_info"]["CONTACT_FULL_NAME"]){
@@ -843,7 +787,7 @@ ob_end_clean();
             }
             tr +="<td>"+body1[i]["deal_info"]["UF_CRM_1761658516561"]+"</td>";
             tr +="<td><a href='/crm/deal/details/"+body1[i]["deal_info"]["ID"]+"/'>"+body1[i]["deal_info"]["TITLE"]+"</a></td>";
-            tr +=`<td> <div contenteditable="true" id="${body1[i]["deal_info"]["ID"]}">${commentText} </div> <button onclick="saveDealComment(${body1[i]["deal_info"]["ID"]})">Save</button> </td>`;
+
             tr +="<td>"+body1[i]["vadagadilebisTarigi"]+"</td>";
             tr +="<td>"+body1[i]["nextPaymentDate"]+"</td>";
             tr +="<td>"+numberWithCommas(body1[i]["deal_info"]["OPPORTUNITY"])+"</td>";
@@ -854,22 +798,13 @@ ob_end_clean();
             tr += "<td>" + body1[i]["vadagadacileba"] + "</td>";
 
             tr +="</tr>";
-
-            // "<td> "+body1[i]["deal_info"]["CONTACT_FULL_NAME"]+"</td>"+
-            // "<td> "+body1[i]["deal_info"]["TITTLE"]+"</td>"+
-            // "</tr>";
         }
-        document.getElementById("count").innerHTML=`<span>რაოდენობა: ${count}</span>`;
+        document.getElementById("count").innerHTML=`<span>რაოდენობა: ${body1.length}</span>`;
         document.getElementById("body1").innerHTML=tr;
     }
 
-
-    //////////////////////////////////////////////
-
-
     function fillBodyOnTime(){
-
-        var body1 = <? echo json_encode($clients_debt,JSON_UNESCAPED_UNICODE);?>;
+        var body1 = clientsDebtData;
         var tr="";
         let count = 0;
         
@@ -882,103 +817,87 @@ ob_end_clean();
                     commentText = "";
                 }
                 var davalianeba = parseFloat(body1[i]["daricxvebi"])-parseFloat(body1[i]["GADAXDILI"]);
-                // console.log(body1[i]["deal_info"]["TITLE"], "გადახდილი", body1[i]["GADAXDILI"], "დარიცხული:",body1[i]["daricxva_till_today"] );
+                
                 if(body1[i]["overdue"]>0) {
                     tr +="<tr class='daricxvebi_tr'><td><img src='/images/icons/redX.png'  width='30' height='30'></td>";
                 }
                 else{
                     tr +="<tr class='daricxvebi_tr'><td ><img src='/images/icons/greenV.jpg'  width='30' height='30'></td>";
-
                 }
 
                 if(body1[i]["deal_info"]["CONTACT_FULL_NAME"]){
-                tr +="<td><a href='/crm/contact/details/"+body1[i]["deal_info"]["CONTACT_ID"]+"/'>"+body1[i]["deal_info"]["CONTACT_FULL_NAME"]+"</a></td>";
-            }else{
-                tr +="<td><a href='/crm/company/details/"+body1[i]["deal_info"]["COMPANY_ID"]+"/'>"+body1[i]["deal_info"]["COMPANY_TITLE"]+"</a></td>";
-            }
-            tr +="<td>"+body1[i]["deal_info"]["UF_CRM_1761658516561"]+"</td>";
-            tr +="<td><a href='/crm/deal/details/"+body1[i]["deal_info"]["ID"]+"/'>"+body1[i]["deal_info"]["TITLE"]+"</a></td>";
-            tr +=`<td> <div contenteditable="true" id="${body1[i]["deal_info"]["ID"]}">${commentText} </div> <button onclick="saveDealComment(${body1[i]["deal_info"]["ID"]})">Save</button> </td>`;
-            console.log(commentText)
-            tr +="<td>"+body1[i]["vadagadilebisTarigi"]+"</td>";
-            tr +="<td>"+body1[i]["nextPaymentDate"]+"</td>";
-            tr +="<td>"+numberWithCommas(body1[i]["deal_info"]["OPPORTUNITY"])+"</td>";
-            tr +="<td>"+numberWithCommas(body1[i]["planedTillToDay"])+"</td>";
-            tr +="<td>"+numberWithCommas(body1[i]["overdue"])+"</td>";
-            tr +="<td>"+numberWithCommas(body1[i]["GADAXDILI"].toFixed(2))+"</td>";
-            tr += "<td>" + numberWithCommas(davalianeba.toFixed(2)) + "</td>";
-            tr += "<td>" + body1[i]["vadagadacileba"] + "</td>";
+                    tr +="<td><a href='/crm/contact/details/"+body1[i]["deal_info"]["CONTACT_ID"]+"/'>"+body1[i]["deal_info"]["CONTACT_FULL_NAME"]+"</a></td>";
+                }else{
+                    tr +="<td><a href='/crm/company/details/"+body1[i]["deal_info"]["COMPANY_ID"]+"/'>"+body1[i]["deal_info"]["COMPANY_TITLE"]+"</a></td>";
+                }
+                tr +="<td>"+body1[i]["deal_info"]["UF_CRM_1761658516561"]+"</td>";
+                tr +="<td><a href='/crm/deal/details/"+body1[i]["deal_info"]["ID"]+"/'>"+body1[i]["deal_info"]["TITLE"]+"</a></td>";
+
+                tr +="<td>"+body1[i]["vadagadilebisTarigi"]+"</td>";
+                tr +="<td>"+body1[i]["nextPaymentDate"]+"</td>";
+                tr +="<td>"+numberWithCommas(body1[i]["deal_info"]["OPPORTUNITY"])+"</td>";
+                tr +="<td>"+numberWithCommas(body1[i]["planedTillToDay"])+"</td>";
+                tr +="<td>"+numberWithCommas(body1[i]["overdue"])+"</td>";
+                tr +="<td>"+numberWithCommas(body1[i]["GADAXDILI"].toFixed(2))+"</td>";
+                tr += "<td>" + numberWithCommas(davalianeba.toFixed(2)) + "</td>";
+                tr += "<td>" + body1[i]["vadagadacileba"] + "</td>";
 
                 tr +="</tr>";
-
-                // "<td> "+body1[i]["deal_info"]["CONTACT_FULL_NAME"]+"</td>"+
-                // "<td> "+body1[i]["deal_info"]["TITTLE"]+"</td>"+
-                // "</tr>";
             }
-            document.getElementById("count").innerHTML=`<span>რაოდენობა: ${count}</span>`;
-            document.getElementById("body1").innerHTML=tr;
         }
+        document.getElementById("count").innerHTML=`<span>რაოდენობა: ${count}</span>`;
+        document.getElementById("body1").innerHTML=tr;
     }
 
-
     function fillBodyOverdue(){
-
-        var body1 = <? echo json_encode($clients_debt,JSON_UNESCAPED_UNICODE);?>;
+        var body1 = clientsDebtData;
         var tr="";
-
-        // vadagadacileba='<p1 style=color:"red">123<p1>';
         let count = 0;
+        
         for(var i=0;i<body1.length;i++){
-
             if(body1[i]["overdue"]>0){
-                count ++;
+                count++;
                 if(body1[i]["deal_info"]["UF_CRM_1712920188845"]){
                     commentText = body1[i]["deal_info"]["UF_CRM_1712920188845"];
                 }else{
                     commentText = "";
                 }
                 var davalianeba = parseFloat(body1[i]["daricxvebi"])-parseFloat(body1[i]["GADAXDILI"]);
-                // console.log(body1[i]["deal_info"]["TITLE"], "გადახდილი", body1[i]["GADAXDILI"], "დარიცხული:",body1[i]["daricxva_till_today"] );
+                
                 if(body1[i]["overdue"]>0) {
                     tr +="<tr class='daricxvebi_tr'><td><img src='/images/icons/redX.png'  width='30' height='30'></td>";
                 }
                 else{
                     tr +="<tr class='daricxvebi_tr'><td ><img src='/images/icons/greenV.jpg'  width='30' height='30'></td>";
-
                 }
+                
                 if(body1[i]["deal_info"]["CONTACT_FULL_NAME"]){
-                tr +="<td><a href='/crm/contact/details/"+body1[i]["deal_info"]["CONTACT_ID"]+"/'>"+body1[i]["deal_info"]["CONTACT_FULL_NAME"]+"</a></td>";
-            }else{
-                tr +="<td><a href='/crm/company/details/"+body1[i]["deal_info"]["COMPANY_ID"]+"/'>"+body1[i]["deal_info"]["COMPANY_TITLE"]+"</a></td>";
-            }
-            tr +="<td>"+body1[i]["deal_info"]["UF_CRM_1761658516561"]+"</td>";
-            tr +="<td><a href='/crm/deal/details/"+body1[i]["deal_info"]["ID"]+"/'>"+body1[i]["deal_info"]["TITLE"]+"</a></td>";
-            tr +=`<td> <div contenteditable="true" id="${body1[i]["deal_info"]["ID"]}">${commentText} </div> <button onclick="saveDealComment(${body1[i]["deal_info"]["ID"]})">Save</button> </td>`;
-            tr +="<td>"+body1[i]["vadagadilebisTarigi"]+"</td>";
-            tr +="<td>"+body1[i]["nextPaymentDate"]+"</td>";
-            tr +="<td>"+numberWithCommas(body1[i]["deal_info"]["OPPORTUNITY"])+"</td>";
-            tr +="<td>"+numberWithCommas(body1[i]["planedTillToDay"])+"</td>";
-            tr +="<td>"+numberWithCommas(body1[i]["overdue"])+"</td>";
-            tr +="<td>"+numberWithCommas(body1[i]["GADAXDILI"].toFixed(2))+"</td>";
-            tr += "<td>" + numberWithCommas(davalianeba.toFixed(2)) + "</td>";
-            tr += "<td>" + body1[i]["vadagadacileba"] + "</td>";
+                    tr +="<td><a href='/crm/contact/details/"+body1[i]["deal_info"]["CONTACT_ID"]+"/'>"+body1[i]["deal_info"]["CONTACT_FULL_NAME"]+"</a></td>";
+                }else{
+                    tr +="<td><a href='/crm/company/details/"+body1[i]["deal_info"]["COMPANY_ID"]+"/'>"+body1[i]["deal_info"]["COMPANY_TITLE"]+"</a></td>";
+                }
+                tr +="<td>"+body1[i]["deal_info"]["UF_CRM_1761658516561"]+"</td>";
+                tr +="<td><a href='/crm/deal/details/"+body1[i]["deal_info"]["ID"]+"/'>"+body1[i]["deal_info"]["TITLE"]+"</a></td>";
+
+                tr +="<td>"+body1[i]["vadagadilebisTarigi"]+"</td>";
+                tr +="<td>"+body1[i]["nextPaymentDate"]+"</td>";
+                tr +="<td>"+numberWithCommas(body1[i]["deal_info"]["OPPORTUNITY"])+"</td>";
+                tr +="<td>"+numberWithCommas(body1[i]["planedTillToDay"])+"</td>";
+                tr +="<td>"+numberWithCommas(body1[i]["overdue"])+"</td>";
+                tr +="<td>"+numberWithCommas(body1[i]["GADAXDILI"].toFixed(2))+"</td>";
+                tr += "<td>" + numberWithCommas(davalianeba.toFixed(2)) + "</td>";
+                tr += "<td>" + body1[i]["vadagadacileba"] + "</td>";
 
                 tr +="</tr>";
-
-                // "<td> "+body1[i]["deal_info"]["CONTACT_FULL_NAME"]+"</td>"+
-                // "<td> "+body1[i]["deal_info"]["TITTLE"]+"</td>"+
-                // "</tr>";
             }
-            document.getElementById("count").innerHTML=`<span>რაოდენობა: ${count}</span>`;
-            document.getElementById("body1").innerHTML=tr;
         }
+        document.getElementById("count").innerHTML=`<span>რაოდენობა: ${count}</span>`;
+        document.getElementById("body1").innerHTML=tr;
     }
-
-    //////////////////////////////////////////////
     
     function fillClient(){
         var client = document.getElementById("CLIENT"),
-            itemArray1 = <?php echo json_encode($CONTACTS_FOR_FILTER); ?>;
+            itemArray1 = allContactsData;
         for (var key in itemArray1) {
             var value = itemArray1[key];
             var el          = document.createElement("option");
@@ -989,9 +908,8 @@ ob_end_clean();
     }
 
     function fillContract(){
-
         var deal            = document.getElementById("contract"),
-            itemArray1      = <?php echo json_encode($DEALS_FOR_FILTER); ?>;
+            itemArray1      = allDealsData;
         for (var key in itemArray1) {
             var value       = itemArray1[key];
             var el          = document.createElement("option");
@@ -999,13 +917,11 @@ ob_end_clean();
             el.value        = key;
             deal.appendChild(el);
         }
-
     }
 
     function exportProd1()
     {
         var tableSelect = document.getElementById("table");
-
 
         let wb = XLSX.utils.book_new();
         wb.Props = {
@@ -1018,26 +934,31 @@ ob_end_clean();
         let row = [];
         let ws;
 
-
         for (let i = 0; i < tableSelect.rows.length; i++) {
             for (let j = 0; j < tableSelect.rows[i].cells.length; j++) {
-                if(i == 0 && j>6 && false){
-                    let number = tableSelect.rows[i].cells[j].innerText.replace(",","");
-                    row.push(Number(number));
-                }
-                else if(i >=2 && j==4){
-                    row.push(tableSelect.rows[i].cells[j].children[0].innerText);
-                }
-                else if(i >=2 && j>6){
-                    let number = tableSelect.rows[i].cells[j].innerText.replace(",","");
-                    row.push(Number(number));
-                }
-                else{
-                    row.push(tableSelect.rows[i].cells[j].innerText);
+                let cellText = tableSelect.rows[i].cells[j].innerText.trim();
+
+                if (i >= 2 && j === 11) {
+                    let number = parseFloat(cellText.replace(",", ""));
+                    if (!isNaN(number)) {
+                        row.push(number);
+                    } else {
+                        row.push(cellText);
+                    }
+                } else if (i >= 2 && j > 5) {
+                    let cellText = tableSelect.rows[i].cells[j].innerText.trim();
+                    let number = parseFloat(cellText.replace(",", ""));
+                    if (!isNaN(number)) {
+                        row.push(number);
+                    } else {
+                        row.push(cellText);
+                    }
+                } else {
+                    row.push(cellText);
                 }
             }
             ws_data.push(row);
-            row=[];
+            row = [];
         }
 
         ws = XLSX.utils.aoa_to_sheet(ws_data);
@@ -1046,28 +967,6 @@ ob_end_clean();
         var wbout = XLSX.writeFile(wb,"დავალიანების რეპორტი.xlsx");
         console.log(wbout);
     }
-
-
-    function saveDealComment(id){
-
-        comment = document.getElementById(id).innerText;
-
-        let reqParams = `dealID=${id}&comment=${comment}`;
-
-
-        fetch(`${location.origin}/rest/local/saveComment.php?${reqParams}`)
-                .then(data => {
-                    return data.json();
-                })
-                .then(data => {
-                    console.log(data);
-
-                })
-                .catch(error => {
-                    console.log(error);
-                });
-    }
-    
 
 </script>
 
