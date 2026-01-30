@@ -1018,6 +1018,18 @@ if (!empty($htmlEditorConfigs))
 <script>
     pathname = window.location.pathname.split("/");
 
+	if(pathname[1] == "crm" && pathname[2] == "deal" && pathname[4] != "0"){
+
+		setTimeout(() => {
+			let sourceBlock = document.querySelector('[data-cid="SOURCE_ID"]');
+			if (sourceBlock) {
+				// sourceBlock.classList.add("ui-entity-editor-content-block-disabled");
+				sourceBlock.style.pointerEvents = "none";
+				// sourceBlock.style.opacity = "0.6";
+			}
+		}, 100);
+	}
+
 	if(pathname[1] == "crm" && pathname[2] == "deal" ){
 
 		setInterval(() => {
