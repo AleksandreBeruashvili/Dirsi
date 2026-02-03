@@ -550,7 +550,7 @@ $nbgKursi = getNBGkursi($dateForNBG);
             <label>განვადების ტიპი</label>
             <select id="ganvadebaType" class="form-select green-border" onchange="changeType();">
                 <option value="customType" selected>არასტანდარტული</option>
-                <option value="mortgage">განვადება</option>
+                <option value="mortgage">სტანდარტული</option>
                 <option value="allCash">ერთიანი გადახდა</option>
                 <option value="bankLoan">ბანკის სესხი</option>
             </select>
