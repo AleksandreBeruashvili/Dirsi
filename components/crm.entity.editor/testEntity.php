@@ -53,12 +53,12 @@ if($arResult['REST_USE'])
 
 $htmlEditorConfigs = [];
 $htmlFieldNames = isset($arResult['ENTITY_HTML_FIELD_NAMES']) && is_array($arResult['ENTITY_HTML_FIELD_NAMES'])
-        ? $arResult['ENTITY_HTML_FIELD_NAMES']
-        : []
+    ? $arResult['ENTITY_HTML_FIELD_NAMES']
+    : []
 ;
 $bbFieldNames = isset($arResult['ENTITY_BB_FIELD_NAMES']) && is_array($arResult['ENTITY_BB_FIELD_NAMES'])
-        ? $arResult['ENTITY_BB_FIELD_NAMES']
-        : []
+    ? $arResult['ENTITY_BB_FIELD_NAMES']
+    : []
 ;
 
 $hasBBCodeFields = isset($arResult['HAS_BBCODE_FIELDS']) && $arResult['HAS_BBCODE_FIELDS'] === true;
@@ -71,54 +71,54 @@ foreach ($htmlFieldNames as $fieldName)
 {
     $fieldPrefix = $prefix.'_'.strtolower($fieldName);
     $htmlEditorConfigs[$fieldName] = [
-            'id' => "{$fieldPrefix}_html_editor",
-            'containerId' => "{$fieldPrefix}_html_editor_container",
-            'bb' => false,
-            'controlsMap' => [
-                    ['id' => 'Bold',  'compact' => true, 'sort' => 10],
-                    ['id' => 'Italic',  'compact' => true, 'sort' => 20],
-                    ['id' => 'Underline',  'compact' => true, 'sort' => 30],
-                    ['id' => 'Strikeout',  'compact' => true, 'sort' => 40],
-                    ['id' => 'RemoveFormat',  'compact' => false, 'sort' => 50],
-                    ['id' => 'Color',  'compact' => false, 'sort' => 60],
-                    ['id' => 'FontSelector',  'compact' => false, 'sort' => 70],
-                    ['id' => 'FontSize',  'compact' => true, 'sort' => 80],
-                    ['separator' => true, 'compact' => false, 'sort' => 90],
-                    ['id' => 'OrderedList',  'compact' => true, 'sort' => 100],
-                    ['id' => 'UnorderedList',  'compact' => true, 'sort' => 110],
-                    ['id' => 'AlignList', 'compact' => false, 'sort' => 120],
-                    ['separator' => true, 'compact' => false, 'sort' => 130],
-                    ['id' => 'InsertLink',  'compact' => true, 'sort' => 140],
-                    ['id' => 'Code',  'compact' => false, 'sort' => 180],
-                    ['id' => 'Quote',  'compact' => false, 'sort' => 190],
-                    ['separator' => true, 'compact' => false, 'sort' => 200],
-                    ['id' => 'Fullscreen',  'compact' => true, 'sort' => 210],
-                    ['id' => 'More',  'compact' => true, 'sort' => 400]
-            ],
+        'id' => "{$fieldPrefix}_html_editor",
+        'containerId' => "{$fieldPrefix}_html_editor_container",
+        'bb' => false,
+        'controlsMap' => [
+            ['id' => 'Bold',  'compact' => true, 'sort' => 10],
+            ['id' => 'Italic',  'compact' => true, 'sort' => 20],
+            ['id' => 'Underline',  'compact' => true, 'sort' => 30],
+            ['id' => 'Strikeout',  'compact' => true, 'sort' => 40],
+            ['id' => 'RemoveFormat',  'compact' => false, 'sort' => 50],
+            ['id' => 'Color',  'compact' => false, 'sort' => 60],
+            ['id' => 'FontSelector',  'compact' => false, 'sort' => 70],
+            ['id' => 'FontSize',  'compact' => true, 'sort' => 80],
+            ['separator' => true, 'compact' => false, 'sort' => 90],
+            ['id' => 'OrderedList',  'compact' => true, 'sort' => 100],
+            ['id' => 'UnorderedList',  'compact' => true, 'sort' => 110],
+            ['id' => 'AlignList', 'compact' => false, 'sort' => 120],
+            ['separator' => true, 'compact' => false, 'sort' => 130],
+            ['id' => 'InsertLink',  'compact' => true, 'sort' => 140],
+            ['id' => 'Code',  'compact' => false, 'sort' => 180],
+            ['id' => 'Quote',  'compact' => false, 'sort' => 190],
+            ['separator' => true, 'compact' => false, 'sort' => 200],
+            ['id' => 'Fullscreen',  'compact' => true, 'sort' => 210],
+            ['id' => 'More',  'compact' => true, 'sort' => 400]
+        ],
     ];
 }
 foreach ($bbFieldNames as $fieldName)
 {
     $fieldPrefix = $prefix.'_'.strtolower($fieldName);
     $htmlEditorConfigs[$fieldName] = [
-            'id' => "{$fieldPrefix}_html_editor",
-            'containerId' => "{$fieldPrefix}_html_editor_container",
-            'bb' => true,
+        'id' => "{$fieldPrefix}_html_editor",
+        'containerId' => "{$fieldPrefix}_html_editor_container",
+        'bb' => true,
         // only allow tags that are supported in mobile app
-            'controlsMap' => [
-                    ['id' => 'Bold',  'compact' => true, 'sort' => 10],
-                    ['id' => 'Italic',  'compact' => true, 'sort' => 20],
-                    ['id' => 'Underline',  'compact' => true, 'sort' => 30],
-                    ['id' => 'Strikeout',  'compact' => true, 'sort' => 40],
-                    ['id' => 'RemoveFormat',  'compact' => false, 'sort' => 50],
-                    ['separator' => true, 'compact' => false, 'sort' => 90],
-                    ['id' => 'OrderedList',  'compact' => true, 'sort' => 100],
-                    ['id' => 'UnorderedList',  'compact' => true, 'sort' => 110],
-                    ['separator' => true, 'compact' => false, 'sort' => 130],
-                    ['id' => 'InsertLink',  'compact' => true, 'sort' => 140],
-                    ['separator' => true, 'compact' => false, 'sort' => 200],
-                    ['id' => 'Fullscreen',  'compact' => true, 'sort' => 210],
-            ],
+        'controlsMap' => [
+            ['id' => 'Bold',  'compact' => true, 'sort' => 10],
+            ['id' => 'Italic',  'compact' => true, 'sort' => 20],
+            ['id' => 'Underline',  'compact' => true, 'sort' => 30],
+            ['id' => 'Strikeout',  'compact' => true, 'sort' => 40],
+            ['id' => 'RemoveFormat',  'compact' => false, 'sort' => 50],
+            ['separator' => true, 'compact' => false, 'sort' => 90],
+            ['id' => 'OrderedList',  'compact' => true, 'sort' => 100],
+            ['id' => 'UnorderedList',  'compact' => true, 'sort' => 110],
+            ['separator' => true, 'compact' => false, 'sort' => 130],
+            ['id' => 'InsertLink',  'compact' => true, 'sort' => 140],
+            ['separator' => true, 'compact' => false, 'sort' => 200],
+            ['id' => 'Fullscreen',  'compact' => true, 'sort' => 210],
+        ],
     ];
 }
 
@@ -165,14 +165,14 @@ if (Main\Loader::includeModule('socialnetwork'))
         $configIconID = "{$prefix}_config_icon";
 
         $configIconClassName = $arResult['ENTITY_CONFIG_SCOPE'] === Crm\Entity\EntityEditorConfigScope::COMMON
-                ? 'crm-entity-card-common'
-                : 'crm-entity-card-private';
+            ? 'crm-entity-card-common'
+            : 'crm-entity-card-private';
 
         $configCaption = Crm\Entity\EntityEditorConfigScope::getCaption(
-                $arResult['ENTITY_CONFIG_SCOPE'],
-                $arResult['CONFIG_ID'],
-                $arResult['USER_SCOPE_ID'],
-                ($arParams['MODULE_ID'] ?? null)
+            $arResult['ENTITY_CONFIG_SCOPE'],
+            $arResult['CONFIG_ID'],
+            $arResult['USER_SCOPE_ID'],
+            ($arParams['MODULE_ID'] ?? null)
         );
         ?><span id="<?=htmlspecialcharsbx($configIconID)?>" class="<?=$configIconClassName?>" title="<?=$configCaption?>">
         </span><?
@@ -213,8 +213,8 @@ if (!empty($htmlEditorConfigs))
                     }
 
                     if (
-                            $isSeparator
-                            && isset($editorControls[array_key_last($editorControls)]['separator'])
+                        $isSeparator
+                        && isset($editorControls[array_key_last($editorControls)]['separator'])
                     )
                     {
                         continue;
@@ -228,52 +228,52 @@ if (!empty($htmlEditorConfigs))
             }
 
             $chtmlEditorParams = [
-                    'name' => $htmlEditorConfig['id'],
-                    'id' => $htmlEditorConfig['id'],
-                    'siteId' => SITE_ID,
-                    'width' => '100%',
-                    'minBodyWidth' => 230,
-                    'normalBodyWidth' => 530,
-                    'height' => 200,
-                    'minBodyHeight' => 200,
-                    'showTaskbars' => false,
-                    'showNodeNavi' => false,
-                    'autoResize' => true,
-                    'autoResizeOffset' => 10,
-                    'bbCode' => $htmlEditorConfig['bb'],
-                    'saveOnBlur' => false,
-                    'bAllowPhp' => false,
-                    'lazyLoad' => false,
-                    'limitPhpAccess' => false,
-                    'setFocusAfterShow' => false,
-                    'askBeforeUnloadPage' => false,
-                    'useFileDialogs' => false,
-                    'controlsMap' => $htmlEditorConfig['controlsMap'],
-                    'isMentionUnavailable' => $fieldInfo['copilotIntegrationParams']['isMentionUnavailable'] ?? false,
-                    'isCopilotTextEnabledBySettings' => AIManager::isEnabledInGlobalSettings(EventHandler::SETTINGS_FILL_CRM_TEXT_ENABLED_CODE),
-                    'copilotParams' => [
-                            'moduleId' => 'crm',
-                            'contextId' => 'crm_details_comment_editor_' . $htmlEditorConfig['id'],
-                            'category' => 'crm_comment_field',
-                            'autoHide' => true,
-                    ],
+                'name' => $htmlEditorConfig['id'],
+                'id' => $htmlEditorConfig['id'],
+                'siteId' => SITE_ID,
+                'width' => '100%',
+                'minBodyWidth' => 230,
+                'normalBodyWidth' => 530,
+                'height' => 200,
+                'minBodyHeight' => 200,
+                'showTaskbars' => false,
+                'showNodeNavi' => false,
+                'autoResize' => true,
+                'autoResizeOffset' => 10,
+                'bbCode' => $htmlEditorConfig['bb'],
+                'saveOnBlur' => false,
+                'bAllowPhp' => false,
+                'lazyLoad' => false,
+                'limitPhpAccess' => false,
+                'setFocusAfterShow' => false,
+                'askBeforeUnloadPage' => false,
+                'useFileDialogs' => false,
+                'controlsMap' => $htmlEditorConfig['controlsMap'],
+                'isMentionUnavailable' => $fieldInfo['copilotIntegrationParams']['isMentionUnavailable'] ?? false,
+                'isCopilotTextEnabledBySettings' => AIManager::isEnabledInGlobalSettings(EventHandler::SETTINGS_FILL_CRM_TEXT_ENABLED_CODE),
+                'copilotParams' => [
+                    'moduleId' => 'crm',
+                    'contextId' => 'crm_details_comment_editor_' . $htmlEditorConfig['id'],
+                    'category' => 'crm_comment_field',
+                    'autoHide' => true,
+                ],
             ];
 
             $APPLICATION->IncludeComponent(
-                    'bitrix:main.post.form',
-                    '',
-                    [
-                            'PARSER' => $parserList,
-                            'BUTTONS' => $fieldInfo['buttons'] ?? [],
-                            'UPLOAD_FILE' => false,
-                            'LHE' => $chtmlEditorParams,
-                            'isAiImageEnabled' => $fieldInfo['postFormSettings']['isAiImageEnabled'] ?? false,
-                            'isDnDEnabled' => $fieldInfo['postFormSettings']['isDnDEnabled'] ?? false,
-                    ],
-                    false,
-                    [
-                            "HIDE_ICONS" => "Y",
-                    ]
+                'bitrix:main.post.form',
+                '',
+                [
+                    'PARSER' => $parserList,
+                    'BUTTONS' => $fieldInfo['buttons'] ?? [],
+                    'UPLOAD_FILE' => false,
+                    'LHE' => $chtmlEditorParams,
+                    'isAiImageEnabled' => $fieldInfo['postFormSettings']['isAiImageEnabled'] ?? false,
+                    'isDnDEnabled' => $fieldInfo['postFormSettings']['isDnDEnabled'] ?? false,
+                ],
+                false,
+                [
+                    "HIDE_ICONS" => "Y",
+                ]
             );
             ?>
         </div>
@@ -289,14 +289,14 @@ if (!empty($htmlEditorConfigs))
     if (!class_exists(\Bitrix\Bizproc\Controller\Workflow\Starter::class))
     {
         $APPLICATION->IncludeComponent(
-                "bitrix:bizproc.workflow.start",
-                'modern',
-                [
-                        'MODULE_ID' => $arResult['BIZPROC_MANAGER_CONFIG']['moduleId'],
-                        'ENTITY' => $arResult['BIZPROC_MANAGER_CONFIG']['entity'],
-                        'DOCUMENT_TYPE' => $arResult['BIZPROC_MANAGER_CONFIG']['documentType'],
-                        'AUTO_EXECUTE_TYPE' => $arResult['BIZPROC_MANAGER_CONFIG']['autoExecuteType'],
-                ],
+            "bitrix:bizproc.workflow.start",
+            'modern',
+            [
+                'MODULE_ID' => $arResult['BIZPROC_MANAGER_CONFIG']['moduleId'],
+                'ENTITY' => $arResult['BIZPROC_MANAGER_CONFIG']['entity'],
+                'DOCUMENT_TYPE' => $arResult['BIZPROC_MANAGER_CONFIG']['documentType'],
+                'AUTO_EXECUTE_TYPE' => $arResult['BIZPROC_MANAGER_CONFIG']['autoExecuteType'],
+            ],
         );
     }
     ?></div>
@@ -407,7 +407,7 @@ if (!empty($htmlEditorConfigs))
             BX.UI.EntitySchemeElement.userFieldFileUrlTemplate = "<?=CUtil::JSEscape($arResult['USER_FIELD_FILE_URL_TEMPLATE'])?>";
 
             var model = BX.Crm.EntityEditorModelFactory.create(
-                    <?=$arResult['ENTITY_TYPE_ID']?>,
+                <?=$arResult['ENTITY_TYPE_ID']?>,
                 "",
                 { entityTypeId: <?=$arResult['ENTITY_TYPE_ID']?>, data: <?= Json::encode($arResult['PREPARED_ENTITY_DATA'])?> }
             );
@@ -667,15 +667,15 @@ if (!empty($htmlEditorConfigs))
                     manualOpportunityConfirmationYes: "<?=GetMessageJS('MAIN_YES')?>",
                     manualOpportunityConfirmationNo: "<?=GetMessageJS('MAIN_NO')?>",
                     manualOpportunityChangeModeTitle: "<?=
-                            empty($arResult['MESSAGES']['MANUAL_OPPORTUNITY_CHANGE_MODE_TITLE'])
-                                    ? GetMessageJS('CRM_EDITOR_MANUAL_OPPORTUNITY_CHANGE_TITLE_' . $arResult['ENTITY_TYPE_ID'])
-                                    : \CUtil::JSEscape($arResult['MESSAGES']['MANUAL_OPPORTUNITY_CHANGE_MODE_TITLE'])
-                            ?>",
+                        empty($arResult['MESSAGES']['MANUAL_OPPORTUNITY_CHANGE_MODE_TITLE'])
+                            ? GetMessageJS('CRM_EDITOR_MANUAL_OPPORTUNITY_CHANGE_TITLE_' . $arResult['ENTITY_TYPE_ID'])
+                            : \CUtil::JSEscape($arResult['MESSAGES']['MANUAL_OPPORTUNITY_CHANGE_MODE_TITLE'])
+                        ?>",
                     manualOpportunityChangeModeText: "<?=
-                            empty($arResult['MESSAGES']['MANUAL_OPPORTUNITY_CHANGE_MODE_TEXT'])
-                                    ? GetMessageJS('CRM_EDITOR_MANUAL_OPPORTUNITY_CHANGE_TEXT_' . $arResult['ENTITY_TYPE_ID'])
-                                    : \CUtil::JSEscape($arResult['MESSAGES']['MANUAL_OPPORTUNITY_CHANGE_MODE_TEXT'])
-                            ?>",
+                        empty($arResult['MESSAGES']['MANUAL_OPPORTUNITY_CHANGE_MODE_TEXT'])
+                            ? GetMessageJS('CRM_EDITOR_MANUAL_OPPORTUNITY_CHANGE_TEXT_' . $arResult['ENTITY_TYPE_ID'])
+                            : \CUtil::JSEscape($arResult['MESSAGES']['MANUAL_OPPORTUNITY_CHANGE_MODE_TEXT'])
+                        ?>",
                     manualOpportunityChangeModeYes: "<?=GetMessageJS('CRM_EDITOR_MANUAL_OPPORTUNITY_CHANGE_VALUE_AUTO')?>",
                     manualOpportunityChangeModeNo: "<?=GetMessageJS('CRM_EDITOR_MANUAL_OPPORTUNITY_CHANGE_VALUE_MANUAL')?>"
                 };
@@ -872,12 +872,12 @@ if (!empty($htmlEditorConfigs))
             <?if(!$arResult['IS_EMBEDDED']){?>
             bizprocManager = BX.Crm.EntityBizprocManager.create(
                 "<?=CUtil::JSEscape($guid)?>",
-                    <?=\Bitrix\Main\Web\Json::encode($arResult['BIZPROC_MANAGER_CONFIG'])?>
+                <?=\Bitrix\Main\Web\Json::encode($arResult['BIZPROC_MANAGER_CONFIG'])?>
             );
 
             restPlacementTabManager = BX.Crm.EntityRestPlacementManager.create(
                 "<?=CUtil::JSEscape($guid)?>",
-                    <?=\CUtil::PhpToJSObject($arResult['REST_PLACEMENT_TAB_CONFIG'])?>
+                <?=\CUtil::PhpToJSObject($arResult['REST_PLACEMENT_TAB_CONFIG'])?>
             );
             <?}?>
 

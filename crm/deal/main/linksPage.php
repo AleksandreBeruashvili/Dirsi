@@ -177,8 +177,8 @@ unset($items);
 
         .group-title {
             font-family: 'Montserrat', sans-serif;
-            background-color: #ffffff;
-            color: #174173;
+            background-color: #174173;   /* 🔵 always blue */
+            color: #ffffff;              /* white text */
             padding: 14px 20px;
             font-size: 18px;
             font-weight: 600;
@@ -189,10 +189,6 @@ unset($items);
             text-align: center;
         }
 
-        .group-title:hover {
-            background-color: #174173;
-            color: #ffffff;
-        }
 
         /* Elements List */
         .group-elements {
