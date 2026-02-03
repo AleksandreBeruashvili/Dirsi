@@ -480,7 +480,7 @@ $nbgKursi = getNBGkursi($dateForNBG);
         }
 
         .buttonsDiv{
-            padding-left: 1300px;
+            /*padding-left: 1300px;*/
             padding-bottom: 20px;
         }
 
@@ -498,7 +498,7 @@ $nbgKursi = getNBGkursi($dateForNBG);
 
 
         <!-- Export Buttons -->
-    <div class="export-buttons element-to-hide buttonsDiv">
+    <div class="export-buttons  buttonsDiv">
         <button class="export-btn" onclick="openOffer('grafik')">გრაფიკი (GEO)</button>
         <button class="export-btn" onclick="openOffer('grafikEng')">გრაფიკი (ENG)</button>
         <!-- <button class="export-btn" onclick="openOffer('geo')" id="offerGeo">offer (GEO)</button>
