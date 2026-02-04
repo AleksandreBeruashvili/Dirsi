@@ -79,6 +79,27 @@ $deal = getDealInfoByIDToolbar($dealId);
             <div class="error" id="clientDesc-error">გთხოვთ შეიყვანოთ აღწერა</div>
         </div>
 
+        <div class="form-group">
+            <label for="miznobrioba" class="required">შეძენის მიზნობრიობა</label>
+            <select class="form-control" id="miznobrioba" name="miznobrioba" style="width: 40%; height: 30px; border-radius: 5px;" onchange="javshnisTypeFunc()" required>
+                <option value="">აირჩიეთ...</option>
+                <option value="170">საცხოვრებელი</option>
+                <option value="171">საინვესტიციო</option>
+            </select>
+            <div class="error" id="miznobrioba-error">გთხოვთ აირჩიოთ შეძენის მიზნობრიობა</div>
+        </div>
+
+        
+        <div class="form-group">
+            <label for="contactType" class="required">კონტრაქტის ტიპი</label>
+            <select class="form-control" id="contactType" name="contactType" style="width: 40%; height: 30px; border-radius: 5px;" onchange="javshnisTypeFunc()" required>
+                <option value="">აირჩიეთ...</option>
+                <option value="174">Standard</option>
+                <option value="175">Non standard</option>
+            </select>
+            <div class="error" id="contactType-error">გთხოვთ აირჩიოთ კონტრაქტის ტიპი</div>
+        </div>
+
         <div class="button-group">
             <button type="button" class="btn btn-secondary" onclick="closePopup()">გაუქმება</button>
             <button type="submit" class="btn btn-primary">გაგზავნა</button>
@@ -98,6 +119,31 @@ if (rawDate) {
         document.getElementById('contractDate').value = parts[2] + '-' + parts[1] + '-' + parts[0];
     }
 }
+
+
+let deal=<?php echo json_encode($deal, JSON_UNESCAPED_UNICODE); ?>;
+
+if(deal["UF_CRM_1770204855111"]=="174"){
+    document.getElementById("contactType").value="174";
+}else if(deal["UF_CRM_1770204855111"]=="175"){
+    document.getElementById("contactType").value="175";
+}
+else{
+    document.getElementById("contactType").value="";
+}
+
+
+if(deal["UF_CRM_1770204779269"]=="170"){
+    document.getElementById("miznobrioba").value="170";
+}else if(deal["UF_CRM_1770204779269"]=="171"){
+    document.getElementById("miznobrioba").value="171";
+}
+else{
+    document.getElementById("miznobrioba").value="";
+}
+
+
+
 
 function closePopup() {
     if (window.BX && BX.SidePanel) {
@@ -181,6 +227,10 @@ $(document).ready(function() {
         formData.append("sellFlatFile", sellFlatFileId);
         formData.append("sellAttachFile", sellAttachFileId);
         formData.append("clientDesc", $("#clientDesc").val());
+        formData.append("miznobrioba", $("#miznobrioba").val());
+        formData.append("contactType", $("#contactType").val());
+ 
+        
 
         $.ajax({
             url: "/rest/popupsservices/sell.php",

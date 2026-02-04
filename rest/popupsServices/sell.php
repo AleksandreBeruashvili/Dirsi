@@ -42,6 +42,9 @@ $sellAttachFile = trim($_POST["sellAttachFile"]);
 $clientDesc = trim($_POST["clientDesc"]); 
 
 
+$miznobrioba = trim($_POST["miznobrioba"]);
+$contactType = trim($_POST["contactType"]);
+
 
 if($dealId){
     $arErrorsTmp = array();
@@ -53,6 +56,8 @@ if($dealId){
             "sellFlatFile" => $sellFlatFile,
             "sellAttachFile" => $sellAttachFile,
             "clientDesc" => $clientDesc,
+            "miznobrioba" => $miznobrioba,
+            "contactType" => $contactType,
             "TargetUser" => "user_" . $currentUserId
         ],
         $arErrorsTmp
