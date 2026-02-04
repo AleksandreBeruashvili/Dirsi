@@ -107,13 +107,13 @@ if($contactID){
     $fieldsToCheck = [
         "სახელი" => $contact["NAME"],
         "გვარი" => $contact["LAST_NAME"],
-        "ტელეფონი" => $contact["PHONE"],
-        "მეილი" => $contact["EMAIL"],
+//        "ტელეფონი" => $contact["PHONE"],
+//        "მეილი" => $contact["EMAIL"],
         // "დაბადების თარიღი" => $contact["BIRTHDATE"],
-        "ფაქტიური მისამრთი" => $contact["UF_CRM_1761653727005"],
-        "იურიდიული მისამრთი" => $contact["UF_CRM_1761653738978"],
-        "მოქალაქეობა" => $contact["UF_CRM_1761651978222"],
-        "ნაციონალობა" => $contact["UF_CRM_1769506891465"],
+//        "ფაქტიური მისამრთი" => $contact["UF_CRM_1761653727005"],
+//        "იურიდიული მისამრთი" => $contact["UF_CRM_1761653738978"],
+//        "მოქალაქეობა" => $contact["UF_CRM_1761651978222"],
+//        "ნაციონალობა" => $contact["UF_CRM_1769506891465"],
 
     ];
     
