@@ -41,6 +41,15 @@ $sellFlatFile = trim($_POST["sellFlatFile"]);
 $sellAttachFile = trim($_POST["sellAttachFile"]); 
 $clientDesc = trim($_POST["clientDesc"]); 
 
+$phone = trim($_POST["phone"]);
+$email = trim($_POST["email"]);
+$personalId = trim($_POST["personalId"]);
+$passportId = trim($_POST["passportId"]);
+$legalAddress = trim($_POST["legalAddress"]);
+$actualAddress = trim($_POST["actualAddress"]);
+$citizenshipType = trim($_POST["citizenshipType"]);
+$citizenOf = trim($_POST["citizenOf"]);
+$nationality = trim($_POST["nationality"]);
 
 $miznobrioba = trim($_POST["miznobrioba"]);
 $contactType = trim($_POST["contactType"]);
@@ -56,6 +65,15 @@ if($dealId){
             "sellFlatFile" => $sellFlatFile,
             "sellAttachFile" => $sellAttachFile,
             "clientDesc" => $clientDesc,
+            "phone" => $phone,
+            "email" => $email,
+            "personalId" => $personalId,
+            "passportId" => $passportId,
+            "legalAddress" => $legalAddress,
+            "actualAddress" => $actualAddress,
+            "citizenshipType" => $citizenshipType,
+            "citizenOf" => $citizenOf,
+            "nationality" => $nationality,
             "miznobrioba" => $miznobrioba,
             "contactType" => $contactType,
             "TargetUser" => "user_" . $currentUserId

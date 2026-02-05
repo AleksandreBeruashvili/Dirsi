@@ -105,8 +105,8 @@ $hasAllFieldsSelected = "no";
 if($contactID){
     $contact=getContactInfoBINISGAYIDVA($contactID);
     $fieldsToCheck = [
-        "სახელი" => $contact["NAME"],
-        "გვარი" => $contact["LAST_NAME"],
+//        "სახელი" => $contact["NAME"],
+//        "გვარი" => $contact["LAST_NAME"],
 //        "ტელეფონი" => $contact["PHONE"],
 //        "მეილი" => $contact["EMAIL"],
         // "დაბადების თარიღი" => $contact["BIRTHDATE"],
@@ -120,9 +120,9 @@ if($contactID){
     $missingFields = [];
 
 
-    if(!$contact["UF_CRM_1761651998145"] && !$contact["UF_CRM_1761652010097"]){
-        $missingFields[] = "პირადი ნომერი|პასპორტი";
-    }
+//    if(!$contact["UF_CRM_1761651998145"] && !$contact["UF_CRM_1761652010097"]){
+//        $missingFields[] = "პირადი ნომერი|პასპორტი";
+//    }
     
     foreach ($fieldsToCheck as $fieldName => $fieldValue) {
         if (empty($fieldValue)) {
