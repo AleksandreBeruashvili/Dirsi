@@ -314,10 +314,11 @@ $products = getProducts($dealIds);
 $projects = getUniqueValues($products, 'PROJECT');
 $phases = getUniqueValues($products, 'phase');
 $blocks = array_diff(getUniqueValues($products, 'KORPUSIS_NOMERI_XE3NX2'), ['P']);
-$responsibles = getUniqueValues($products, 'DEAL_RESPONSIBLE_NAME');
+// $responsibles = getUniqueValues($products, 'DEAL_RESPONSIBLE_NAME');
 
 // Get lists for filters
-$usersList = getUsersList();
+// $usersList = getUsersList();
+$responsibles = getUniqueValues($products, 'DEAL_RESPONSIBLE_NAME');
 $sourcesList = getSourcesList();
 
 // After getting products
@@ -600,9 +601,9 @@ ob_end_clean();
                     <label class="filter-label">👤 Responsible</label>
                     <select name="responsible" class="filter-select">
                         <option value="">All Responsibles</option>
-                        <?php foreach($usersList as $userId => $userName): ?>
-                            <option value="<?= $userId ?>" <?= $filterResponsible == $userId ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($userName) ?>
+                        <?php foreach ($responsibles as $responsible): ?>
+                            <option value="<?= htmlspecialchars($responsible) ?>" <?= $filterResponsible == $responsible ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($responsible) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>

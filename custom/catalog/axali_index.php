@@ -432,7 +432,7 @@ ob_end_clean();
             align-items: center;
             justify-content: center;
             gap: 5px;
-            width: 350px;
+            width: 260px;
             height: 30px;
             flex-shrink: 0;  /* ✅ ADD THIS */
         }
@@ -440,7 +440,7 @@ ob_end_clean();
         .blockOnFloor {
             display: flex;
             gap: 5px;
-            width: 350px;
+            width: 260px;
             height: 30px;
             flex-shrink: 0;  /* ✅ ADD THIS */
             border-radius: 10px;
@@ -467,7 +467,7 @@ ob_end_clean();
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: 50px;
+            gap: 30px;  /* Changed from 50px to 5px */
             padding: 3px 12px;
             flex-wrap: nowrap; 
             min-width: fit-content;
@@ -1018,17 +1018,16 @@ ob_end_clean();
 
         /* ========================== TRANSLATE BOX ========================== */
         .gtranslate_wrapper {
+            flex-wrap: wrap;
             display: flex;
-            height: 30px;
             width: 75px;
             justify-content: center;
             align-items: center;
             position: absolute;
-            top: 32px;
-            left: 186.5px;
+            top: 25px;
+            left: 191px;
             z-index: 9999;
             background: white;
-            padding: 3px;
             border-radius: 6px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
         }
@@ -1038,7 +1037,7 @@ ob_end_clean();
             display: flex;
             min-width: 200px;
             width: fit-content;
-            height: 30px;
+            height: 40px;
             margin-left: 10px;
             margin-top: 17px;
             padding: 15px;
@@ -1340,12 +1339,12 @@ ob_end_clean();
 
                 <ul id="popupDetails"></ul>
 
-                <button id="toggleDetailsBtn">► დამატებითი დეტალები</button>
+                <!-- <button id="toggleDetailsBtn">► დამატებითი დეტალები</button>
                 <div class="popup-footer"></div>
 
                 <div id="popupDetailsWrapper">
                     <ul id="popupDetailsMore"></ul>
-                </div>
+                </div> -->
 
             </div>
 
@@ -1687,6 +1686,14 @@ ob_end_clean();
             option.textContent = project["NAME"];
             projectSelect.appendChild(option);
         });
+
+        // Set default project to "33"
+        projectSelect.value = "33";
+        
+        // Trigger the change event to load blocks
+        setTimeout(() => {
+            projectSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        }, 100);
     }
 
     // ================================ FETCH APARTMENTS ================================
@@ -1772,8 +1779,7 @@ ob_end_clean();
 
 
     // =========================== DRAWING APARTMENTS ===========================
-
-    function renderProductsByBlock(products, selectedBlocks, filterBy) {
+    function renderProductsByBlock(products, selectedBuildings, filterBy) {
         const container = document.getElementById("apsDisplay");
         container.innerHTML = ""; // clear old content
 
@@ -1782,48 +1788,59 @@ ob_end_clean();
             return;
         }
 
-        // Calculate max apartments per block across all floors
-        const maxApartmentsPerBlock = {};
-        
-        // Group by floor first
+        // Group products by building and block
+        const buildingBlockStructure = {};
+        products.forEach(apartment => {
+            const building = apartment["BUILDING"];
+            const block = apartment["KORPUSIS_NOMERI_XE3NX2"];
+            
+            if (!buildingBlockStructure[building]) {
+                buildingBlockStructure[building] = {};
+            }
+            if (!buildingBlockStructure[building][block]) {
+                buildingBlockStructure[building][block] = [];
+            }
+            buildingBlockStructure[building][block].push(apartment);
+        });
+
+        // Group by floor
         let byFloor = {};
         products.forEach(apartment => {
             if (!byFloor[apartment["FLOOR"]]) byFloor[apartment["FLOOR"]] = [];
             byFloor[apartment["FLOOR"]].push(apartment);
         });
 
-        // For each floor, count apartments per block
+        // Calculate max apartments per building-block combination
+        const maxApartmentsPerBlock = {};
         Object.values(byFloor).forEach(floorApartments => {
-            const blockCounts = {};
-            let blockName = '';
             floorApartments.forEach(apartment => {
-                if (filterBy === "block") {
-                    blockName = apartment["KORPUSIS_NOMERI_XE3NX2"];
-                } else {
-                    blockName = apartment["BUILDING"];
-                }
-                blockCounts[blockName] = (blockCounts[blockName] || 0) + 1;
-            });
-
-            // Update max for each block
-            Object.entries(blockCounts).forEach(([blockName, count]) => {
-                if (!maxApartmentsPerBlock[blockName] || count > maxApartmentsPerBlock[blockName]) {
-                    maxApartmentsPerBlock[blockName] = count;
-                }
+                const building = apartment["BUILDING"];
+                const block = apartment["KORPUSIS_NOMERI_XE3NX2"];
+                const key = `${building}-${block}`;
+                
+                maxApartmentsPerBlock[key] = (maxApartmentsPerBlock[key] || 0) + 1;
             });
         });
 
-        // Calculate width for each block (30px per apt + 5px gap between apts)
+        // Calculate width for each block
         const blockWidths = {};
-        Object.entries(maxApartmentsPerBlock).forEach(([blockName, maxCount]) => {
-            blockWidths[blockName] = (maxCount * 40) + ((maxCount - 1) * 5);
+        Object.entries(maxApartmentsPerBlock).forEach(([key, maxCount]) => {
+            blockWidths[key] = (maxCount * 40) + ((maxCount - 1) * 5);
         });
 
-        // Render block labels with calculated widths
+        // Render building and block labels
         let blockLabel = `<div class="floor-row" id="block-labels">`;
-        selectedBlocks.forEach(block => {
-            const width = blockWidths[block] || 350; // fallback to 350px if no data
-            blockLabel += `<div id="label-div" style="width: ${width}px; display: flex; align-items: center; justify-content: center; gap: 5px; height: 40px; flex-shrink: 0;"><div>${block}</div></div>`;
+        selectedBuildings.forEach(building => {
+            const blocks = Object.keys(buildingBlockStructure[building] || {}).sort();
+            
+            blocks.forEach(block => {
+                const key = `${building}-${block}`;
+                const width = blockWidths[key] || 350;
+                blockLabel += `<div id="label-div" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; height: 40px; flex-shrink: 0;">
+                    <div style="font-size: 11px; color: #666; font-weight: 500;">${building}</div>
+                    <div style="font-weight: 600;">${block}</div>
+                </div>`;
+            });
         });
         blockLabel += `</div>`;
         container.innerHTML += blockLabel;
@@ -1841,80 +1858,73 @@ ob_end_clean();
         let min = Math.min(...floors);
         let max = Math.max(...floors);
         const floorsContainer = document.getElementById("floors");
-        floorsContainer.innerHTML = ""; // clear old labels first
+        floorsContainer.innerHTML = "";
 
         for (let i = max; i >= min; i--) {
             floorsContainer.innerHTML += `<div class="floor-label"><div>${i}</div></div>`;
         }
 
-        // Render each floor with calculated block widths
+        // Render each floor with building-block structure
         Object.keys(byFloor).sort((a, b) => b - a).forEach(floorNumber => {
             const floor = byFloor[floorNumber]; 
 
-            let blocks = {};
-            selectedBlocks.forEach(block => {
-                blocks[block] = [];
-            });
-
-            Object.values(floor).forEach(apartment => {
-                if (filterBy === "block") {
-                    blocks[apartment["KORPUSIS_NOMERI_XE3NX2"]].push(apartment);
-                } else {
-                    blocks[apartment["BUILDING"]].push(apartment);
-                }
-            });
-
             let floorDiv = `<div class="floor-row">`;
 
-            Object.entries(blocks).forEach(([blockName, blockOnFloor]) => {
-                const width = blockWidths[blockName] || 350; // use calculated width
+            selectedBuildings.forEach(building => {
+                const blocks = Object.keys(buildingBlockStructure[building] || {}).sort();
                 
-                let blockOnFloorDiv = `<div 
-                        class="blockOnFloor"
-                        data-floor="${floor[0]["FLOOR"]}"
-                        data-block="${blockName}"
-                        style="height:40px; width: ${width}px; flex-shrink: 0;">`;
+                blocks.forEach(block => {
+                    const key = `${building}-${block}`;
+                    const width = blockWidths[key] || 350;
+                    
+                    let blockOnFloorDiv = `<div 
+                            class="blockOnFloor"
+                            data-floor="${floorNumber}"
+                            data-building="${building}"
+                            data-block="${block}"
+                            style="height:40px; flex-shrink: 0;">`;
 
-                if (blockOnFloor.length > 0) {
-                    blockOnFloor.forEach(apartment => {
-                        let statusClass = "status-active";
-                        switch(apartment["STATUS"]) {
-                            case "გაყიდული": statusClass="status-sold"; break;
-                            case "დაჯავშნილი": statusClass="status-reserved"; break;
-                            case "ჯავშნის რიგი": statusClass="status-queue"; break;
-                            case "თავისუფალი": statusClass="status-active"; break;
-                            case "NFS": statusClass="status-notforsale"; break;
-                        }
+                    const blockApartments = floor.filter(apt => 
+                        apt["BUILDING"] === building && apt["KORPUSIS_NOMERI_XE3NX2"] === block
+                    );
 
-                        if (filterBy === "block") {
-                            blockThingy = apartment["KORPUSIS_NOMERI_XE3NX2"];
-                        } else {
-                            blockThingy = apartment["BUILDING"];
-                        }
-                        if (productsIds && productsIds.includes(apartment["ID"])) {
-                            blockOnFloorDiv += `<div class="apt ${statusClass} dimmed"
-                                        data-id="${apartment["ID"]}"
-                                        data-status="${apartment["STATUS"]}"
-                                        data-floor="${apartment["FLOOR"]}"
-                                        data-block="${blockThingy}"
-                                        style="transform: scale(1.2); outline: 2px solid #ff343a;">
-                                        <div style="font-size: 10px;">${apartment["Number"]}</div> <div>${apartment["TOTAL_AREA"]}</div>
-                                </div>`;
-                        } else {
-                            blockOnFloorDiv += `<div class="apt ${statusClass}"
+                    if (blockApartments.length > 0) {
+                        blockApartments.forEach(apartment => {
+                            let statusClass = "status-active";
+                            switch(apartment["STATUS"]) {
+                                case "გაყიდული": statusClass="status-sold"; break;
+                                case "დაჯავშნილი": statusClass="status-reserved"; break;
+                                case "ჯავშნის რიგი": statusClass="status-queue"; break;
+                                case "თავისუფალი": statusClass="status-active"; break;
+                                case "NFS": statusClass="status-notforsale"; break;
+                            }
+
+                            if (productsIds && productsIds.includes(apartment["ID"])) {
+                                blockOnFloorDiv += `<div class="apt ${statusClass} dimmed"
                                             data-id="${apartment["ID"]}"
                                             data-status="${apartment["STATUS"]}"
                                             data-floor="${apartment["FLOOR"]}"
-                                            data-block="${blockThingy}">
+                                            data-building="${building}"
+                                            data-block="${block}"
+                                            style="transform: scale(1.2); outline: 2px solid #ff343a;">
                                             <div style="font-size: 10px;">${apartment["Number"]}</div> <div>${apartment["TOTAL_AREA"]}</div>
                                     </div>`;
-                        }
-
-                    });
-                }
-                
-                blockOnFloorDiv += `</div>`;
-                floorDiv += blockOnFloorDiv;
+                            } else {
+                                blockOnFloorDiv += `<div class="apt ${statusClass}"
+                                                data-id="${apartment["ID"]}"
+                                                data-status="${apartment["STATUS"]}"
+                                                data-floor="${apartment["FLOOR"]}"
+                                                data-building="${building}"
+                                                data-block="${block}">
+                                                <div style="font-size: 10px;">${apartment["Number"]}</div> <div>${apartment["TOTAL_AREA"]}</div>
+                                        </div>`;
+                            }
+                        });
+                    }
+                    
+                    blockOnFloorDiv += `</div>`;
+                    floorDiv += blockOnFloorDiv;
+                });
             });
             
             floorDiv += `</div>`;
@@ -1993,6 +2003,9 @@ ob_end_clean();
     function applyFilters() {
         const filters = getAllFilters(); // Collect values from checkboxes, select, and range
 
+        // Track which building-block combinations have visible apartments
+        const visibleBlocks = new Set();
+
         document.querySelectorAll("#apsDisplay .apt").forEach(aptEl => {
             const aptId = aptEl.dataset.id; // fetches the data-id attribute
             const apartment = filteredProducts.find(p => p["ID"] == aptId);
@@ -2003,9 +2016,6 @@ ob_end_clean();
 
             // Status filter
             if (filters.status.length > 0 && !filters.status.includes(apartment["STATUS"])) match = false;
-
-            // building filter
-            // if (filters.building.length > 0 && !filters.building.includes(apartment["BUILDING"])) match = false;
 
             // Apartment type filter
             if (filters.aptType.length > 0 && !filters.aptType.includes(apartment["PRODUCT_TYPE"])) match = false;
@@ -2025,29 +2035,23 @@ ob_end_clean();
                 const prop = apartment[key];
                 
                 if (Array.isArray(val)) {
-                    // Checkbox filter - check if apartment's value is in selected values
-                    // Handle both empty values and actual comparisons
                     if (val.length === 0) {
-                        continue; // Skip empty filters
+                        continue;
                     }
                     
                     if (!prop || prop === '' || prop === null || prop === undefined) {
                         match = false;
-                        console.log(`Apartment ${aptId} failed filter ${key}: property is empty/null`);
                         break;
                     }
                     
-                    // Convert both to strings and compare
                     const propStr = String(prop).trim();
                     const matched = val.some(v => String(v).trim() === propStr);
                     
                     if (!matched) {
-                        console.log(`Apartment ${aptId} (${apartment["NUMBER"]}) failed filter ${key}: "${propStr}" not in [${val.map(v => `"${v}"`).join(', ')}]`);
                         match = false;
                         break;
                     }
                 } else if (typeof val === "object" && val !== null) {
-                    // Range filter
                     const numProp = parseFloat(prop);
                     if (isNaN(numProp)) {
                         match = false;
@@ -2058,7 +2062,6 @@ ob_end_clean();
                         break;
                     }
                 } else {
-                    // Text filter (fallback)
                     if (!prop || !prop.toString().toLowerCase().includes(val.toLowerCase())) {
                         match = false;
                         break;
@@ -2069,8 +2072,38 @@ ob_end_clean();
             // Apply dimmed class if it does NOT match
             if (match) {
                 aptEl.classList.remove("dimmed");
+                // Track this building-block combination as visible
+                const building = apartment["BUILDING"];
+                const block = apartment["KORPUSIS_NOMERI_XE3NX2"];
+                visibleBlocks.add(`${building}-${block}`);
             } else {
                 aptEl.classList.add("dimmed");
+            }
+        });
+
+        // Hide/show block labels based on whether they have any visible apartments
+        document.querySelectorAll("#block-labels #label-div").forEach(labelDiv => {
+            const buildingText = labelDiv.querySelector("div:first-child").textContent;
+            const blockText = labelDiv.querySelector("div:last-child").textContent;
+            const key = `${buildingText}-${blockText}`;
+            
+            if (visibleBlocks.has(key)) {
+                labelDiv.style.display = "flex";
+            } else {
+                labelDiv.style.display = "none";
+            }
+        });
+
+        // Also hide/show the blockOnFloor divs
+        document.querySelectorAll(".blockOnFloor").forEach(blockDiv => {
+            const building = blockDiv.dataset.building;
+            const block = blockDiv.dataset.block;
+            const key = `${building}-${block}`;
+            
+            if (visibleBlocks.has(key)) {
+                blockDiv.style.display = "flex";
+            } else {
+                blockDiv.style.display = "none";
             }
         });
     }
@@ -2110,6 +2143,12 @@ ob_end_clean();
             source: isFromProductsBox ? "productsBox" : "apsDisplay"
         });
     });
+
+    function addLi(label, value, detailsList) {
+        if (value !== undefined && value !== null && value !== "") {
+            detailsList.innerHTML += `<li><b>${label}: </b> ${value}</li>`;
+        }
+    }
 
     // ================================== POPUP ==================================
     async function openPopup(apartmentInfo) {
@@ -2166,23 +2205,39 @@ ob_end_clean();
         
         // // fill details
         const detailsList = document.getElementById("popupDetails");
+        detailsList.innerHTML = ""; // reset
 
-        
-        detailsList.innerHTML = `
-            <li><b>პროექტი: </b> ${apartment["PROJECT"] || "—"}</li>
-            <li><b>ბლოკი: </b> ${apartment["KORPUSIS_NOMERI_XE3NX2"] || "—"}</li>
-            <li><b>სადარბაზო: </b> ${apartment["_15MYD6"] || "—"}</li>
-            <li><b>სართული: </b> ${apartment["FLOOR"] || "—"}</li>
-            <li>
-                <div style="display: flex; justify-content: space-between; width:85%;">
-                    <div><b>სრული ფასი $: </b> ${apartment["PRICE"] || "—"}</div>
-                    <div><b>ფასი m<sup>2</sup> $: </b> ${apartment["KVM_PRICE"] || "—"}</div>
-                </div>
-            </li>
-            <li><b>სრული ფართი: </b> ${apartment["TOTAL_AREA"] || "—"}</li>
-            <li><b>ფართი (საცხოვრებელი): </b> ${apartment["LIVING_SPACE"] || "—"}</li>
-            <li><b>ფართი (საზაფხულო): </b> ${apartment["__FVE8A2"] || "—"}</li>
-        `;
+        addLi("პროექტი", apartment["PROJECT"], detailsList);
+        addLi("ბლოკი", apartment["KORPUSIS_NOMERI_XE3NX2"] !== "P" ? apartment["KORPUSIS_NOMERI_XE3NX2"] : "", detailsList);
+        addLi("სადარბაზო", apartment["_15MYD6"], detailsList);
+        addLi("სართული", apartment["FLOOR"], detailsList);
+        if (apartment["PRICE"] || apartment["KVM_PRICE"]) {
+            detailsList.innerHTML += `
+                <li>
+                    <div style="display:flex; justify-content:space-between; width:85%;">
+                        ${apartment["PRICE"] ? `<div><b>სრული ფასი $: </b>${apartment["PRICE"]}</div>` : ""}
+                        ${apartment["KVM_PRICE"] ? `<div><b>ფასი მ<sup>2</sup> $: </b>${apartment["KVM_PRICE"]}</div>` : ""}
+                    </div>
+                </li>
+            `;
+        }
+        if (apartment["PRICE_GEL"]) {
+            detailsList.innerHTML += `
+                <li>
+                    <div style="display:flex; justify-content:space-between; width:85%;">
+                        ${apartment["PRICE_GEL"] ? `<div><b>სრული ფასი $: </b>${apartment["PRICE"]}</div>` : ""}
+                        <div><b>NBG კურსი: </b> ${nbg}</div>
+                    </div>
+                </li>
+            `;
+        }
+
+        addLi("სრული ფართი მ<sup>2</sup>", apartment["TOTAL_AREA"], detailsList);
+        addLi("ფართი (საცხოვრებელი)", apartment["LIVING_SPACE"], detailsList);
+        addLi("ფართი (საზაფხულო)", apartment["__FVE8A2"], detailsList);
+        addLi("საძინებლების რაოდენობა: ", apartment["Bedrooms"], detailsList);
+        addLi("კორპუსი: ", apartment["BUILDING"], detailsList);
+        addLi("პროექტის დასრულების თარიღი: ", apartment["projEndDate"], detailsList);
         
         if(apartment["OWNER_DEAL"]){
             let ownerDeal = `<a href="/crm/deal/details/${apartment["OWNER_DEAL"]}/" target="_blank">${apartment["OWNER_DEAL"]}</a>`;
@@ -2218,12 +2273,16 @@ ob_end_clean();
         }
         
         // დამატებითი დეტალები
-        const moreDetailsList = document.getElementById("popupDetailsMore");
-        moreDetailsList.innerHTML = `
-            <li><b>საძინებლების რაოდენობა: </b> ${apartment["Bedrooms"] || "—"}</li>
-            <li><b>building: </b> ${apartment["BUILDING"] || "—"}</li>
-            <li><b>პროექტის დასრულების თარიღი: </b> ${apartment["projEndDate"] || "—"}</li>
-        `;
+        // const moreDetailsList = document.getElementById("popupDetailsMore");
+        // moreDetailsList.innerHTML = ""; // reset
+        // moreDetailsList.innerHTML = `
+        //     <li><b>საძინებლების რაოდენობა: </b> ${apartment["Bedrooms"] || "—"}</li>
+        //     <li><b>კორპუსი: </b> ${apartment["BUILDING"] || "—"}</li>
+        //     <li><b>პროექტის დასრულების თარიღი: </b> ${apartment["projEndDate"] || "—"}</li>
+        // `;
+        // addLi("საძინებლების რაოდენობა: ", apartment["Bedrooms"], moreDetailsList);
+        // addLi("კორპუსი: ", apartment["BUILDING"], moreDetailsList);
+        // addLi("პროექტის დასრულების თარიღი: ", apartment["projEndDate"], moreDetailsList);
         
         // LOOSEN UP MY BUTTONS BABE (UH HUH) 
         // BUT YOU KEEP FRONTIN' (HUH)
@@ -2284,17 +2343,17 @@ ob_end_clean();
     });
 
     // popup extra details toggle
-    document.getElementById("toggleDetailsBtn").addEventListener("click", function () {
-        const wrapper = document.getElementById("popupDetailsWrapper");
+    // document.getElementById("toggleDetailsBtn").addEventListener("click", function () {
+    //     const wrapper = document.getElementById("popupDetailsWrapper");
 
-        wrapper.classList.toggle("open");
+    //     wrapper.classList.toggle("open");
 
-        if (wrapper.classList.contains("open")) {
-            this.textContent = "▼ დამალე";
-        } else {
-            this.textContent = "► დამატებითი დეტალები";
-        }
-    });
+    //     if (wrapper.classList.contains("open")) {
+    //         this.textContent = "▼ დამალე";
+    //     } else {
+    //         this.textContent = "► დამატებითი დეტალები";
+    //     }
+    // });
     
     
     // update filter texts when filtered
@@ -2726,10 +2785,13 @@ ob_end_clean();
             translateContainer.style.display = "flex";
             translateContainer.style.justifyContent = "center";
             translateContainer.style.alignItems = "center";
-            translateContainer.style.width = "45px";
-            translateContainer.style.height = "20px";
-            translateContainer.style.top = "40px";
-            translateContainer.style.left = "192px";
+            translateContainer.style.width = "104px";
+            translateContainer.style.height = "30px";
+            translateContainer.style.top = "25px";
+            translateContainer.style.left = "12px";
+
+            let filterContainer = document.querySelector("#filterContainer");
+            filterContainer.style.paddingTop = "25px";
         }
         
         containerDiv.insertBefore(translateContainer, containerDiv.firstChild);
@@ -2795,7 +2857,7 @@ ob_end_clean();
     function closeCarousel() {
         const carousel = document.getElementById("imageCarouselPopup");
         carousel.classList.remove("active");
-        document.querySelector(".gtranslate_wrapper").style.display = "block";;
+        document.querySelector(".gtranslate_wrapper").style.display = "flex";
     }
 
     function updateCarouselImage() {
