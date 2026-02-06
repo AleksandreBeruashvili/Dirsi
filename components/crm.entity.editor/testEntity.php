@@ -1057,22 +1057,30 @@ if (!empty($htmlEditorConfigs))
             if (citizenshipValue === "Non-resident" || citizenshipValue === "not selected" ) {
                 // console.log("test")
                 // console.log(citizenshipValue)
-                // const hiddenInput = citizenOfBlock.querySelector("input[name='UF_CRM_1770187155776']");
-                // if(hiddenInput){
-                //     hiddenInput.value = "";
-                // }
+                const hiddenInput = citizenOfBlock.querySelector("input[name='UF_CRM_1770187155776']");
+                if(hiddenInput){
+                    if(hiddenInput.value=="217"){
+                        hiddenInput.value = "";
+                    }
+    
+                }
 
-                // // თუ view mode-შია, field-item-იც შევცვალოთ
-                // const fieldItem = citizenOfBlock.querySelector(".field-item");
-                // if(fieldItem){
-                //     fieldItem.innerText = "not selected";
-                // }
+                // თუ view mode-შია, field-item-იც შევცვალოთ
+                const fieldItem = citizenOfBlock.querySelector(".field-item");
+                if(fieldItem){
+                    if(fieldItem.innerText=="Not selected"){
+                        fieldItem.innerText = "not selected";
+                    }
+
+                }
                 
-                // // თუ edit mode-შია, selectName-იც შევცვალოთ
-                // const selectName = citizenOfBlock.querySelector(".main-ui-select-name");
-                // if(selectName){
-                //     selectName.innerText = "not selected";
-                // }
+                // თუ edit mode-შია, selectName-იც შევცვალოთ
+                const selectName = citizenOfBlock.querySelector(".main-ui-select-name");
+                if(selectName){
+                    if(selectName.innerText=="Not selected"){
+                        selectName.innerText = "not selected";
+                    }
+                }
 
                 if(citizenshipValue === "Non-resident"){
                     citizenOfBlock.style.display = "";
