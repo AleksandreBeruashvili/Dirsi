@@ -15,6 +15,13 @@ $citizenshipType = $root->GetVariable("citizenshipType");
 $citizenOf = $root->GetVariable("citizenOf");
 $nationality = $root->GetVariable("nationality");
 
+$nameRU = $root->GetVariable("nameRU");
+$legalAddressRU = $root->GetVariable("legalAddressRU");
+$actualAddressRU = $root->GetVariable("actualAddressRU");
+$nameENG = $root->GetVariable("nameENG");
+$legalAddressENG = $root->GetVariable("legalAddressENG");
+$actualAddressENG = $root->GetVariable("actualAddressENG");
+
 $miznobrioba = $root->GetVariable("miznobrioba");
 $contType = $root->GetVariable("contType");
 
@@ -114,6 +121,12 @@ $upd = array(
     "UF_CRM_1761651978222" => $citizenshipType,
     "UF_CRM_1770187155776" => $citizenOf,
     "UF_CRM_1769506891465" => $nationality,
+    "UF_CRM_1766144180428" => $nameRU,
+    "UF_CRM_1766144198587" => $legalAddressRU,
+    "UF_CRM_1766144293570" => $actualAddressRU,
+    "UF_CRM_1767604263120" => $nameENG,
+    "UF_CRM_1767604279485" => $legalAddressENG,
+    "UF_CRM_1767604297086" => $actualAddressENG,
 );
 $CCrmContact->Update($contactId, $upd);
 

@@ -51,6 +51,13 @@ $citizenshipType = trim($_POST["citizenshipType"]);
 $citizenOf = trim($_POST["citizenOf"]);
 $nationality = trim($_POST["nationality"]);
 
+$nameRU = trim($_POST["nameRU"]);
+$legalAddressRU = trim($_POST["legalAddressRU"]);
+$actualAddressRU = trim($_POST["actualAddressRU"]);
+$nameENG = trim($_POST["nameENG"]);
+$legalAddressENG = trim($_POST["legalAddressENG"]);
+$actualAddressENG = trim($_POST["actualAddressENG"]);
+
 $miznobrioba = trim($_POST["miznobrioba"]);
 $contactType = trim($_POST["contactType"]);
 
@@ -74,6 +81,12 @@ if($dealId){
             "citizenshipType" => $citizenshipType,
             "citizenOf" => $citizenOf,
             "nationality" => $nationality,
+            "nameRU" => $nameRU,
+            "legalAddressRU" => $legalAddressRU,
+            "actualAddressRU" => $actualAddressRU,
+            "nameENG" => $nameENG,
+            "legalAddressENG" => $legalAddressENG,
+            "actualAddressENG" => $actualAddressENG,
             "miznobrioba" => $miznobrioba,
             "contactType" => $contactType,
             "TargetUser" => "user_" . $currentUserId

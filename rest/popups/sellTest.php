@@ -152,7 +152,7 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         </div>
 
         <div class="form-group" id="citizenOfDiv" style="display:none;">
-            <label for="citizenOf" class="required">Citizen of</label>
+            <label for="citizenOf" class="required">მოქალაქე</label>
             <select id="citizenOf" name="citizenOf" style="width: 40%; height: 30px;">
                 <option value=""></option>
             </select>
@@ -168,6 +168,38 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
                 <option value="157">Russian</option>
             </select>
         </div>
+
+        <div class="form-group">
+            <label for="nameRU">სახელი (რუსული)</label>
+            <input type="text" id="nameRU" name="nameRU">
+        </div>
+
+        <div class="form-group">
+            <label for="legalAddressRU">იურიდიული მისმართი (რუსული)</label>
+            <input type="text" id="legalAddressRU" name="legalAddressRU">
+        </div>
+
+        <div class="form-group">
+            <label for="actualAddressRU">ფაქტიური მისამართი (რუსული)</label>
+            <input type="text" id="actualAddressRU" name="actualAddressRU">
+        </div>
+
+        <div class="form-group">
+            <label for="nameENG">სახელი (ინგლისური)</label>
+            <input type="text" id="nameENG" name="nameENG">
+        </div>
+
+        <div class="form-group">
+            <label for="legalAddressENG">იურიდიული მისამართი (ინგლისური)</label>
+            <input type="text" id="legalAddressENG" name="legalAddressENG">
+        </div>
+
+        <div class="form-group">
+            <label for="actualAddressENG">ფაქტიური მისამართი (ინგლისური)</label>
+            <input type="text" id="actualAddressENG" name="actualAddressENG">
+        </div>
+
+
 
         <div class="form-group">
             <label for="clientDesc" >კლიენტის დახასიათება</label>
@@ -232,6 +264,43 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         document.getElementById("email").value=contact["EMAIL"];
     } else {
         document.getElementById("email").value="";
+    }
+    // რუსული ფილდები
+    if (contact["UF_CRM_1766144180428"]){
+        document.getElementById("nameRU").value=contact["UF_CRM_1766144180428"];
+    } else {
+        document.getElementById("nameRU").value="";
+    }
+
+    if (contact["UF_CRM_1766144198587"]){
+        document.getElementById("legalAddressRU").value=contact["UF_CRM_1766144198587"];
+    } else {
+        document.getElementById("legalAddressRU").value="";
+    }
+
+    if (contact["UF_CRM_1766144293570"]){
+        document.getElementById("actualAddressRU").value=contact["UF_CRM_1766144293570"];
+    } else {
+        document.getElementById("actualAddressRU").value="";
+    }
+
+    // ინგლისური ფილდები
+    if (contact["UF_CRM_1767604263120"]){
+        document.getElementById("nameENG").value=contact["UF_CRM_1767604263120"];
+    } else {
+        document.getElementById("nameENG").value="";
+    }
+
+    if (contact["UF_CRM_1767604279485"]){
+        document.getElementById("legalAddressENG").value=contact["UF_CRM_1767604279485"];
+    } else {
+        document.getElementById("legalAddressENG").value="";
+    }
+
+    if (contact["UF_CRM_1767604297086"]){
+        document.getElementById("actualAddressENG").value=contact["UF_CRM_1767604297086"];
+    } else {
+        document.getElementById("actualAddressENG").value="";
     }
 
     if (contact["UF_CRM_1761651998145"]){
@@ -469,6 +538,13 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
             formData.append("citizenshipType", $("#citizenshipType").val())
             formData.append("citizenOf", $("#citizenOf").val())
             formData.append("nationality", $("#nationality").val())
+
+            formData.append("nameRU", $("#nameRU").val())
+            formData.append("legalAddressRU", $("#legalAddressRU").val())
+            formData.append("actualAddressRU", $("#actualAddressRU").val())
+            formData.append("nameENG", $("#nameENG").val())
+            formData.append("legalAddressENG", $("#legalAddressENG").val())
+            formData.append("actualAddressENG", $("#actualAddressENG").val())
 
             formData.append("miznobrioba", $("#miznobrioba").val());
             formData.append("contactType", $("#contactType").val());
