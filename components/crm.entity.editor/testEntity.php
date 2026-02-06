@@ -1030,27 +1030,21 @@ if (!empty($htmlEditorConfigs))
         }, 100);
     }
 
+
+
+
+    
+
+
+
     if (pathname[1] === "crm" && pathname[2] === "contact") {
-
         setInterval(() => {
-
-            const citizenOfBlock = document.querySelector(
-                "[data-cid='UF_CRM_1770187155776']"
-            );
-
-            const citizenOfEdit = document.querySelector(
-                "[data-name='UF_CRM_1770187155776']"
-            )
-
+            const citizenOfBlock = document.querySelector("[data-cid='UF_CRM_1770187155776']");
+            
             if (!citizenOfBlock) return;
 
-            const citizenshipViewItem = document.querySelector(
-                "[data-cid='UF_CRM_1761651978222'] .field-item"
-            );
-
-            const citizenshipEditControl = document.querySelector(
-                "[data-name='UF_CRM_1761651978222']"
-            );
+            const citizenshipViewItem = document.querySelector("[data-cid='UF_CRM_1761651978222'] .field-item");
+            const citizenshipEditControl = document.querySelector("[data-name='UF_CRM_1761651978222']");
 
             let citizenshipValue = "";
 
@@ -1060,49 +1054,64 @@ if (!empty($htmlEditorConfigs))
                 citizenshipValue = citizenshipEditControl.innerText.trim();
             }
 
-            /* ===== CITIZEN OF INTERNAL ELEMENTS ===== */
+            if (citizenshipValue === "Non-resident" || citizenshipValue === "not selected" ) {
+                // console.log("test")
+                // console.log(citizenshipValue)
+                // const hiddenInput = citizenOfBlock.querySelector("input[name='UF_CRM_1770187155776']");
+                // if(hiddenInput){
+                //     hiddenInput.value = "";
+                // }
 
-            const citizenOfHiddenInput =
-                citizenOfBlock.querySelector("input[type='hidden']");
+                // // თუ view mode-შია, field-item-იც შევცვალოთ
+                // const fieldItem = citizenOfBlock.querySelector(".field-item");
+                // if(fieldItem){
+                //     fieldItem.innerText = "not selected";
+                // }
+                
+                // // თუ edit mode-შია, selectName-იც შევცვალოთ
+                // const selectName = citizenOfBlock.querySelector(".main-ui-select-name");
+                // if(selectName){
+                //     selectName.innerText = "not selected";
+                // }
 
-            const citizenOfText =
-                citizenOfBlock.querySelector(".field-item");
+                if(citizenshipValue === "Non-resident"){
+                    citizenOfBlock.style.display = "";
+              
+                }else{
+                    citizenOfBlock.style.display = "none";
+                }
+           
+            } else {
 
-            /* 🟢 NON-RESIDENT → show, keep Not selected */
-            if (citizenshipValue === "Non-resident") {
-                citizenOfBlock.style.display = "";
+                console.log(citizenshipValue)
+                console.log("test2")
+                // ჯერ დავასეტოთ მნიშვნელობა (hidden input პირდაპირ)
+                const hiddenInput = citizenOfBlock.querySelector("input[name='UF_CRM_1770187155776']");
+                if(hiddenInput){
+                    hiddenInput.value = 217;
+                }
+                
+                // თუ view mode-შია, field-item-იც შევცვალოთ
+                const fieldItem = citizenOfBlock.querySelector(".field-item");
+                if(fieldItem){
+                    fieldItem.innerText = "Not selected";
+                }
+                
+                // თუ edit mode-შია, selectName-იც შევცვალოთ
+                const selectName = citizenOfBlock.querySelector(".main-ui-select-name");
+                if(selectName){
+                    selectName.innerText = "Not selected";
+                }
+                citizenOfBlock.style.display = "none";    
             }
 
-            /* 🔴 RESIDENT → hide + clear value */
-            if (citizenshipValue === "Resident") {
+        }, 1000);
 
-                citizenOfBlock.style.display = "none";
 
-                citizenOfEdit.value = "217";
-
-                // clear hidden value
-                if (citizenOfHiddenInput) {
-                    citizenOfHiddenInput.value = "";
-                    citizenOfHiddenInput.removeAttribute("data-value");
-                }
-
-                // clear visible text
-                if (citizenOfText) {
-                    citizenOfText.innerText = "Not selected";
-                }
-            }
-
-        }, 500);
     }
 
-
-
     if(pathname[1] == "crm" && pathname[2] == "deal" ){
-
-
-
         setInterval(() => {
-
             const targetField = document.querySelector(
                 "[data-cid='UF_CRM_1770109695987']"
             );
