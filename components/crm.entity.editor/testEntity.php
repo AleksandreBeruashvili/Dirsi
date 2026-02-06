@@ -1030,6 +1030,73 @@ if (!empty($htmlEditorConfigs))
         }, 100);
     }
 
+    if (pathname[1] === "crm" && pathname[2] === "contact") {
+
+        setInterval(() => {
+
+            const citizenOfBlock = document.querySelector(
+                "[data-cid='UF_CRM_1770187155776']"
+            );
+
+            const citizenOfEdit = document.querySelector(
+                "[data-name='UF_CRM_1770187155776']"
+            )
+
+            if (!citizenOfBlock) return;
+
+            const citizenshipViewItem = document.querySelector(
+                "[data-cid='UF_CRM_1761651978222'] .field-item"
+            );
+
+            const citizenshipEditControl = document.querySelector(
+                "[data-name='UF_CRM_1761651978222']"
+            );
+
+            let citizenshipValue = "";
+
+            if (citizenshipViewItem) {
+                citizenshipValue = citizenshipViewItem.innerText.trim();
+            } else if (citizenshipEditControl) {
+                citizenshipValue = citizenshipEditControl.innerText.trim();
+            }
+
+            /* ===== CITIZEN OF INTERNAL ELEMENTS ===== */
+
+            const citizenOfHiddenInput =
+                citizenOfBlock.querySelector("input[type='hidden']");
+
+            const citizenOfText =
+                citizenOfBlock.querySelector(".field-item");
+
+            /* 🟢 NON-RESIDENT → show, keep Not selected */
+            if (citizenshipValue === "Non-resident") {
+                citizenOfBlock.style.display = "";
+            }
+
+            /* 🔴 RESIDENT → hide + clear value */
+            if (citizenshipValue === "Resident") {
+
+                citizenOfBlock.style.display = "none";
+
+                citizenOfEdit.value = "217";
+
+                // clear hidden value
+                if (citizenOfHiddenInput) {
+                    citizenOfHiddenInput.value = "";
+                    citizenOfHiddenInput.removeAttribute("data-value");
+                }
+
+                // clear visible text
+                if (citizenOfText) {
+                    citizenOfText.innerText = "Not selected";
+                }
+            }
+
+        }, 500);
+    }
+
+
+
     if(pathname[1] == "crm" && pathname[2] == "deal" ){
 
 
