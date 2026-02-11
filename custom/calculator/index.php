@@ -1069,6 +1069,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (CONFIG.graphHeaderByDoc) {
         fillCalculatorHeader();
         fillGraphByDoc();
+        hide('confirmTXT');
+        show('graphExportButtons');
     }
     
     initializeEventListeners();
