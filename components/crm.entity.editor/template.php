@@ -1028,6 +1028,35 @@ if (!empty($htmlEditorConfigs))
                 // sourceBlock.style.opacity = "0.6";
             }
         }, 100);
+
+        setInterval(() => {
+
+            let priorityField = document.querySelector(
+                "[data-cid='UF_CRM_1770793691'] .field-item"
+            );
+
+            if (!priorityField) return;
+
+            let value = priorityField.textContent.trim().toLowerCase();
+
+            if (value === "yes") {
+
+                console.log("here is yes");
+                let dealWrapper = document.querySelector(".ui-side-panel-content");
+                // let dealWrapper = document.querySelector(".ui-page-slider-wrapper");
+
+                dealWrapper.style.background =
+                "linear-gradient(35deg,#FFE400,#FFA500)";
+
+            } else {
+
+                dealWrapper.style.background = "";
+            }
+
+        }, 1000);
+
+
+
     }
 
     if(pathname[1] == "crm" && pathname[2] == "deal" ){
