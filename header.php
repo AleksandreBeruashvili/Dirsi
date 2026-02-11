@@ -20,7 +20,25 @@ if ($USER->IsAuthorized()) {
     const userID = <?php echo $userID; ?>;
 	url = <? echo json_encode($url); ?>;
 
+    setInterval(() => {
+        
+            
+        let divToCheck=document.querySelectorAll('.crm-kanban-item-fields-item');
+        if(divToCheck){        
+            
+            divToCheck= divToCheck.forEach(element => {
+                let divTitle=element.children[0].textContent;
+                if(divTitle=='Priority'){
+                    divValue=element.children[1].textContent;
 
+                    if(divValue=='Yes'){        
+                        element.parentElement.parentElement.style.background='linear-gradient(35deg,#FFE400,#FFA500)';
+                    }
+                }
+            });        
+        }
+            
+    }, 1000);
 
 
     if(userID !== 1){

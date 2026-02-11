@@ -40,7 +40,8 @@ if (count($json["data"])) {
         $arPropsOld["SELECTID_GRAPH"] = $json["graph"];
         $arPropsOld["HEADER_JSON"] = json_encode($json["calculatorHead"]);
         $arPropsOld["GRAPH_JSON"] = json_encode($json["data"]);
-        $arPropsOld["planType"] = $graphName;
+        // $arPropsOld["planType"] = $graphName;
+        $arPropsOld["planType"] = $json["ganvadebaType"];
         $arPropsOld["AUTHOR"] = $json["author"];
         $arPropsOld["PERIOD"] = $json["period"];
         $arPropsOld["commentInput"] = $json["commentInput"];

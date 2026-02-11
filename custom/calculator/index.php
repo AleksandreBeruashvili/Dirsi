@@ -130,6 +130,7 @@ if (is_numeric($docID)) {
     $jsonGraph = str_replace("&quot;", "\"", $calculation["GRAPH_JSON"]);
     $graphHeaderByDoc = json_decode($json, true);
     $graphByDoc = json_decode($jsonGraph, true);
+    $ganvadebaType = $calculation["planType"];
     
     if ($binisNomeri != $graphHeaderByDoc["binisNomeri"]) {
         exit("არასწორი გრაფიკი");
@@ -1016,6 +1017,7 @@ const CONFIG = {
     holiday: <?php echo json_encode($holiday); ?>,
     hasProduct: <?php echo json_encode($hasProduct); ?>,
     graphHeaderByDoc: <?php echo json_encode($graphHeaderByDoc); ?>,
+    ganvadebaType: <?php echo json_encode($ganvadebaType); ?>,
     graphByDoc: <?php echo json_encode($graphByDoc); ?>,
     dealGet: <?php echo json_encode($dealGet); ?>,
     dealID: <?php echo $dealID; ?>,
@@ -1816,6 +1818,9 @@ function fillGraphByDoc() {
 function fillCalculatorHeader() {
     const header = CONFIG.graphHeaderByDoc;
     
+
+    setValue('ganvadebaType', CONFIG.ganvadebaType);
+    changeType(); // type_select-ის ოფშენების შევსება ganvadebaType-ის მიხედვით
     setValue('advancePayDate', header.advancePayDate);
     setValue('advancePayment', header.advancePayment);
     setValue('advancePaymentPercent', header.advancePaymentPercent);
@@ -1837,6 +1842,7 @@ function fillCalculatorHeader() {
     setValue('startPriceGel', header.startPriceGel);
     setValue('startSqmPriceGel', header.startSqmPriceGel);
     setValue('type_select', header.type_select);
+
 }
 
 /**
@@ -1995,6 +2001,9 @@ async function saveGraph() {
  */
 
     async function  saveGraphCalculation() {
+
+
+   
         let type = document.getElementById("type_select");
         let selected_type = type.value;
         let selectedGraph = "";
@@ -2003,6 +2012,9 @@ async function saveGraph() {
         }else{
             selectedGraph = CONFIG.instalmentPlanArr[selected_type];
         }
+
+        let ganvadebaType = document.getElementById("ganvadebaType").value;
+
         let price= parseFormattedNumber(document.getElementById("price").value);
         let graph = document.getElementById("graphData");
         let kvmPrice = parseFormattedNumber(document.getElementById("kvmPrice").value);
@@ -2108,6 +2120,7 @@ async function saveGraph() {
             "nbgKursi":nbgKursi,
             "startPriceUSD":startPriceUSD,
             "startKVMPriceUSD":startKVMPriceUSD,
+            "ganvadebaType": ganvadebaType,
         };
 
     
