@@ -1048,13 +1048,83 @@ if (!empty($htmlEditorConfigs))
                 dealWrapper.style.background =
                 "linear-gradient(35deg,#FFE400,#FFA500)";
 
-            } else {
-
-                dealWrapper.style.background = "";
             }
+
+
+
+
+
+
+
+            //დაჯანქვისას
+            const selectName = 'UF_CRM_1761575156657';
+            const textareaName = 'UF_CRM_1769493213';
+            const OTHER_VALUE = '213';
+
+            const select = document.querySelector(`select[name="${selectName}"]`);
+            const textarea = document.querySelector(`textarea[name="${textareaName}"]`);
+            
+
+            if (!select || !textarea) return;
+
+            const block = textarea.closest('.ui-entity-editor-content-block');
+
+            function updateField() {
+                const val = select.value;
+
+                if (val === OTHER_VALUE) {
+                    // show
+                    // block.style.display = '';
+                    if(document.querySelector("[data-cid='UF_CRM_1769493213']")){
+                        document.querySelector("[data-cid='UF_CRM_1769493213']").style.display=""
+                    }
+
+                    if (textarea.value.trim() === '-') {
+                        textarea.value = '';
+                    }
+                } else {
+                    // set dash + hide
+                    textarea.value = '-';
+                    // block.style.display = 'none';
+                    if(document.querySelector("[data-cid='UF_CRM_1769493213']")){
+                        document.querySelector("[data-cid='UF_CRM_1769493213']").style.display="none"
+                    }
+                }
+
+                // Bitrix change event trigger (important for save)
+                textarea.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+
+            updateField();
+
 
         }, 1000);
 
+        setInterval(() => {
+
+            document.querySelectorAll('.crm-timeline__card').forEach(card => {
+
+                let textBlock = card.querySelector('.crm-timeline__editable-text_text');
+
+                if (!textBlock) return;
+
+                if (
+                    textBlock.innerText.includes("System comment") ||
+                    textBlock.innerText.includes("Systematic comment")
+                ) {
+
+                    let actionBlock  = card.querySelector('.crm-timeline__card-action');
+                    let actionBlock2 = card.querySelector('.crm-timeline__editable-text_edit-icon');
+                    let actionBlock3 = card.querySelector('.crm-timeline__editable-text_text-edit-icon');
+
+                    if (actionBlock)  actionBlock.style.display  = "none";
+                    if (actionBlock2) actionBlock2.style.display = "none";
+                    if (actionBlock3) actionBlock3.style.display = "none";
+                }
+
+            });
+
+        }, 500);
 
 
     }
@@ -1164,8 +1234,6 @@ if (!empty($htmlEditorConfigs))
 
     }
 
-
-
     if (pathname[1] == "crm" && pathname[2] == "deal" && pathname[4] == "0") {
 
         setInterval(() => {
@@ -1184,6 +1252,87 @@ if (!empty($htmlEditorConfigs))
                 agr.style.display = "none";
             }
         }, 500);
+    }
+
+    if (pathname[1] === "crm" && pathname[2] === "contact") {
+        setInterval(() => {
+            const citizenOfBlock = document.querySelector("[data-cid='UF_CRM_1770187155776']");
+            
+            if (!citizenOfBlock) return;
+
+            const citizenshipViewItem = document.querySelector("[data-cid='UF_CRM_1761651978222'] .field-item");
+            const citizenshipEditControl = document.querySelector("[data-name='UF_CRM_1761651978222']");
+
+            let citizenshipValue = "";
+
+            if (citizenshipViewItem) {
+                citizenshipValue = citizenshipViewItem.innerText.trim();
+            } else if (citizenshipEditControl) {
+                citizenshipValue = citizenshipEditControl.innerText.trim();
+            }
+
+            if (citizenshipValue === "Non-resident" || citizenshipValue === "not selected" ) {
+                // console.log("test")
+                // console.log(citizenshipValue)
+                const hiddenInput = citizenOfBlock.querySelector("input[name='UF_CRM_1770187155776']");
+                if(hiddenInput){
+                    if(hiddenInput.value=="217"){
+                        hiddenInput.value = "";
+                    }
+    
+                }
+
+                // თუ view mode-შია, field-item-იც შევცვალოთ
+                const fieldItem = citizenOfBlock.querySelector(".field-item");
+                if(fieldItem){
+                    if(fieldItem.innerText=="Not selected"){
+                        fieldItem.innerText = "not selected";
+                    }
+
+                }
+                
+                // თუ edit mode-შია, selectName-იც შევცვალოთ
+                const selectName = citizenOfBlock.querySelector(".main-ui-select-name");
+                if(selectName){
+                    if(selectName.innerText=="Not selected"){
+                        selectName.innerText = "not selected";
+                    }
+                }
+
+                if(citizenshipValue === "Non-resident"){
+                    citizenOfBlock.style.display = "";
+              
+                }else{
+                    citizenOfBlock.style.display = "none";
+                }
+           
+            } else {
+
+                console.log(citizenshipValue)
+                console.log("test2")
+                // ჯერ დავასეტოთ მნიშვნელობა (hidden input პირდაპირ)
+                const hiddenInput = citizenOfBlock.querySelector("input[name='UF_CRM_1770187155776']");
+                if(hiddenInput){
+                    hiddenInput.value = 217;
+                }
+                
+                // თუ view mode-შია, field-item-იც შევცვალოთ
+                const fieldItem = citizenOfBlock.querySelector(".field-item");
+                if(fieldItem){
+                    fieldItem.innerText = "Not selected";
+                }
+                
+                // თუ edit mode-შია, selectName-იც შევცვალოთ
+                const selectName = citizenOfBlock.querySelector(".main-ui-select-name");
+                if(selectName){
+                    selectName.innerText = "Not selected";
+                }
+                citizenOfBlock.style.display = "none";    
+            }
+
+        }, 1000);
+
+
     }
 
 </script>

@@ -79,11 +79,13 @@ function getCIBlockElementsByFilter($arFilter = array()) {
 }
 
 
-function getProduct($building, $block, $floor, $number) {
+function getProduct($building, $block, $floor, $number, $project) {
     $arFilter = array(
         "IBLOCK_ID" => 14,
     );
-    
+    if (!empty($project)) {
+        $arFilter["IBLOCK_SECTION_ID"] = $project;
+    }
     // მხოლოდ გადაცემული პარამეტრების დამატება filter-ში
     if (!empty($building)) {
         $arFilter["PROPERTY_BUILDING"] = $building;
@@ -182,10 +184,11 @@ $building = isset($_GET["building"]) ? $_GET["building"] : "";
 $block = isset($_GET["block"]) ? $_GET["block"] : "";
 $floor = isset($_GET["floor"]) ? $_GET["floor"] : "";
 $number = isset($_GET["number"]) ? $_GET["number"] : "";
+$project = isset($_GET["project"]) ? $_GET["project"] : "";
 
 // მინიმუმ ერთი პარამეტრი უნდა იყოს გადაცემული
-if (!empty($building) || !empty($block) || !empty($floor) || !empty($number)) {
-    $prod = getProduct($building, $block, $floor, $number);
+if (!empty($building) || !empty($block) || !empty($floor) || !empty($number) || !empty($project)) {
+    $prod = getProduct($building, $block, $floor, $number, $project);
 
     if(!empty($prod) && is_array($prod) && count($prod) > 0) {
         $resArray["status"] = 200;

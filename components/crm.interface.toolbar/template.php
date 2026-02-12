@@ -437,6 +437,11 @@ if($dealId){
             UC_BAUB5P: 'UC_BAUB5P',
             UC_F3FOBF: 'UC_F3FOBF'
         },
+
+        STAGES_AFTER_AGREEMENT: [
+            '2', '3', '4', 'WON'
+        ],
+
         
         // დასამალი სტეიჯები ტაბებისთვის
         HIDDEN_STAGES_FOR_TABS: [
@@ -481,6 +486,10 @@ if($dealId){
 
 		isAdmin() {
             return userID == 1;
+        },
+
+        ifAfterAgreement() {
+            return CONFIG.STAGES_AFTER_AGREEMENT.includes(deal['STAGE_ID']);
         },
         
         getProductStatus() {
@@ -936,6 +945,7 @@ if($dealId){
         init() {
             if (!Utils.isDealDetailsPage()) return;
 			if(Utils.isAdmin()) return; 
+			if(!Utils.ifAfterAgreement()) return;
 
 				setTimeout(() => {
 					document.querySelectorAll('.crm-entity-section-status-step').forEach(step => {
@@ -972,6 +982,22 @@ if($dealId){
 						}
 					});
 				}, 100);
+
+            if(!Utils.hasProduct()) {
+                
+                const element = document.querySelector(`[data-id="2"]`);
+                if (element) {
+                    console.log("here is no product");
+                    element.style.pointerEvents = 'none';
+                    element.style.opacity = '0.8';
+                    element.onclick = (e) => {
+                        e.preventDefault();
+                        alert('ამ სტეიჯზე ხელით გადატანა შეუძლებელია, რადგან პროდუქტი არაა მიბმული!');
+                        
+                        return false;
+                    };
+                }
+            }
 			
 
         }

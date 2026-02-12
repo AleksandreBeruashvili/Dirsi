@@ -446,7 +446,7 @@ ob_end_clean();
         wb.Props = {
             Title: "daricxva gadaxda",
             Subject: "report",
-            Author:"otium",
+            Author:"asgroup",
             CreatedDate: new Date()
         };
 
