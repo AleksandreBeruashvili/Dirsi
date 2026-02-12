@@ -507,7 +507,7 @@ if (!empty($_POST)) {
             $fileName = getFileNameFromDiskObject($fileObject["NAME"]);
             $generatedFile = generateDocument($fileContent, $variables, $isPdf);
             
-            // ავტორიზაციის აღდგენა ჩამოტვირთვამდე
+            // ავტორიზაციის აღდგენა გენერაციამდე
             if($NotAuthorized) {
                 $USER->Logout();
             }
@@ -538,7 +538,7 @@ else{
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>დოკუმენტების ჩამოტვირთვა</title>
+    <title>დოკუმენტების გენერაცია</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; }
@@ -593,7 +593,7 @@ else{
 
 <div id="maincontent" class="maincontent">
     <div class="form-card">
-        <h4 class="mb-4 text-center fw-semibold">📄 დოკუმენტების ჩამოტვირთვა</h4>
+        <h4 class="mb-4 text-center fw-semibold">📄 დოკუმენტების გენერაცია</h4>
 
         <form method="post" class="d-flex flex-column gap-4">
             <div style="display: none;">
@@ -636,7 +636,7 @@ else{
                 </div>
 
                 <div class="buttonDiv">
-                    <button type="submit" class="buttonDoc">📥 ჩამოტვირთვა</button>
+                    <button type="submit" class="buttonDoc">📥 გენერაცია</button>
                 </div>
             </div>
         </form>
