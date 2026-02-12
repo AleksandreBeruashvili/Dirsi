@@ -373,6 +373,9 @@ function getNbgKurs($date){
         color: white;
         font-size: 15px;
     }
+    .invoice-btn:hover {
+        background-color: #1565c0 !important;
+    }
 
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -420,6 +423,7 @@ function getNbgKurs($date){
         <th>გადახდილი $</th>
         <th>გადახდილი ₾</th>
         <th>ნაშთი</th>
+        <th>ინვოისი</th>   <!-- ახალი სვეტი -->
         </thead>
         <tbody ID="financial_data"></tbody>
     </table>
@@ -432,26 +436,38 @@ function getNbgKurs($date){
     let rows = "";
     for(let i=0;i<$financeArr.length;i++) {
         rows += `
-                <tr class="inputer">
-                    <td>${$financeArr[i]["PLAN_DATE"] || ""}</td>
-                    <td>${$financeArr[i]["PAYMENT_DATE"] || ""}</td>
-                    <td>${$financeArr[i]["PLAN"] ? "$" + $financeArr[i]["PLAN"] : ""}</td>
-                    <td>${$financeArr[i]["RATE"] || ""}</td>
-                    <td>${$financeArr[i]["PAYMENT"] ? getPaymentAmount($financeArr[i], "$") : ""}</td>
-                    <td>${$financeArr[i]["PAYMENT_Gel"] ? getPaymentAmountGel($financeArr[i], "₾") : ""}</td>
-            `;
+            <tr class="inputer">
+                <td>${$financeArr[i]["PLAN_DATE"] || ""}</td>
+                <td>${$financeArr[i]["PAYMENT_DATE"] || ""}</td>
+                <td>${$financeArr[i]["PLAN"] ? "$" + $financeArr[i]["PLAN"] : ""}</td>
+                <td>${$financeArr[i]["RATE"] || ""}</td>
+                <td>${$financeArr[i]["PAYMENT"] ? getPaymentAmount($financeArr[i], "$") : ""}</td>
+                <td>${$financeArr[i]["PAYMENT_Gel"] ? getPaymentAmountGel($financeArr[i], "₾") : ""}</td>
+        `;
 
         if ($financeArr[i]["leftToPay"] > 0) {
-            rows += `
-                        <td style="color: red">${$financeArr[i]["leftToPay"]}</td>
-                    </tr>
-                `;
+            rows += `<td style="color: red">${$financeArr[i]["leftToPay"]}</td>`;
         } else {
-            rows += `
-                        <td style="color: green">${$financeArr[i]["leftToPay"]}</td>
-                    </tr>
-                `;
+            rows += `<td style="color: green">${$financeArr[i]["leftToPay"]}</td>`;
         }
+
+        // ინვოისის ღილაკი მხოლოდ PLAN ტიპის ჩანაწერებისთვის
+        if ($financeArr[i]["TYPE"] === "PLAN") {
+            let invoiceUrl = `/custom/reports/generateInvoice.php?deal_id=<?php echo $deal_ID; ?>&date=${encodeURIComponent($financeArr[i]["PLAN_DATE"])}&amount=${encodeURIComponent($financeArr[i]["PLAN"])}`;
+            rows += `
+                <td>
+                    <button onclick="window.location.href='${invoiceUrl}'"
+                       style="background-color:#1e88e5; color:white; padding:5px 12px;
+                              border-radius:4px; border:none; font-size:11px; cursor:pointer;">
+                        <i class="fa fa-file-word-o"></i> ინვოისი
+                    </button>
+                </td>
+            `;
+        } else {
+            rows += `<td></td>`;
+        }
+
+        rows += `</tr>`;
     }
 
     function getPaymentAmount($financeArr,valuta){
@@ -560,8 +576,7 @@ function getNbgKurs($date){
         ws_data.push([]); // ცარიელი ხაზი (გაყრისთვის)
 
         // **ცხრილის სათაურების თარგმნა (Header Row)**
-        let translatedHeaders = ["N", "Date", "განვადება $", "განვადება ₾", "გადახდილი $", "გადახდილი ₾", "ნაშთი"];
-
+        let translatedHeaders = ["N", "Date", "განვადება $", "განვადება ₾", "გადახდილი $", "გადახდილი ₾", "ნაშთი", "ინვოისი"];
         ws_data.push(translatedHeaders);
 
         // **მონაცემების დამუშავება**
@@ -648,8 +663,7 @@ function getNbgKurs($date){
         ws_data.push([]); // ცარიელი ხაზი (გაყრისთვის)
 
         // **ცხრილის სათაურების თარგმნა (Header Row)**
-        let translatedHeaders = ["N", "თარიღი", "Plan $", "PLan ₾", "Paid $", "Paid ₾", "Left to pay"];
-        ws_data.push(translatedHeaders);
+        let translatedHeaders = ["N", "თარიღი", "Plan $", "Plan ₾", "Paid $", "Paid ₾", "Left to pay", "Invoice"];        ws_data.push(translatedHeaders);
 
         // **მონაცემების დამუშავება**
         for (let i = 1; i < tableSelect.rows.length; i++) { // იწყება 1-დან, რადგან 0 სათაურია

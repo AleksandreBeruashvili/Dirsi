@@ -25,13 +25,21 @@ function getPaymentPlan($arFilter = array())
         $arFilds = $ob->GetFields();
         $arProps = $ob->GetProperties();
 
-        $arPushs["ID"] = $arFilds["ID"];
-        $arPushs["DATE"] = $arProps["TARIGI"]["VALUE"];
+//        $arPushs["ID"] = $arFilds["ID"];
+//        $arPushs["DATE"] = $arProps["TARIGI"]["VALUE"];
+//        $arPushs["PAYMENT"] = "";
+//        $arPushs["PAYMENT_Gel"] = "";
+//        $arPushs["PLAN"] = str_replace("|USD","",$arProps["TANXA"]["VALUE"]);
+//        $arPushs["PLAN_Gel"] = $arProps["amount_GEL"]["VALUE"];
+//        $arPushs["TYPE"] = "PLAN";
+        $arPushs["PLAN_DATE"] = $arProps["TARIGI"]["VALUE"];
+        $arPushs["PAYMENT_DATE"] = "";
+        $arPushs["PLAN"] = str_replace("|USD","",$arProps["TANXA"]["VALUE"]);
         $arPushs["PAYMENT"] = "";
         $arPushs["PAYMENT_Gel"] = "";
-        $arPushs["PLAN"] = str_replace("|USD","",$arProps["TANXA"]["VALUE"]);
-        $arPushs["PLAN_Gel"] = $arProps["amount_GEL"]["VALUE"];
+        $arPushs["RATE"] = "";
         $arPushs["TYPE"] = "PLAN";
+
         array_push($arElements,$arPushs);
 
     }
@@ -75,14 +83,32 @@ function getPayments($arFilter = array())
         $arProps = $ob->GetProperties();
 
         $arPushs = array();
-        $arPushs["ID"] = $arFilds["ID"];
-        $arPushs["DATE"] = $arProps["date"]["VALUE"];
-        $arPushs["PAYMENT"] = str_replace("|USD","",$arProps["TANXA"]["VALUE"]);
-        $arPushs["PAYMENT_Gel"] = $arProps["tanxa_gel"]["VALUE"];
+//        $arPushs["ID"] = $arFilds["ID"];
+//        $arPushs["DATE"] = $arProps["date"]["VALUE"];
+//        $arPushs["PAYMENT"] = str_replace("|USD","",$arProps["TANXA"]["VALUE"]);
+//        $arPushs["PAYMENT_Gel"] = $arProps["tanxa_gel"]["VALUE"];
+//        $arPushs["PLAN"] = "";
+//        $arPushs["PLAN_Gel"] = "";
+//        $arPushs["TYPE"] = "PAYMENT";
+//        $arPushs["refund"] = $arProps["refund"]["VALUE"];
+        $arPushs["PLAN_DATE"] = "";
+        $arPushs["PAYMENT_DATE"] = $arProps["date"]["VALUE"];
+
+        $arPushs["RATE"] = getNbgKurs($arPushs["PAYMENT_DATE"]);
+
         $arPushs["PLAN"] = "";
-        $arPushs["PLAN_Gel"] = "";
+
+        $arPushs["PAYMENT"] = (float)str_replace("|USD","",$arProps["TANXA"]["VALUE"]);
+
+// ⬇⬇⬇ აქ არის მთავარი ცვლილება ⬇⬇⬇
+        $arPushs["PAYMENT_Gel"] = $arPushs["RATE"]
+                ? round($arPushs["PAYMENT"] * $arPushs["RATE"], 2)
+                : "";
+
         $arPushs["TYPE"] = "PAYMENT";
         $arPushs["refund"] = $arProps["refund"]["VALUE"];
+
+
 
         array_push($arElements,$arPushs);
 
@@ -133,11 +159,22 @@ function getApprovedInstallment($arFilter = array()) {
 }
 
 
+//function sortByDate($a, $b) {
+//    $dateA = DateTime::createFromFormat('d/m/Y', $a['DATE']);
+//    $dateB = DateTime::createFromFormat('d/m/Y', $b['DATE']);
+//    return $dateA <=> $dateB;
+//}
+
 function sortByDate($a, $b) {
-    $dateA = DateTime::createFromFormat('d/m/Y', $a['DATE']);
-    $dateB = DateTime::createFromFormat('d/m/Y', $b['DATE']);
-    return $dateA <=> $dateB;
+    $dateA = $a["PLAN_DATE"] ?: $a["PAYMENT_DATE"];
+    $dateB = $b["PLAN_DATE"] ?: $b["PAYMENT_DATE"];
+
+    $dA = DateTime::createFromFormat('d/m/Y', $dateA);
+    $dB = DateTime::createFromFormat('d/m/Y', $dateB);
+
+    return $dA <=> $dB;
 }
+
 
 
 function getContactName($id) {
@@ -149,15 +186,15 @@ function getContactName($id) {
 }
 
 
-    // $arrForAdd ["UF_CRM_1761658559005"] = $prodNumber;     //ბინის N
-    // $arrForAdd ["UF_CRM_1761658577987"] =$prodFLOOR; //სართული
-    // $arrForAdd ["UF_CRM_1761658516561"] = $productData["PROJECT"];    //პროექტი
-    // $arrForAdd ["UF_CRM_1762948106980"] = $productData["KORPUSIS_NOMERI_XE3NX2"];//ბლოკი
-    // $arrForAdd ["UF_CRM_1761658503260"] = $productData["KVM_PRICE"];  //კვ/მ ფასი
-    // $arrForAdd ["UF_CRM_1761658532158"] = $prodPRODUCT_TYPE;      //ფართის ტიპი
-    // $arrForAdd ["UF_CRM_1761658608306"] = $prodTOTAL_AREA;    //საერთო ფართი
-    // $arrForAdd ["UF_CRM_1762867479699"] = $productData["_15MYD6"];     //სადარბაზო   
-    // $arrForAdd ["UF_CRM_1761658765237"]  = $productData["LIVING_SPACE"];    //საცხოვრებელი ფართი მ²   
+// $arrForAdd ["UF_CRM_1761658559005"] = $prodNumber;     //ბინის N
+// $arrForAdd ["UF_CRM_1761658577987"] =$prodFLOOR; //სართული
+// $arrForAdd ["UF_CRM_1761658516561"] = $productData["PROJECT"];    //პროექტი
+// $arrForAdd ["UF_CRM_1762948106980"] = $productData["KORPUSIS_NOMERI_XE3NX2"];//ბლოკი
+// $arrForAdd ["UF_CRM_1761658503260"] = $productData["KVM_PRICE"];  //კვ/მ ფასი
+// $arrForAdd ["UF_CRM_1761658532158"] = $prodPRODUCT_TYPE;      //ფართის ტიპი
+// $arrForAdd ["UF_CRM_1761658608306"] = $prodTOTAL_AREA;    //საერთო ფართი
+// $arrForAdd ["UF_CRM_1762867479699"] = $productData["_15MYD6"];     //სადარბაზო
+// $arrForAdd ["UF_CRM_1761658765237"]  = $productData["LIVING_SPACE"];    //საცხოვრებელი ფართი მ²
 
 $deal_ID = $_GET["dealid"];
 $dealData    = getDealInfoByID($deal_ID);
@@ -180,8 +217,8 @@ $dealData["UF_CRM_1702019032102"] == 322 ? $valuta = "₾" : $valuta = "$";
 
 }
 else{*/
-    $payments = getPayments(array("IBLOCK_ID" => 21,"PROPERTY_DEAL"=>$deal_ID));
-    $paymentPlans = getPaymentPlan(array("IBLOCK_ID" => 20,"PROPERTY_DEAL"=>$deal_ID));
+$payments = getPayments(array("IBLOCK_ID" => 21,"PROPERTY_DEAL"=>$deal_ID));
+$paymentPlans = getPaymentPlan(array("IBLOCK_ID" => 20,"PROPERTY_DEAL"=>$deal_ID));
 //}
 $financeArr = array_merge($paymentPlans, $payments);
 
@@ -220,18 +257,34 @@ for ($i = 0; $i<count($financeArr);$i++){
 $approvedInstallment = array();
 if($deal_ID) {
     $arFilter = array(
-        "IBLOCK_ID" => 23,
-        "PROPERTY_DASTURI" => "დადასტურებული",
-        "PROPERTY_DEAL" => $deal_ID
+            "IBLOCK_ID" => 23,
+            "PROPERTY_DASTURI" => "დადასტურებული",
+            "PROPERTY_DEAL" => $deal_ID
     );
 
     $res = getApprovedInstallment($arFilter);
-    
+
     if($res["ID"]) {
         $approvedInstallment = $res;
     }
 }
 
+// ეროვნული ბანკის კურსი კონკრეტულ თარიღში
+function getNbgKurs($date){
+    if (!$date) return null;
+
+    $dateObj = DateTime::createFromFormat('d/m/Y', $date);
+    if (!$dateObj) return null;
+
+    $dateFormatted = $dateObj->format('Y-m-d');
+    $url = "https://nbg.gov.ge/gw/api/ct/monetarypolicy/currencies?Currencies=USD&date={$dateFormatted}";
+
+    $resp = @file_get_contents($url);
+    if (!$resp) return null;
+
+    $json = json_decode($resp);
+    return $json[0]->currencies[0]->rate ?? null;
+}
 
 
 ?>
@@ -338,7 +391,7 @@ if($deal_ID) {
     <div>
         <a href="<?php echo $href; ?>"><?php echo $dealData["TITLE"]; ?></a>
 
-        
+
         <p>კლიენტი:  <?php echo $contact; ?></p>
         <p>პროექტი:  <?php echo $project; ?></p>
         <p>სართული:  <?php echo $floor; ?></p>
@@ -360,10 +413,10 @@ if($deal_ID) {
 
     <table class="tablerlist" id = "table">
         <thead>
-        <th>N</th>
-        <th>თარიღი</th>
+        <th>განვადების თარიღი</th>
+        <th>გადახდის თარიღი</th>
         <th>განვადება $</th>
-        <th>განვადება ₾</th>
+        <th>ეროვნული ბანკის კურსი</th>
         <th>გადახდილი $</th>
         <th>გადახდილი ₾</th>
         <th>ნაშთი</th>
@@ -380,12 +433,12 @@ if($deal_ID) {
     for(let i=0;i<$financeArr.length;i++) {
         rows += `
                 <tr class="inputer">
-                    <td>${i}</td>
-                    <td>${$financeArr[i]["DATE"]}</td>
-                    <td>${$financeArr[i]["PLAN"]? "$" + $financeArr[i]["PLAN"]:""}</td>
-                    <td>${$financeArr[i]["PLAN_Gel"]? "₾" + $financeArr[i]["PLAN_Gel"]:""}</td>
-                    <td>${$financeArr[i]["PAYMENT"] ? getPaymentAmount($financeArr[i],"$"):""}</td>
-                    <td>${$financeArr[i]["PAYMENT_Gel"] ? getPaymentAmount($financeArr[i],"₾"):""}</td>
+                    <td>${$financeArr[i]["PLAN_DATE"] || ""}</td>
+                    <td>${$financeArr[i]["PAYMENT_DATE"] || ""}</td>
+                    <td>${$financeArr[i]["PLAN"] ? "$" + $financeArr[i]["PLAN"] : ""}</td>
+                    <td>${$financeArr[i]["RATE"] || ""}</td>
+                    <td>${$financeArr[i]["PAYMENT"] ? getPaymentAmount($financeArr[i], "$") : ""}</td>
+                    <td>${$financeArr[i]["PAYMENT_Gel"] ? getPaymentAmountGel($financeArr[i], "₾") : ""}</td>
             `;
 
         if ($financeArr[i]["leftToPay"] > 0) {
@@ -410,9 +463,9 @@ if($deal_ID) {
     }
     function getPaymentAmountGel($financeArr,valuta){
         if($financeArr["refund"] == "YES"){
-            return "-" + valuta + $financeArr["PAYMENTGEL"];
+            return "-" + valuta + $financeArr["PAYMENT_Gel"];
         }else{
-            return valuta + $financeArr["PAYMENTGEL"];
+            return valuta + $financeArr["PAYMENT_Gel"];
         }
     }
     financial_data.innerHTML = rows;
@@ -420,16 +473,16 @@ if($deal_ID) {
 
     function getLatinName(str) {
         const GEO_LAT = {
-            "ქ": "q", "წ": "ts", "ჭ": "ch", "ე": "e", "რ": "r", "ღ": "gh", "ტ": "t", "თ": "t", 
-            "ყ": "y", "უ": "u", "ი": "i", "ო": "o", "პ": "p", "ა": "a", "ს": "s", "შ": "sh", 
-            "დ": "d", "ფ": "p", "გ": "g", "ჰ": "h", "ჯ": "j", "ჟ": "zh", "კ": "k", "ლ": "l", 
+            "ქ": "q", "წ": "ts", "ჭ": "ch", "ე": "e", "რ": "r", "ღ": "gh", "ტ": "t", "თ": "t",
+            "ყ": "y", "უ": "u", "ი": "i", "ო": "o", "პ": "p", "ა": "a", "ს": "s", "შ": "sh",
+            "დ": "d", "ფ": "p", "გ": "g", "ჰ": "h", "ჯ": "j", "ჟ": "zh", "კ": "k", "ლ": "l",
             "ზ": "z", "ხ": "x", "ძ": "dz", "ც": "c", "ჩ": "ch", "ვ": "v", "ბ": "b", "ნ": "n", "მ": "m"
         };
 
         return str.split('').map(char => GEO_LAT[char] || char).join('');
     }
 
- 
+
 
 
     function exportTableToExcel(){
@@ -516,7 +569,7 @@ if($deal_ID) {
             let row = [];
             for (let j = 0; j < tableSelect.rows[i].cells.length; j++) {
                 let cellText = tableSelect.rows[i].cells[j].innerText.trim();
-                
+
                 if (j == 1) { // "თარიღი" (Date) სვეტი
                     row.push(cellText);
                 } else if ([2, 3, 4, 5].includes(j)) { // თანხის ველები
@@ -603,7 +656,7 @@ if($deal_ID) {
             let row = [];
             for (let j = 0; j < tableSelect.rows[i].cells.length; j++) {
                 let cellText = tableSelect.rows[i].cells[j].innerText.trim();
-                
+
                 if (j == 1) { // "თარიღი" (Date) სვეტი
                     row.push(cellText);
                 } else if ([2, 3, 4, 5].includes(j)) { // თანხის ველები
@@ -625,6 +678,8 @@ if($deal_ID) {
 
         XLSX.writeFile(wb, "financialReport.xlsx");
     }
+
+
 
 
 </script>

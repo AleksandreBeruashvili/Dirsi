@@ -46,33 +46,146 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
     <meta charset="utf-8">
     <title>გაყიდვა</title>
     <style>
+        * { box-sizing: border-box; }
+
         .sell-form {
-            padding: 20px;
-            max-width: 600px;
+            padding: 14px 20px 20px;
+            max-width: 720px;
             margin: 0 auto;
-            margin-top: 50px;
         }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 500; color: #333; }
-        label.required::after { content: ' *'; color: red; }
-        input, textarea {
-            width: 100%; padding: 8px 10px; border: 1px solid #ddd;
-            border-radius: 4px; font-size: 14px;
+
+        .form-row {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 12px;
         }
-        input:focus, textarea:focus { border-color: #0286ce; outline: none; }
-        .button-group { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+
+        .form-row > .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .contract-date-group {
+            flex: 0 0 50%;
+        }
+
+
+        label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+            color: #333;
+            font-size: 13px;
+        }
+
+        label.required::after {
+            content: ' *';
+            color: red;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            background: #fff;
+        }
+
+        select {
+            height: 34px;
+            cursor: pointer;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: #0286ce;
+            outline: none;
+        }
+
+        .file-row {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .file-group {
+            flex: 1;
+        }
+
+        .file-group span {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+            color: #80868e;
+            font-weight: 500;
+        }
+
+        .file-group input[type="file"] {
+            font-size: 12px;
+            padding: 5px;
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+            background: #fafafa;
+            cursor: pointer;
+        }
+
+        .file-group input[type="file"]:hover {
+            border-color: #0286ce;
+            background: #f0f8ff;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 16px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn {
+            padding: 9px 22px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
         .btn-primary { background: #0286ce; color: #fff; }
         .btn-primary:hover { background: #026ba5; }
-        .btn-secondary { background: #f5f5f5; }
-        .error { color: red; font-size: 13px; display: none; }
-        .error-input { border-color: red; }
+        .btn-secondary { background: #f5f5f5; color: #333; }
+        .btn-secondary:hover { background: #e8e8e8; }
 
+        .error { color: red; font-size: 12px; display: none; margin-top: 2px; }
+        .error-input { border-color: red !important; }
 
-        .gtranslate_wrapper{
-            margin-left: 450px;
+        .section-divider {
+            border: none;
+            border-top: 1px solid #eee;
+            margin: 14px 0;
         }
 
+        .section-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .gtranslate_wrapper {
+            text-align: right;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 50px;
+        }
     </style>
 </head>
 <body>
@@ -80,152 +193,174 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
     <form id="sellForm" enctype="multipart/form-data">
         <input type="hidden" id="dealId" name="dealId" value="<?= $dealId ?>">
 
+        <!-- Row 1: Date + Files -->
+        <div class="form-row">
+            <div class="form-group contract-date-group">
+                <label for="contractDate" class="required">ხელშეკრულების გაფორმების თარიღი</label>
+                <input type="date" id="contractDate" name="contractDate" required>
+                <div class="error" id="contractDate-error">გთხოვთ მიუთითოთ თარიღი</div>
+            </div>
+        </div>
+
+        <div class="file-row">
+            <div class="file-group" id="SellFlatDiv">
+                <span>ხელშეკრულება:</span>
+                <input id="sellFlat" type="file" onchange="fileShetvirtva('sellFlat')" />
+                <input id="sellFlatText" type="hidden" />
+            </div>
+            <div class="file-group" id="SellAttachDiv">
+                <span>დოკუმენტის ასლი:</span>
+                <input id="sellAttach" type="file" onchange="fileShetvirtva('sellAttach')" />
+                <input id="sellAttachText" type="hidden" />
+            </div>
+        </div>
+
+        <!--        <hr class="section-divider">-->
+
+        <!-- Row 2: Phone + Email -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="phone">ტელეფონი</label>
+                <input type="text" id="phone" name="phone">
+            </div>
+            <div class="form-group">
+                <label for="email">მეილი</label>
+                <input type="email" id="email" name="email">
+            </div>
+        </div>
+
+        <!-- Row 3: Personal ID + Passport -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="personalId">პირადი ნომერი</label>
+                <input
+                        type="text"
+                        id="personalId"
+                        name="personalId"
+                        maxlength="11"
+                        pattern="\d{11}"
+                        inputmode="numeric"
+                >
+
+                <div class="error" id="personalId-error">შეავსეთ პირადი ნომერი ან პასპორტი</div>
+            </div>
+            <div class="form-group">
+                <label for="passportId">პასპორტის ნომერი</label>
+                <input type="text" id="passportId" name="passportId">
+                <div class="error" id="passportId-error">შეავსეთ პირადი ნომერი ან პასპორტი</div>
+            </div>
+        </div>
+
+        <!-- Row 4: Legal + Actual Address -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="legalAddress" class="required">იურიდიული მისამართი</label>
+                <input type="text" id="legalAddress" name="legalAddress" required>
+                <div class="error" id="legalAddress-error">გთხოვთ შეიყვანოთ იურიდიული მისამართი</div>
+            </div>
+            <div class="form-group">
+                <label for="actualAddress" class="required">ფაქტიური მისამართი</label>
+                <input type="text" id="actualAddress" name="actualAddress" required>
+                <div class="error" id="actualAddress-error">გთხოვთ შეიყვანოთ ფაქტიური მისამართი</div>
+            </div>
+        </div>
+
+        <!--        <hr class="section-divider">-->
+
+        <!-- Row 5: Citizenship + CitizenOf + Nationality -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="citizenshipType" class="required">მოქალაქეობა</label>
+                <select class="form-control" id="citizenshipType" name="citizenshipType" onchange="toggleCitizenOf()" required>
+                    <option value="">აირჩიეთ...</option>
+                    <option value="45">Resident</option>
+                    <option value="46">Non-resident</option>
+                </select>
+                <div class="error" id="citizenshipType-error">აირჩიეთ მოქალაქეობა</div>
+            </div>
+            <div class="form-group" id="citizenOfDiv" style="display:none;">
+                <label for="citizenOf" class="required">მოქალაქე</label>
+                <select id="citizenOf" name="citizenOf">
+                    <option value=""></option>
+                </select>
+                <div class="error" id="citizenOf-error">გთხოვთ შეავსოთ ქვეყანა</div>
+            </div>
+            <div class="form-group">
+                <label for="nationality" class="required">ნაციონალობა</label>
+                <select class="form-control" id="nationality" name="nationality" required>
+                    <option value="">აირჩიეთ...</option>
+                    <option value="156">Georgian</option>
+                    <option value="157">Russian</option>
+                </select>
+            </div>
+        </div>
+
+        <!--        <hr class="section-divider">-->
+        <div class="section-label">რუსული</div>
+
+        <!-- Row 6: Russian fields -->
+        <div class="form-row">
+            <div class="form-group" style="flex: 1 1 0; min-width: 0;">
+                <label for="nameRU">სახელი</label>
+                <input type="text" id="nameRU" name="nameRU">
+            </div>
+            <div class="form-group" style="flex: 1 1 0; min-width: 0;">
+                <label for="legalAddressRU">იურიდიული მისამართი</label>
+                <input type="text" id="legalAddressRU" name="legalAddressRU">
+            </div>
+            <div class="form-group" style="flex: 1 1 0; min-width: 0;">
+                <label for="actualAddressRU">ფაქტიური მისამართი</label>
+                <input type="text" id="actualAddressRU" name="actualAddressRU">
+            </div>
+        </div>
+
+        <div class="section-label">ინგლისური</div>
+
+        <!-- Row 7: English fields -->
+        <div class="form-row">
+            <div class="form-group" style="flex: 1 1 0; min-width: 0;">
+                <label for="nameENG">სახელი</label>
+                <input type="text" id="nameENG" name="nameENG">
+            </div>
+            <div class="form-group" style="flex: 1 1 0; min-width: 0;">
+                <label for="legalAddressENG">იურიდიული მისამართი</label>
+                <input type="text" id="legalAddressENG" name="legalAddressENG">
+            </div>
+            <div class="form-group" style="flex: 1 1 0; min-width: 0;">
+                <label for="actualAddressENG">ფაქტიური მისამართი</label>
+                <input type="text" id="actualAddressENG" name="actualAddressENG">
+            </div>
+        </div>
+
+        <!--        <hr class="section-divider">-->
+
+        <!-- Row 8: Description -->
         <div class="form-group">
-            <label for="contractDate" class="required">ხელშეკრულების გაფორმების თარიღი</label>
-            <input type="date" id="contractDate" name="contractDate" style="width: 30%;" required >
-            <div class="error" id="contractDate-error">გთხოვთ მიუთითოთ თარიღი</div>
-        </div>
-
-        <!-- style="width: 35%;"  -->
-        <div id="SellFlatDiv" class="bizproc-modern-type-control-container documentsSell" style="margin: 20px 0 17px 0;">
-            <span style="display: block; margin: 0 0 15px 0; font-size: 13px; color: #80868e;">ხელშეკრულება:</span>
-            <input id="sellFlat" type="file" onchange="fileShetvirtva('sellFlat')"  />
-            <input id="sellFlatText" type="hidden" />
-        </div>
-
-        <div id="SellAttachDiv" class="bizproc-modern-type-control-container documentsSell" style="margin: 20px 0 17px 0;">
-            <span style="display: block; margin: 0 0 15px 0; font-size: 13px; color: #80868e;">დოკუმენტის ასლი:</span>
-            <input id="sellAttach" type="file" onchange="fileShetvirtva('sellAttach')" />
-            <input id="sellAttachText" type="hidden" />
-        </div>
-
-        <!-- საკონტაქტო ინფორმაცია -->
-        <div class="form-group">
-            <label for="phone">ტელეფონი</label>
-            <input type="text" id="phone" name="phone">
-        </div>
-
-        <div class="form-group">
-            <label for="email">მეილი</label>
-            <input type="email" id="email" name="email">
-        </div>
-
-        <!-- ერთერთია მხოლოდ სავალდებულო -->
-        <div class="form-group">
-            <label for="personalId">პირადი ნომერი</label>
-            <input type="text" id="personalId" name="personalId">
-        </div>
-
-        <div class="form-group">
-            <label for="passportId">პასპორტის ნომერი</label>
-            <input type="text" id="passportId" name="passportId">
-        </div>
-
-
-        <!-- ორივე სავალდებულოა -->
-        <div class="form-group">
-            <label for="legalAddress" class="required">იურიდიული მისამართი</label>
-            <input type="text" id="legalAddress" name="legalAddress" required>
-            <div class="error" id="legalAddress-error">გთხოვთ შეიყვანოთ იურიდიული მისამართი</div>
-        </div>
-
-        <div class="form-group">
-            <label for="actualAddress" class="required">ფაქტიური მისამართი</label>
-            <input type="text" id="actualAddress" name="actualAddress" required>
-            <div class="error" id="actualAddress-error">გთხოვთ შეიყვანოთ ფაქტიური მისამართი</div>
-        </div>
-
-        <!-- მოქალაქეობა -->
-        <div class="form-group">
-            <label for="citizenshipType" class="required">მოქალაქეობა</label>
-            <select class="form-control"
-                    id="citizenshipType"
-                    name="citizenshipType"
-                    style="width: 40%; height: 30px; border-radius: 5px;"
-                    onchange="toggleCitizenOf()"
-                    required>
-            <option value="">აირჩიეთ...</option>
-                <option value="45">Resident</option>
-                <option value="46">Non-resident</option>
-            </select>
-            <div class="error" id="citizenshipType-error">აირჩიეთ მოქალაქეობა</div>
-        </div>
-
-        <div class="form-group" id="citizenOfDiv" style="display:none;">
-            <label for="citizenOf" class="required">მოქალაქე</label>
-            <select id="citizenOf" name="citizenOf" style="width: 40%; height: 30px;">
-                <option value=""></option>
-            </select>
-            <div class="error" id="citizenOf-error">გთხოვთ შეავსოთ ქვეყანა</div>
-        </div>
-
-        <!-- ნაციონალობა -->
-        <div class="form-group">
-            <label for="nationality" class="required">ნაციონალობა</label>
-            <select class="form-control" id="nationality" name="nationality" style="width: 40%; height: 30px; border-radius: 5px;"  required>
-                <option value="">აირჩიეთ...</option>
-                <option value="156">Georgian</option>
-                <option value="157">Russian</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="nameRU">სახელი (რუსული)</label>
-            <input type="text" id="nameRU" name="nameRU">
-        </div>
-
-        <div class="form-group">
-            <label for="legalAddressRU">იურიდიული მისმართი (რუსული)</label>
-            <input type="text" id="legalAddressRU" name="legalAddressRU">
-        </div>
-
-        <div class="form-group">
-            <label for="actualAddressRU">ფაქტიური მისამართი (რუსული)</label>
-            <input type="text" id="actualAddressRU" name="actualAddressRU">
-        </div>
-
-        <div class="form-group">
-            <label for="nameENG">სახელი (ინგლისური)</label>
-            <input type="text" id="nameENG" name="nameENG">
-        </div>
-
-        <div class="form-group">
-            <label for="legalAddressENG">იურიდიული მისამართი (ინგლისური)</label>
-            <input type="text" id="legalAddressENG" name="legalAddressENG">
-        </div>
-
-        <div class="form-group">
-            <label for="actualAddressENG">ფაქტიური მისამართი (ინგლისური)</label>
-            <input type="text" id="actualAddressENG" name="actualAddressENG">
-        </div>
-
-
-
-        <div class="form-group">
-            <label for="clientDesc" >კლიენტის დახასიათება</label>
-            <textarea id="clientDesc" name="clientDesc" rows="3" ></textarea>
+            <label for="clientDesc">კლიენტის დახასიათება</label>
+            <textarea id="clientDesc" name="clientDesc" rows="2"></textarea>
             <div class="error" id="clientDesc-error">გთხოვთ შეიყვანოთ აღწერა</div>
         </div>
 
-        <div class="form-group">
-            <label for="miznobrioba" class="required">შეძენის მიზნობრიობა</label>
-            <select class="form-control" id="miznobrioba" name="miznobrioba" style="width: 40%; height: 30px; border-radius: 5px;"  required>
-                <option value="">აირჩიეთ...</option>
-                <option value="170">საცხოვრებელი</option>
-                <option value="171">საინვესტიციო</option>
-            </select>
-            <div class="error" id="miznobrioba-error">გთხოვთ აირჩიოთ შეძენის მიზნობრიობა</div>
-        </div>
-
-
-        <div class="form-group">
-            <label for="contactType" class="required">კონტრაქტის ტიპი</label>
-            <select class="form-control" id="contactType" name="contactType" style="width: 40%; height: 30px; border-radius: 5px;"  required>
-                <option value="">აირჩიეთ...</option>
-                <option value="174">Standard</option>
-                <option value="175">Non standard</option>
-            </select>
-            <div class="error" id="contactType-error">გთხოვთ აირჩიოთ კონტრაქტის ტიპი</div>
+        <!-- Row 9: Purpose + Contract type -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="miznobrioba" class="required">შეძენის მიზნობრიობა</label>
+                <select class="form-control" id="miznobrioba" name="miznobrioba" required>
+                    <option value="">აირჩიეთ...</option>
+                    <option value="170">საცხოვრებელი</option>
+                    <option value="171">საინვესტიციო</option>
+                </select>
+                <div class="error" id="miznobrioba-error">გთხოვთ აირჩიოთ შეძენის მიზნობრიობა</div>
+            </div>
+            <div class="form-group">
+                <label for="contactType" class="required">კონტრაქტის ტიპი</label>
+                <select class="form-control" id="contactType" name="contactType" required>
+                    <option value="">აირჩიეთ...</option>
+                    <option value="174">Standard</option>
+                    <option value="175">Non standard</option>
+                </select>
+                <div class="error" id="contactType-error">გთხოვთ აირჩიოთ კონტრაქტის ტიპი</div>
+            </div>
         </div>
 
         <div class="button-group">
@@ -243,16 +378,12 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
     if (rawDate) {
         var parts = rawDate.split('/');
         if (parts.length === 3) {
-            // DD/MM/YYYY -> YYYY-MM-DD
             document.getElementById('contractDate').value = parts[2] + '-' + parts[1] + '-' + parts[0];
         }
     }
 
-
     let deal=<?php echo json_encode($deal, JSON_UNESCAPED_UNICODE); ?>;
     let contact=<?php echo json_encode($contact, JSON_UNESCAPED_UNICODE); ?>;
-
-    //console.log(contact)
 
     if (contact["PHONE"]){
         document.getElementById("phone").value=contact["PHONE"];
@@ -265,7 +396,7 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
     } else {
         document.getElementById("email").value="";
     }
-    // რუსული ფილდები
+
     if (contact["UF_CRM_1766144180428"]){
         document.getElementById("nameRU").value=contact["UF_CRM_1766144180428"];
     } else {
@@ -284,7 +415,6 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         document.getElementById("actualAddressRU").value="";
     }
 
-    // ინგლისური ფილდები
     if (contact["UF_CRM_1767604263120"]){
         document.getElementById("nameENG").value=contact["UF_CRM_1767604263120"];
     } else {
@@ -331,7 +461,6 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         $("#citizenshipType").val(contact["UF_CRM_1770187155776"]);
     }
 
-
     if(contact["UF_CRM_1769506891465"]=="156"){
         document.getElementById("nationality").value="156";
     }else if(contact["UF_CRM_1769506891465"]=="157"){
@@ -350,7 +479,6 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         document.getElementById("contactType").value="";
     }
 
-
     if(deal["UF_CRM_1770204779269"]=="170"){
         document.getElementById("miznobrioba").value="170";
     }else if(deal["UF_CRM_1770204779269"]=="171"){
@@ -360,17 +488,14 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         document.getElementById("miznobrioba").value="";
     }
 
-
     function clearError(id) {
         $("#" + id).removeClass("error-input");
         $("#" + id + "-error").hide();
     }
 
-
     function toggleCitizenOf() {
         const citizenship = $("#citizenshipType").val();
-
-        if (citizenship === "46") { // Non-resident
+        if (citizenship === "46") {
             $("#citizenOfDiv").show();
         } else {
             $("#citizenOfDiv").hide();
@@ -379,20 +504,16 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         }
     }
 
-
-
     if(contact["UF_CRM_1761651978222"]=="45"){
         document.getElementById("citizenshipType").value="45";
     }else if(contact["UF_CRM_1761651978222"]=="46"){
         document.getElementById("citizenshipType").value="46";
-        //console.log(document.getElementById("citizenshipType").value)
     }
     else{
         document.getElementById("citizenshipType").value="";
     }
 
     let citizenOf = <?php echo json_encode($citizenOf); ?>;
-    //console.log(citizenOf)
 
     function fillReservationDropdown(dropDownData, id, fieldID) {
         const select = document.getElementById(id);
@@ -413,10 +534,7 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         }
     }
 
-    //let citizenOf = <?php //echo json_encode($citizenOf); ?>//;
-
     fillReservationDropdown(citizenOf, "citizenOf", "UF_CRM_1770187155776");
-
 
     function closePopup() {
         if (window.BX && BX.SidePanel) {
@@ -425,7 +543,6 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
             window.close();
         }
     }
-
 
     function fileShetvirtva(fieldID) {
         let input = document.getElementById(fieldID);
@@ -445,7 +562,7 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 200 && data.uploaded) {
-                        fileIdInput.value = data.uploaded; // ← ატვირთული ფაილის ID / path
+                        fileIdInput.value = data.uploaded;
                         console.log("File uploaded:", data.uploaded);
                     } else {
                         alert("ფაილის ატვირთვა ვერ მოხერხდა!");
@@ -457,28 +574,31 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         }
     }
 
-
     $(document).ready(function() {
 
         fillReservationDropdown(
             citizenOf,
             "citizenOf",
-            "UF_CRM_1770187155776" // CONTACT UF
+            "UF_CRM_1770187155776"
         );
 
-        toggleCitizenOf(); // რომ Resident/Non-resident-ზეც სწორად გამოჩნდეს
+        toggleCitizenOf();
 
         function showError(id, msg) {
             $("#" + id).addClass("error-input");
             $("#" + id + "-error").text(msg).show();
         }
 
+        $("#personalId").on("input", function () {
+            this.value = this.value.replace(/\D/g, ''); // მხოლოდ ციფრები
+        });
+
 
         function validateForm() {
             let valid = true;
             ["contractDate", "sellFlat", "sellAttach"].forEach(id => {
                 let el = $("#" + id)[0];
-                if (!el) return; // თუ არ არსებობს, გამოტოვე
+                if (!el) return;
 
                 let val = $("#" + id).val();
                 if ((el.type === "file" && el.files.length === 0) || val.trim() === "") {
@@ -491,18 +611,29 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
             let personalId  = $("#personalId").val().trim();
             let passportId = $("#passportId").val().trim();
 
-
-            // 🟢 პირადი ნომერი OR პასპორტი (ერთ-ერთი მაინც)
+            /* 1️⃣ მინიმუმ ერთ-ერთი უნდა იყოს შევსებული */
             if (!personalId && !passportId) {
                 showError("personalId", "შეავსეთ პირადი ნომერი ან პასპორტი");
                 showError("passportId", "შეავსეთ პირადი ნომერი ან პასპორტი");
                 valid = false;
             } else {
-                clearError("personalId");
+
+                /* 2️⃣ თუ personalId შევსებულია → უნდა იყოს ზუსტად 11 ციფრი */
+                if (personalId) {
+                    if (!/^\d{11}$/.test(personalId)) {
+                        showError("personalId", "პირადი ნომერი უნდა შეიცავდეს ზუსტად 11 ციფრს");
+                        valid = false;
+                    } else {
+                        clearError("personalId");
+                    }
+                } else {
+                    clearError("personalId");
+                }
+
                 clearError("passportId");
             }
 
-            // 🟢 Non-resident → citizenOf required
+
             if ($("#citizenshipType").val() === "46") {
                 if (!$("#citizenOf").val()) {
                     showError("citizenOf", "გთხოვთ აირჩიოთ ქვეყანა");
@@ -572,20 +703,12 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
                     alert("Server error: " + error);
                 }
             });
-
-
-
-
-
-
         });
     });
-
 
     if (!window.gtranslateInitialized) {
         window.gtranslateInitialized = true;
         setTimeout(() => {
-            // დავამატოთ GTranslate-ის პარამეტრები
             const settingsScript = document.createElement('script');
             settingsScript.textContent = `
                 window.gtranslateSettings = {
@@ -597,20 +720,15 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
             `;
             document.body.appendChild(settingsScript);
 
-            // დავამატოთ თვითონ თარგმანის სკრიპტი
             const gtranslateScript = document.createElement('script');
             gtranslateScript.src = "https://cdn.gtranslate.net/widgets/latest/flags.js";
             gtranslateScript.defer = true;
             document.body.appendChild(gtranslateScript);
 
-            // ვიპოვოთ რეზერვაციის ფორმის ელემენტი
             const reservationForm = document.querySelector('.sell-form');
             if (reservationForm) {
-                // შევქმნათ თარგმანის HTML
                 const translateHtml = document.createElement('div');
                 translateHtml.className = 'gtranslate_wrapper';
-
-                // ჩავსვათ რეზერვაციის ფორმის ზემოთ
                 reservationForm.parentNode.insertBefore(translateHtml, reservationForm);
             }
         }, 3000);
