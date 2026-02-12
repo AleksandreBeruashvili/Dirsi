@@ -967,8 +967,8 @@ if (!empty($htmlEditorConfigs))
 <?php
 
 
-// GLOBAL $USER;
-// $userID = $USER->GetID();
+GLOBAL $USER;
+$userID = $USER->GetID();
 
 
 // function getCIBlockElementsByFilterT($arFilter = array())
@@ -1017,7 +1017,7 @@ if (!empty($htmlEditorConfigs))
 ?>
 <script>
     pathname = window.location.pathname.split("/");
-
+    const userID = <?php echo json_encode($userID); ?>;
     if(pathname[1] == "crm" && pathname[2] == "deal" && pathname[4] != "0"){
 
         setTimeout(() => {
@@ -1123,6 +1123,22 @@ if (!empty($htmlEditorConfigs))
                 }
 
             });
+
+
+
+            if(userID != 1){
+                // console.log("test");
+                uiToolbarContainer=document.getElementById('uiToolbarContainer');
+                if(uiToolbarContainer){
+                    // console.log("test2");
+                    uiToolbarContainer.children[1].children[3].style.display = "none";
+                    uiToolbarContainer.children[1].children[4].style.display = "none";
+                    uiToolbarContainer.children[1].children[5].style.display = "none";
+                    uiToolbarContainer.children[1].children[6].style.display = "none";
+
+                }
+
+            }
 
         }, 500);
 
