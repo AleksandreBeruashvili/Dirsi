@@ -1048,9 +1048,6 @@ if (!empty($htmlEditorConfigs))
                 dealWrapper.style.background =
                 "linear-gradient(35deg,#FFE400,#FFA500)";
 
-            } else {
-
-                dealWrapper.style.background = "";
             }
 
         }, 1000);

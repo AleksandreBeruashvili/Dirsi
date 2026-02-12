@@ -43,20 +43,16 @@ if (!empty($_POST)) {
     $user='';
     $pass='';
     $keycode='';
-    if($proj=='OTIUMI'){
-        $user='RADIUSLLC';
-        $keycode='FEA4JVyX';
-        $accnumber=$acc;
-    }
-    if($proj=='OTIUM_BATUMI'){
-        $user='OTIUMDEVELOPMENTLLC';
-        $keycode='HY8Jnqu9';
+    if($proj=='ParkBoulevard'){
+        $user='ASGEORGIA';
+        $keycode='cY03nKim';
         $accnumber=$acc;
     }
 
-    $list=getCIBlockElementsByFilter(array("IBLOCK_ID"=>64,"PROPERTY_PROJECT"=>$proj));
+
+    $list=getCIBlockElementsByFilter(array("IBLOCK_ID"=>34,"PROPERTY_PROJECT"=>$proj));
     $data = [
-        'DateFrom' => $fromdate,//y-m-d
+        'DateFrom' => $fromdate,
         'DateTo' => $todate,
         'AccountNumber' => $accnumber,
         'User' => $user,
@@ -107,13 +103,13 @@ if (!empty($_POST)) {
 
         foreach($data as $record){
 
-            $identity_check=getCIBlockElementsByFilter(array("IBLOCK_ID"=>65,"PROPERTY_movementId"=>$record->movementId));
+            $identity_check=getCIBlockElementsByFilter(array("IBLOCK_ID"=>35,"PROPERTY_movementId"=>$record->movementId));
 
             if (empty($identity_check)) {
-                if ($record->transactionType == '20' && strpos($record->description, "სესხ") === false && strpos($record->description, "101001000") === false && $record->taxpayerCode !== "405569665"  && strpos($record->description, "კონვერტაც") === false && $record->taxpayerCode !== "426551625") {
+                if ($record->transactionType == '20' && strpos($record->description, "სესხ") === false && strpos($record->description, "კონვერტაც") === false ) {
 
                     $arForAdd = array(
-                        'IBLOCK_ID' => 65,
+                        'IBLOCK_ID' => 35,
                         'NAME' => "ამონაწერი",
                         'ACTIVE' => 'Y',
                     );
@@ -121,9 +117,6 @@ if (!empty($_POST)) {
                     $formdatearr = explode("T", $record->valueDate);
 
                     $url = "https://nbg.gov.ge/gw/api/ct/monetarypolicy/currencies?Currencies=USD&date={$formdatearr[0]}";
-
-
-        
 
                     $seb = file_get_contents($url);
 
@@ -188,13 +181,10 @@ if (!empty($_POST)) {
                     $arPropsOld["NBG_RATE"] = $seb_currency;
 
                     $res = addCIBlockElement($arForAdd, $arPropsOld);
-
-
                 }
             }
         }
     }
-
 }
 
 
@@ -240,11 +230,7 @@ if (!empty($_POST)) {
         <div class="mb-3 mt-3">
             <label for="COMPANY" class="form-label">Company:</label>
             <select onchange="hideacc()" required ID="COMPANY" name="COMPANY" class="form-select">
-                <option value="OTIUMI">ოტიუმი</option>
-                <option value="OTIUM_BATUMI">რევერანსი - ბათუმი</option>
-                <!-- <option value="LISI">დეკა ლისი</option>
-                <option value="DEVELOPMENT">დეკა დეველოპმენტი</option>
-                <option value="VERONA">დეკა ვერონა</option> -->
+                <option value="ParkBoulevard">ParkBoulevard</option>
             </select>
         </div>
         <div class="mb-3 mt-3">
@@ -252,17 +238,12 @@ if (!empty($_POST)) {
             <select onchange="hideacc()" required ID="CURRENCY" name="CURRENCY" class="form-select">
                 <option selected value="USD">USD</option>
                 <option value="GEL">GEL</option>
-                <!-- <option value="EUR">EUR</option> -->
             </select>
         </div>
         <div class="mb-3 mt-3">
             <label for="ACCOUNT" id="acc_lable" class="form-label">Account:</label>
             <select ID="ACCOUNT" name="ACCOUNT" class="form-select">
-                <!-- <option value="GE33TB7722036050100003">B და C ბლოკი</option>
-                <option value="GE60TB7722036050100002">ბიზნეს ანგარიში</option>
-                <option value="GE76TB7722036050100005">A ბლოკი</option> -->
-                <option value="GE50TB7722036150100004">B და C ბლოკი (რეკონი)</option>
-                <option value="GE76TB7722036050100005">A ბლოკი</option>
+                <option value="7777777777777777">7777777777777777</option>
             </select>
         </div>
         <div class="mb-3 mt-3">
@@ -288,27 +269,21 @@ function hideacc() {
 
     let optionsHTML = "";
 
-    if (company === "OTIUMI") {
-        if (currency === "GEL") {
-            optionsHTML = `
-                <option value="GE33TB7722036050100003">B და C ბლოკი</option>
-                <option value="GE60TB7722036050100002">ბიზნეს ანგარიში</option>
-                <option value="GE76TB7722036050100005">A ბლოკი</option>
-            `;
-        } else if (currency === "USD") {
-            optionsHTML = `
-                <option value="GE50TB7722036150100004">B და C ბლოკი (რეკონი)</option>
-                <option value="GE76TB7722036050100005">A ბლოკი</option>
-            `;
-        }
+    // if (company === "OTIUMI") {
+    //     if (currency === "GEL") {
+    //         optionsHTML = `
+    //             <option value="GE33TB7722036050100003">B და C ბლოკი</option>
+    //             <option value="GE60TB7722036050100002">ბიზნეს ანგარიში</option>
+    //             <option value="GE76TB7722036050100005">A ბლოკი</option>
+    //         `;
+    //     } else if (currency === "USD") {
+    //         optionsHTML = `
+    //             <option value="GE50TB7722036150100004">B და C ბლოკი (რეკონი)</option>
+    //             <option value="GE76TB7722036050100005">A ბლოკი</option>
+    //         `;
+    //     }
 
-    }else{
-            optionsHTML = `
-                <option value="GE72TB7608236080100010">GE72TB7608236080100010</option>
-                <option value="GE59TB7608236150100003">GE59TB7608236150100003</option>
-            `;
-    }
-
+    // }
 
 
     

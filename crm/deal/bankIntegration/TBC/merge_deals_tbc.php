@@ -75,9 +75,9 @@ function sortByDate($a, $b) {
 
 function value_to_name($val){
 
-    if($val="75"){
+    if($val=="75"){
         return "GEL";
-    }elseif ($val="74"){
+    }elseif ($val=="74"){
         return "USD";
     }else{
         return " ";
@@ -147,7 +147,7 @@ if(!empty($_POST)) {
                     $list_element = getCIBlockElementsByFilter(array("IBLOCK_ID" => 65, "ID" => $_POST["PAYMENT_" . $h]));
 
                     $arForAdd = array(
-                        'IBLOCK_ID' => 25,
+                        'IBLOCK_ID' => 21,
                         'NAME' => $list_element[0]["partnerName"] . " " . $list_element[0]["valueDate"],
                         'ACTIVE' => 'Y',
                     );
@@ -186,22 +186,6 @@ if(!empty($_POST)) {
 
                     $res = addCIBlockElement($arForAdd, $arPropsOld);
 
-                    if(!empty($res) && is_numeric($res)){
-                        $arErrorsTmp = array();
-                        $wfId = CBPDocument::StartWorkflow(
-                            57,
-                            array("bizproc", "CBPVirtualDocument", $res),
-                            array_merge(array(), array("TargetUser" => "user_1")),
-                            $arErrorsTmp
-                        );
-
-                        $wfId2 = CBPDocument::StartWorkflow(
-                            200,
-                            array("bizproc", "CBPVirtualDocument", $res),
-                            array_merge(array(), array("TargetUser" => "user_1")),
-                            $arErrorsTmp
-                        );
-                    }
 
                     ///////////// გადახდების დაჯამება /////////
 
@@ -209,7 +193,7 @@ if(!empty($_POST)) {
                     $deals = getDealsByFilter($arFilter);
 
                     $arFilter = array("PROPERTY_DEAL" => $_POST["DEAL_" . $h],
-                        "IBLOCK_ID" => 25);
+                        "IBLOCK_ID" => 21);
                     $payments = getCIBlockElementsByFilter($arFilter);
 
                     $moneyToPay = $deals[0]['OPPORTUNITY'];
@@ -265,7 +249,7 @@ $list_model=array();
 $error_deals=array();
 
 foreach ($lists as $list){
-    $check_if=getCIBlockElementsByFilter(array("IBLOCK_ID"=>25,"PROPERTY_BANK_PAYMENT_ID"=>$list["ID"]));
+    $check_if=getCIBlockElementsByFilter(array("IBLOCK_ID"=>21,"PROPERTY_BANK_PAYMENT_ID"=>$list["ID"]));
     if(empty($check_if)) {
             $contact = "";
             $bank_amount = "";
@@ -275,13 +259,16 @@ foreach ($lists as $list){
             $buyer_status = "";
 
                 if (!empty($list["taxpayerCode"])) {
-                    $contact = getContactsByFilter(array("UF_CRM_1693399408936" => $list["taxpayerCode"]));
+                    // ძიება კონტაქტის პირადი ნომრით
+                    $contact = getContactsByFilter(array("UF_CRM_1761651998145" => $list["taxpayerCode"]));
                     if (empty($contact)) {
-                        $contact = getContactsByFilter(array("UF_CRM_1725356833" => $list["taxpayerCode"]));
+                        // ძიება კონტაქტის პასპორტის ნომრით
+                        $contact = getContactsByFilter(array("UF_CRM_1761652010097" => $list["taxpayerCode"]));
                     }
                     $buyer_status = "contact";
                     if (empty($contact)) {
-                        $contact = getCompanysByFilter(array("UF_CRM_1710889005" => $list["taxpayerCode"]));
+                        // ძიება კომპანიის საიდენტიფიკაციო კოდით
+                        $contact = getCompanysByFilter(array("UF_CRM_1762421912281" => $list["taxpayerCode"]));
                         $buyer_status = "company";
                     }
                 }
@@ -297,9 +284,17 @@ foreach ($lists as $list){
                 $name = $list["partnerName"];
                 $date = $list["valueDate"];
                 $date = explode("T", $date)[0];
-            if(!empty($list["taxpayerCode"])) {
+            if(!empty($list["taxpayerCode"]) && !empty($contact)) {
 
-                $deals = getDealsByFilter(array("UF_CRM_1704891774" => $list["taxpayerCode"],"STAGE_ID" => $stage_arr));
+                // დილების ძიება კონტაქტის ან კომპანიის ID-ით
+                $dealFilter = array("STAGE_ID" => $stage_arr);
+                if ($buyer_status == "contact") {
+                    $dealFilter["CONTACT_ID"] = $contact[0]["ID"];
+                } elseif ($buyer_status == "company") {
+                    $dealFilter["COMPANY_ID"] = $contact[0]["ID"];
+                }
+                
+                $deals = getDealsByFilter($dealFilter);
 
                 $modeled_deals = array();
 
@@ -317,8 +312,8 @@ foreach ($lists as $list){
                     $deal_ID =  $deal["ID"];
                     $dealData    = getDealInfoByID($deal_ID);
 
-                    $paymentPlans = getPaymentPlan(array("IBLOCK_ID" => 29,"PROPERTY_DEAL"=>$deal_ID));
-                    $payments = getPayments(array("IBLOCK_ID" => 25,"PROPERTY_DEAL"=>$deal_ID));
+                    $paymentPlans = getPaymentPlan(array("IBLOCK_ID" => 22,"PROPERTY_DEAL"=>$deal_ID));
+                    $payments = getPayments(array("IBLOCK_ID" => 21,"PROPERTY_DEAL"=>$deal_ID));
 
                     $financeArr = array_merge($paymentPlans, $payments);
 
@@ -357,7 +352,12 @@ foreach ($lists as $list){
                         $trueformdate=$date_arr[1]."/".$date_arr[0]."/".$date_arr[2];
                         return strtotime($trueformdate) < strtotime($today);
                     });
-                    $dealmodel["LEFT_TO_PAY"] = $filteredData[count($filteredData)-1]["leftToPay"];
+                    $filteredData = array_values($filteredData); // რეინდექსაცია
+                    if (!empty($filteredData)) {
+                        $dealmodel["LEFT_TO_PAY"] = $filteredData[count($filteredData)-1]["leftToPay"];
+                    } else {
+                        $dealmodel["LEFT_TO_PAY"] = 0; // თუ ფილტრირებული მონაცემები ცარიელია
+                    }
                     array_push($modeled_deals, $dealmodel);
                 }
 
@@ -380,8 +380,10 @@ foreach ($lists as $list){
 
                 }else{
                     $errordeal_model["INN"] = $inn;
-                    $chanaweri["CLIENT_ID"]=$contact[0]["ID"];
-                    $chanaweri["STATUS"]=$buyer_status;
+                    if (!empty($contact)) {
+                        $errordeal_model["CLIENT_ID"] = $contact[0]["ID"];
+                        $errordeal_model["STATUS"] = $buyer_status;
+                    }
                     $errordeal_model["NAME"] = $name;
                     $errordeal_model["AMOUNT_GEL"] = $bank_amount_gel;
                     $errordeal_model["AMOUNT_USD"] = $bank_amount_usd;
@@ -483,7 +485,7 @@ ob_end_clean();
         </table>
         <button disabled id="main_button" class="btn btn-dark" type="submit">შენახვა</button>
     </form>
-    <form action="https://crm.otium.ge/crm/deal/error_deals_tbc.php" method="post" id="myForm_er">
+    <form action="https://crmasgroup.ge/crm/deal/bankIntegration/TBC/error_deals_tbc.php" method="post" id="myForm_er">
         <table class="table">
             <thead>
             <tr>
@@ -515,8 +517,7 @@ ob_end_clean();
     let errors=<?echo json_encode($error_deals);?>;
 
     var dropdowndata={
-        OTIUMI:"ოტიუმი",
-        OTIUM_BATUMI:"რევერანსი - ბათუმი"
+        ParkBoulevard:"ParkBoulevard",
     };
 
     console.log(data);
@@ -580,18 +581,9 @@ ob_end_clean();
 
                 for (var y = 0; y < selectedOptions.length; y++) {
 
-                    if (selectedOptions[y] == "დეკა დიდი დიღომი") {
-                        alloweproj.push('Digomi');
-                    }else if(selectedOptions[y] == "დეკა ვარკეთილი"){
-                        alloweproj.push('Varketili');
-                    }else if(selectedOptions[y] == "დეკა გარემო"){
-                        alloweproj.push('Garemo');
-                    }else if(selectedOptions[y] == "დეკა ვერონა"){
-                        alloweproj.push('Verona');
-                    }else if(selectedOptions[y] == "დეკა ლისი"){
-                        alloweproj.push('Lisi');
+                    if (selectedOptions[y] == "ParkBoulevard") {
+                        alloweproj.push('ParkBoulevard');
                     }
-
                 }
 
                 var alltds = document.getElementsByClassName('hidedeals');
