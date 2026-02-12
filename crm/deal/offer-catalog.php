@@ -301,7 +301,7 @@ html, body {
         <div class="content-grid">
             <!-- LEFT COLUMN -->
             <div class="property-info">
-    <div class="info-container-bg" style="<?php echo (isset($backgroundfoto) && $backgroundfoto) ? 'background-image: url(\'' . $backgroundfoto . '\'); background-size: 60%; width: 100%; background-repeat: no-repeat;
+    <div class="info-container-bg" style="<?php echo (isset($backgroundfoto) && $backgroundfoto) ? 'background-image: url(\'' . $backgroundfoto . '\'); background-size: 60%; width: 36%; background-repeat: no-repeat;
     height: 25%;' : ''; ?>">
                 
                 <div class="info-table">
