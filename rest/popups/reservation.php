@@ -58,48 +58,54 @@ $contactInfo= getContactById($contactId);
             margin: 0 auto;
             height: auto !important;
         }
-        
+
         .form-group {
             margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        
+
+
         .form-group label {
-            display: block;
-            margin-bottom: 5px;
+            min-width: 180px;
+            width: 180px;
+            margin-bottom: 0;
             font-weight: 500;
             color: #333;
+            text-align: right;
         }
-        
+
         .form-group label.required::after {
             content: ' *';
             color: #ff0000;
         }
-        
+
         .form-control {
-            width: 100%;
+            flex: 1;
             padding: 8px 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 14px;
             transition: border-color 0.3s;
         }
-        
+
         .form-control:focus {
             outline: none;
             border-color: #0286ce;
             box-shadow: 0 0 0 3px rgba(2, 134, 206, 0.1);
         }
-        
+
         select.form-control {
             height: 38px;
             cursor: pointer;
         }
-        
+
         textarea.form-control {
             resize: vertical;
             min-height: 80px;
         }
-        
+
         .button-group {
             display: flex;
             gap: 10px;
@@ -108,7 +114,7 @@ $contactInfo= getContactById($contactId);
             padding-top: 20px;
             border-top: 1px solid #e5e5e5;
         }
-        
+
         .btn {
             padding: 10px 20px;
             border: none;
@@ -118,32 +124,33 @@ $contactInfo= getContactById($contactId);
             cursor: pointer;
             transition: background-color 0.3s;
         }
-        
+
         .btn-primary {
             background-color: #0286ce;
             color: white;
         }
-        
+
         .btn-primary:hover {
             background-color: #026ba5;
         }
-        
+
         .btn-secondary {
             background-color: #f5f5f5;
             color: #333;
         }
-        
+
         .btn-secondary:hover {
             background-color: #e5e5e5;
         }
-        
+
         .error {
             color: #ff0000;
             font-size: 12px;
             margin-top: 5px;
             display: none;
+            margin-left: 195px; /* align under inputs */
         }
-        
+
         .form-control.error-input {
             border-color: #ff0000;
         }
@@ -153,277 +160,282 @@ $contactInfo= getContactById($contactId);
     </style>
 </head>
 <body>
-    <div class="reservation-form">
-        <form id="reservationForm">
-            <input type="hidden" id="dealId" value="<?php echo $dealId; ?>">
-            
-            <div class="form-group">
-                <label for="reservationType" class="required">რეზერვაციის ტიპი</label>
-                <select class="form-control" id="reservationType" name="reservationType" style="width: 40%;" onchange="javshnisTypeFunc()" required>
-                    <option value="">აირჩიეთ...</option>
-                    <option value="ufaso">უფასო 2 სამუშაო დღე</option>
-                    <option value="uvado">არასტანდარტული ჯავშანი</option>
-                </select>
-                <div class="error" id="reservationType-error">გთხოვთ აირჩიოთ რეზერვაციის ტიპი</div>
-            </div>
+<div class="reservation-form">
+    <form id="reservationForm">
+        <input type="hidden" id="dealId" value="<?php echo $dealId; ?>">
 
-            <div id="vadaDiv" class="form-group" style="display: none;">
-                <label for="vada" class="required">ვადა</label>
-                <input type="date" class="form-control" id="vada" name="vada">
-                <div class="error" id="vada-error">გთხოვთ შეიყვანოთ ვადა</div>
-            </div>
-            
+        <div class="form-group">
+            <label for="reservationType" class="required">რეზერვაციის ტიპი</label>
+            <select class="form-control" id="reservationType" name="reservationType" style="width: 40%;" onchange="javshnisTypeFunc()" required>
+                <option value="">აირჩიეთ...</option>
+                <option value="ufaso">უფასო 2 სამუშაო დღე</option>
+                <option value="uvado">არასტანდარტული ჯავშანი</option>
+            </select>
+            <div class="error" id="reservationType-error">გთხოვთ აირჩიოთ რეზერვაციის ტიპი</div>
+        </div>
 
-            <div id="resChangeDiv" class="form-group" style="display: none;">
-                <label for="resChange" class="required">ახალი რეზერვაციის თარიღი</label>
-                <input type="date" class="form-control" id="resChange" name="resChange">
-                <div class="error" id="resChange-error">გთხოვთ შეიყვანოთ რეზერვაციის თარიღი</div>
-            </div>
-
-            <div class="form-group">
-                <label for="firstName" class="required">სახელი</label>
-                <input type="text" class="form-control" id="firstName" name="firstName" required>
-                <div class="error" id="firstName-error">გთხოვთ შეიყვანოთ სახელი</div>
-            </div>
-            
-            <div class="form-group">
-                <label for="lastName" class="required">გვარი</label>
-                <input type="text" class="form-control" id="lastName" name="lastName" required>
-                <div class="error" id="lastName-error">გთხოვთ შეიყვანოთ გვარი</div>
-            </div>
-            
-            <div class="form-group">
-                <label for="phone">ტელეფონის ნომერი</label>
-                <input type="tel" class="form-control" id="phone" name="phone" placeholder="+995 5XX XXX XXX">
-            </div>
-            
-            <div class="form-group">
-                <label for="personalId">პირადი ნომერი</label>
-                <input type="text" class="form-control" id="personalId" name="personalId" maxlength="11">
-            </div>
-            
-            <div class="form-group">
-                <label for="passportId">პასპორტის ნომერი</label>
-                <input type="text" class="form-control" id="passportId" name="passportId">
-            </div>
-            
-            <div class="form-group">
-                <label for="comment">კომენტარი</label>
-                <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
-            </div>
-            
-            <div class="button-group">
-                <button type="button" class="btn btn-secondary" onclick="closePopup()">გაუქმება</button>
-                <button type="submit" class="btn btn-primary">გაგზავნა</button>
-            </div>
-        </form>
-    </div>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
-    <script>
-    	dealId = <? echo json_encode($dealId); ?>;
-        contactInfo = <? echo json_encode($contactInfo); ?>;
-        deal = <? echo json_encode($deal); ?>;
-    	ResChange = <? echo json_encode($ResChange); ?>;
-
-        console.log("ResChange");
-        console.log(ResChange);
+        <div id="vadaDiv" class="form-group" style="display: none;">
+            <label for="vada" class="required">ვადა</label>
+            <input type="date" class="form-control" id="vada" name="vada">
+            <div class="error" id="vada-error">გთხოვთ შეიყვანოთ ვადა</div>
+        </div>
 
 
-        if(ResChange==1){
-            document.getElementById("resChangeDiv").style.display="";
-            document.getElementById("resChange").setAttribute("required", "required");
-                if(deal["UF_CRM_1762331240"]=="71"){
-                    typeValue="ufaso";
-                }else if(deal["UF_CRM_1762331240"]=="72"){
-                    typeValue="uvado";
-                }else{
-                    typeValue=""; 
-                }
+        <div id="resChangeDiv" class="form-group" style="display: none;">
+            <label for="resChange" class="required">ახალი რეზერვაციის თარიღი</label>
+            <input type="date" class="form-control" id="resChange" name="resChange">
+            <div class="error" id="resChange-error">გთხოვთ შეიყვანოთ რეზერვაციის თარიღი</div>
+        </div>
 
-            document.getElementById("reservationType").value=typeValue;
-            // document.getElementById("resChange").value=deal["UF_CRM_1762330753"];
-            // document.getElementById("reservationType").style.pointerEvents="none";
+        <div class="form-group">
+            <label for="firstName" class="required">სახელი</label>
+            <input type="text" class="form-control" id="firstName" name="firstName" required>
+            <div class="error" id="firstName-error">გთხოვთ შეიყვანოთ სახელი</div>
+        </div>
+
+        <div class="form-group">
+            <label for="lastName" class="required">გვარი</label>
+            <input type="text" class="form-control" id="lastName" name="lastName" required>
+            <div class="error" id="lastName-error">გთხოვთ შეიყვანოთ გვარი</div>
+        </div>
+
+        <div class="form-group">
+            <label for="phone">ტელეფონის ნომერი</label>
+            <input type="tel" class="form-control" id="phone" name="phone" placeholder="+995 5XX XXX XXX">
+        </div>
+
+        <div class="form-group">
+            <label for="personalId">პირადი ნომერი</label>
+            <input type="text" class="form-control" id="personalId" name="personalId" maxlength="11">
+        </div>
+
+        <div class="form-group">
+            <label for="passportId">პასპორტის ნომერი</label>
+            <input type="text" class="form-control" id="passportId" name="passportId">
+        </div>
+
+        <div class="form-group">
+            <label for="comment">კომენტარი</label>
+            <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+        </div>
+
+        <div class="button-group">
+            <button type="button" class="btn btn-secondary" onclick="closePopup()">გაუქმება</button>
+            <button type="submit" class="btn btn-primary">გაგზავნა</button>
+        </div>
+    </form>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+    dealId = <? echo json_encode($dealId); ?>;
+    contactInfo = <? echo json_encode($contactInfo); ?>;
+    deal = <? echo json_encode($deal); ?>;
+    ResChange = <? echo json_encode($ResChange); ?>;
+
+    console.log("ResChange");
+    console.log(ResChange);
+
+
+    // if(ResChange==1){
+    //     document.getElementById("resChangeDiv").style.display="";
+    //     document.getElementById("resChange").setAttribute("required", "required");
+    //     document.getElementById("reservationType").value="ufaso";
+    //     document.getElementById("reservationType").style.pointerEvents="none";
+    // }else{
+    //     document.getElementById("resChangeDiv").style.display="none"
+    // }
+
+    if(ResChange==1){
+        document.getElementById("resChangeDiv").style.display="";
+        document.getElementById("resChange").setAttribute("required", "required");
+        if(deal["UF_CRM_1762331240"]=="71"){
+            typeValue="ufaso";
+        }else if(deal["UF_CRM_1762331240"]=="72"){
+            typeValue="uvado";
         }else{
-            document.getElementById("resChangeDiv").style.display="none"
+            typeValue="";
         }
 
+        document.getElementById("reservationType").value=typeValue;
+        // document.getElementById("resChange").value=deal["UF_CRM_1762330753"];
+        // document.getElementById("reservationType").style.pointerEvents="none";
+    }else{
+        document.getElementById("resChangeDiv").style.display="none"
+    }
 
-        function javshnisTypeFunc(){
 
-            if(ResChange!=1){
-                if(document.getElementById("reservationType").value=="uvado" || document.getElementById("reservationType").value=="fasiani"){
-                    document.getElementById("vadaDiv").style.display="";
-                }else{
-                    document.getElementById("vadaDiv").style.display="none";
-                }
+    function javshnisTypeFunc(){
 
+        if(ResChange!=1){
+            if(document.getElementById("reservationType").value=="uvado" || document.getElementById("reservationType").value=="fasiani"){
+                document.getElementById("vadaDiv").style.display="";
+            }else{
+                document.getElementById("vadaDiv").style.display="none";
             }
 
         }
-        
-        function fillContactInfo(id, value){
-            if(document.getElementById(id)){
-                document.getElementById(id).value=contactInfo[value];
-            }
+
+    }
+
+    function fillContactInfo(id, value){
+        if(document.getElementById(id)){
+            document.getElementById(id).value=contactInfo[value];
+        }
+    }
+
+    fillContactInfo("firstName", "NAME");
+    fillContactInfo("lastName", "LAST_NAME");
+    fillContactInfo("phone", "PHONE");
+    fillContactInfo("personalId", "UF_CRM_1761651998145");
+    fillContactInfo("passportId", "UF_CRM_1761652010097");
+
+
+    function closePopup() {
+        if (window.BX && BX.SidePanel) {
+            BX.SidePanel.Instance.close();
+        } else {
+            window.close();
+        }
+    }
+
+
+    $(document).ready(function () {
+        // Input validation helper
+        function showError(inputId, message) {
+            $("#" + inputId).addClass("error-input");
+            $("#" + inputId + "-error").text(message).show();
         }
 
-        fillContactInfo("firstName", "NAME");       
-        fillContactInfo("lastName", "LAST_NAME"); 
-        fillContactInfo("phone", "PHONE"); 
-        fillContactInfo("personalId", "UF_CRM_1761651998145");
-        fillContactInfo("passportId", "UF_CRM_1761652010097");
+        function clearError(inputId) {
+            $("#" + inputId).removeClass("error-input");
+            $("#" + inputId + "-error").hide();
+        }
 
+        function validateForm() {
+            let isValid = true;
+            let requiredFields = []; // აქ უნდა გამოცხადდეს გარეთ
 
-        function closePopup() {
-            if (window.BX && BX.SidePanel) {
-                BX.SidePanel.Instance.close();
+            if (ResChange == 1) {
+                requiredFields = [
+                    "reservationType",
+                    "resChange",
+                    "firstName",
+                    "lastName"
+                ];
             } else {
-                window.close();
-            }
-        }
-
-
-        $(document).ready(function () {
-            // Input validation helper
-            function showError(inputId, message) {
-                $("#" + inputId).addClass("error-input");
-                $("#" + inputId + "-error").text(message).show();
-            }
-
-            function clearError(inputId) {
-                $("#" + inputId).removeClass("error-input");
-                $("#" + inputId + "-error").hide();
-            }
-
-            function validateForm() {
-                let isValid = true;
-                let requiredFields = []; // აქ უნდა გამოცხადდეს გარეთ
-
-                if (ResChange == 1) {
+                if (
+                    document.getElementById("reservationType").value == "uvado"
+                ) {
                     requiredFields = [
                         "reservationType",
-                        "resChange",
+                        "vada",
                         "firstName",
                         "lastName"
                     ];
                 } else {
-                    if (
-                        document.getElementById("reservationType").value == "uvado"
-                    ) {
-                        requiredFields = [
-                            "reservationType",
-                            "vada",
-                            "firstName",
-                            "lastName"
-                        ];
-                    } else {
-                        requiredFields = [
-                            "reservationType",
-                            "firstName",
-                            "lastName"
-                        ];
-                    }
+                    requiredFields = [
+                        "reservationType",
+                        "firstName",
+                        "lastName"
+                    ];
                 }
-
-                requiredFields.forEach(function (field) {
-                    let value = $("#" + field).val().trim();
-                    if (!value) {
-                        showError(field, "გთხოვთ შეავსოთ ეს ველი");
-                        isValid = false;
-                    } else {
-                        clearError(field);
-                    }
-                });
-
-                return isValid;
             }
 
+            requiredFields.forEach(function (field) {
+                let value = $("#" + field).val().trim();
+                if (!value) {
+                    showError(field, "გთხოვთ შეავსოთ ეს ველი");
+                    isValid = false;
+                } else {
+                    clearError(field);
+                }
+            });
 
-            // Submit form
-            $("#reservationForm").on("submit", function (e) {
-                e.preventDefault();
+            return isValid;
+        }
 
-                if (!validateForm()) return;
 
-                let formData = {
-                    dealId: $("#dealId").val(),
-                    reservationType: $("#reservationType").val(),
-                    firstName: $("#firstName").val(),
-                    lastName: $("#lastName").val(),
-                    phone: $("#phone").val(),
-                    personalId: $("#personalId").val(),
-                    passportId: $("#passportId").val(),
-                    comment: $("#comment").val(),
-                    vada: $("#vada").val(),
-                    ResChange: ResChange,              
-                    ResChangeDate: $("#resChange").val() || ""
-                };
+        // Submit form
+        $("#reservationForm").on("submit", function (e) {
+            e.preventDefault();
 
-                console.log("formData")
-                console.log(formData)
+            if (!validateForm()) return;
 
-                $.ajax({
-                    url: "/rest/popupsservices/reservation.php",
-                    type: "POST",
-                    data: formData,
-                    dataType: "json",
-                    beforeSend: function () {
-                        $(".btn-primary").text("მუშავდება...").prop("disabled", true);
-                    },
-                    success: function (response) {
-                        if (response.status === "success") {
-                            alert("რეზერვაციის მონაცემები გაგზავნილია!");
-                            setTimeout(() => {
-                                closePopup();
-                                window.top.location.reload();
-                            }, 500);
+            let formData = {
+                dealId: $("#dealId").val(),
+                reservationType: $("#reservationType").val(),
+                firstName: $("#firstName").val(),
+                lastName: $("#lastName").val(),
+                phone: $("#phone").val(),
+                personalId: $("#personalId").val(),
+                passportId: $("#passportId").val(),
+                comment: $("#comment").val(),
+                vada: $("#vada").val(),
+                ResChange: ResChange,
+                ResChangeDate: $("#resChange").val() || ""
+            };
 
-                        } else {
-                            alert("შეტყობინება: " + response.message);
-                        }
-                    },
-                    error: function () {
-                        alert("დაფიქსირდა შეცდომა! სცადეთ თავიდან.");
-                    },
-                    complete: function () {
-                        $(".btn-primary").text("გაგზავნა").prop("disabled", false);
+            console.log("formData")
+            console.log(formData)
+
+            $.ajax({
+                url: "/rest/popupsservices/reservation.php",
+                type: "POST",
+                data: formData,
+                dataType: "json",
+                beforeSend: function () {
+                    $(".btn-primary").text("მუშავდება...").prop("disabled", true);
+                },
+                success: function (response) {
+                    if (response.status === "success") {
+                        alert("რეზერვაციის მონაცემები გაგზავნილია!");
+                        setTimeout(() => {
+                            closePopup();
+                            window.top.location.reload();
+                        }, 500);
+
+                    } else {
+                        alert("შეტყობინება: " + response.message);
                     }
-                });
+                },
+                error: function () {
+                    alert("დაფიქსირდა შეცდომა! სცადეთ თავიდან.");
+                },
+                complete: function () {
+                    $(".btn-primary").text("გაგზავნა").prop("disabled", false);
+                }
             });
         });
+    });
 
 
-        setTimeout(() => {
-            // დავამატოთ GTranslate-ის პარამეტრები
-            const settingsScript = document.createElement('script');
-            settingsScript.textContent = `
-                window.gtranslateSettings = {
-                    "default_language": "ka",
-                    "languages": ["ka", "en", "ru"],
-                    "wrapper_selector": ".gtranslate_wrapper",
-                    "flag_size": 24
-                };
-            `;
-            document.body.appendChild(settingsScript);
+    setTimeout(() => {
+        // Check if already initialized
+        if (document.querySelector('.gtranslate_wrapper a')) return;
 
-            // დავამატოთ თვითონ თარგმანის სკრიპტი
-            const gtranslateScript = document.createElement('script');
-            gtranslateScript.src = "https://cdn.gtranslate.net/widgets/latest/flags.js";
-            gtranslateScript.defer = true;
-            document.body.appendChild(gtranslateScript);
+        const settingsScript = document.createElement('script');
+        settingsScript.textContent = `
+        window.gtranslateSettings = {
+            "default_language": "ka",
+            "languages": ["ka", "en", "ru"],
+            "wrapper_selector": ".gtranslate_wrapper",
+            "flag_size": 24
+        };
+    `;
+        document.body.appendChild(settingsScript);
 
-            // ვიპოვოთ რეზერვაციის ფორმის ელემენტი
-            const reservationForm = document.querySelector('.reservation-form');
-            if (reservationForm) {
-                // შევქმნათ თარგმანის HTML
-                const translateHtml = document.createElement('div');
-                translateHtml.className = 'gtranslate_wrapper';
+        const gtranslateScript = document.createElement('script');
+        gtranslateScript.src = "https://cdn.gtranslate.net/widgets/latest/flags.js";
+        gtranslateScript.defer = true;
+        document.body.appendChild(gtranslateScript);
 
-                // ჩავსვათ რეზერვაციის ფორმის ზემოთ
-                reservationForm.parentNode.insertBefore(translateHtml, reservationForm);
-            }
-        }, 3000);
-
-    </script>
+        const reservationForm = document.querySelector('.reservation-form');
+        if (reservationForm && !document.querySelector('.gtranslate_wrapper')) {
+            const translateHtml = document.createElement('div');
+            translateHtml.className = 'gtranslate_wrapper';
+            reservationForm.parentNode.insertBefore(translateHtml, reservationForm);
+        }
+    }, 3000);
+</script>
