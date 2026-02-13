@@ -209,7 +209,7 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
                 <input id="sellFlatText" type="hidden" />
             </div>
             <div class="file-group" id="SellAttachDiv">
-                <span>დოკუმენტის ასლი:</span>
+                <span>პიროვნების დამადასტურებელი დოკუმენტი:</span>
                 <input id="sellAttach" type="file" onchange="fileShetvirtva('sellAttach')" />
                 <input id="sellAttachText" type="hidden" />
             </div>
@@ -273,8 +273,8 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
                 <label for="citizenshipType" class="required">მოქალაქეობა</label>
                 <select class="form-control" id="citizenshipType" name="citizenshipType" onchange="toggleCitizenOf()" required>
                     <option value="">აირჩიეთ...</option>
-                    <option value="45">Resident</option>
-                    <option value="46">Non-resident</option>
+                    <option value="45">რეზიდენტი</option>
+                    <option value="46">არა რეზიდენტი</option>
                 </select>
                 <div class="error" id="citizenshipType-error">აირჩიეთ მოქალაქეობა</div>
             </div>
@@ -356,8 +356,8 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
                 <label for="contactType" class="required">კონტრაქტის ტიპი</label>
                 <select class="form-control" id="contactType" name="contactType" required>
                     <option value="">აირჩიეთ...</option>
-                    <option value="174">Standard</option>
-                    <option value="175">Non standard</option>
+                    <option value="174">სტანდარტული</option>
+                    <option value="175">არასტანდარტული</option>
                 </select>
                 <div class="error" id="contactType-error">გთხოვთ აირჩიოთ კონტრაქტის ტიპი</div>
             </div>
@@ -596,7 +596,7 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
 
         function validateForm() {
             let valid = true;
-            ["contractDate", "sellFlat", "sellAttach"].forEach(id => {
+            ["contractDate"].forEach(id => {
                 let el = $("#" + id)[0];
                 if (!el) return;
 
@@ -706,33 +706,33 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         });
     });
 
-    if (!window.gtranslateInitialized) {
-        window.gtranslateInitialized = true;
-        setTimeout(() => {
-            const settingsScript = document.createElement('script');
-            settingsScript.textContent = `
-                window.gtranslateSettings = {
-                    "default_language": "ka",
-                    "languages": ["ka", "en", "ru"],
-                    "wrapper_selector": ".gtranslate_wrapper",
-                    "flag_size": 24
-                };
-            `;
-            document.body.appendChild(settingsScript);
+    // if (!window.gtranslateInitialized) {
+    //     window.gtranslateInitialized = true;
+    //     setTimeout(() => {
+    //         const settingsScript = document.createElement('script');
+    //         settingsScript.textContent = `
+    //             window.gtranslateSettings = {
+    //                 "default_language": "ka",
+    //                 "languages": ["ka", "en", "ru"],
+    //                 "wrapper_selector": ".gtranslate_wrapper",
+    //                 "flag_size": 24
+    //             };
+    //         `;
+    //         document.body.appendChild(settingsScript);
 
-            const gtranslateScript = document.createElement('script');
-            gtranslateScript.src = "https://cdn.gtranslate.net/widgets/latest/flags.js";
-            gtranslateScript.defer = true;
-            document.body.appendChild(gtranslateScript);
+    //         const gtranslateScript = document.createElement('script');
+    //         gtranslateScript.src = "https://cdn.gtranslate.net/widgets/latest/flags.js";
+    //         gtranslateScript.defer = true;
+    //         document.body.appendChild(gtranslateScript);
 
-            const reservationForm = document.querySelector('.sell-form');
-            if (reservationForm) {
-                const translateHtml = document.createElement('div');
-                translateHtml.className = 'gtranslate_wrapper';
-                reservationForm.parentNode.insertBefore(translateHtml, reservationForm);
-            }
-        }, 3000);
-    }
+    //         const reservationForm = document.querySelector('.sell-form');
+    //         if (reservationForm) {
+    //             const translateHtml = document.createElement('div');
+    //             translateHtml.className = 'gtranslate_wrapper';
+    //             reservationForm.parentNode.insertBefore(translateHtml, reservationForm);
+    //         }
+    //     }, 3000);
+    // }
 
 </script>
 </body>

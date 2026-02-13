@@ -58,6 +58,15 @@ if ($USER->IsAuthorized()) {
                 sidePanel2.style.display = "none";
             }
 
+            if(userID == 2788){
+                automation=document.getElementById("crm-view-switcher-buttons-right");
+                if(automation){
+                    automation.style.display = "none";
+                }
+            }
+      
+            
+
             if (url[0] == "crm" && url[1] == "deal"){ 
                 
                     // ლისტ ხედვა

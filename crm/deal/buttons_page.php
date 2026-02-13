@@ -687,23 +687,23 @@ function init() {
     filterDocuments();
     
     // GTranslate
-    setTimeout(() => {
-        window.gtranslateSettings = {
-            default_language: "ka",
-            languages: ["ka", "en", "ru"],
-            wrapper_selector: ".gtranslate_wrapper",
-            flag_size: 24
-        };
+    // setTimeout(() => {
+    //     window.gtranslateSettings = {
+    //         default_language: "ka",
+    //         languages: ["ka", "en", "ru"],
+    //         wrapper_selector: ".gtranslate_wrapper",
+    //         flag_size: 24
+    //     };
         
-        const script = document.createElement('script');
-        script.src = "https://cdn.gtranslate.net/widgets/latest/flags.js";
-        script.defer = true;
-        document.body.appendChild(script);
+    //     const script = document.createElement('script');
+    //     script.src = "https://cdn.gtranslate.net/widgets/latest/flags.js";
+    //     script.defer = true;
+    //     document.body.appendChild(script);
         
-        const wrapper = document.createElement('div');
-        wrapper.className = 'gtranslate_wrapper';
-        document.getElementById('maincontent').parentNode.insertBefore(wrapper, document.getElementById('maincontent'));
-    }, 3000);
+    //     const wrapper = document.createElement('div');
+    //     wrapper.className = 'gtranslate_wrapper';
+    //     document.getElementById('maincontent').parentNode.insertBefore(wrapper, document.getElementById('maincontent'));
+    // }, 3000);
 }
 
 document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
