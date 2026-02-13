@@ -152,6 +152,38 @@ $bade = getCIBlockElementsByFilter($arFilter);
 if (count($bade)) {
     $badefoto = CFile::GetPath($bade[0]["PHOTO"]);
 }
+
+
+$arFilter = array("ID" => 11419);
+$gayidvebi = getCIBlockElementsByFilter($arFilter);
+if (count($gayidvebi)) {
+    $gayidvebifoto = CFile::GetPath($gayidvebi[0]["PHOTO"]);
+}
+
+$arFilter = array("ID" => 11420);
+$gayidvebi2 = getCIBlockElementsByFilter($arFilter);
+if (count($gayidvebi2)) {
+    $gayidvebi2foto = CFile::GetPath($gayidvebi2[0]["PHOTO"]);
+}
+
+$arFilter = array("ID" => 11390);
+$gayidvebi3 = getCIBlockElementsByFilter($arFilter);
+if (count($gayidvebi3)) {
+    $gayidvebi3foto = CFile::GetPath($gayidvebi3[0]["PHOTO"]);
+}
+	
+
+$arFilter = array("ID" => 11447);
+$green = getCIBlockElementsByFilter($arFilter);
+if (count($green)) {
+    $greenfoto = CFile::GetPath($green[0]["PHOTO"]);
+}
+	
+
+
+	
+
+
 ?>
 
 <!DOCTYPE html>
@@ -161,6 +193,9 @@ if (count($bade)) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>შეთავაზება - Park Boulevard</title>
     <link rel="stylesheet" href="//cdn.web-fonts.ge/fonts/bpg-nino-elite-exp-caps/css/bpg-nino-elite-exp-caps.min.css">
+    <link rel="stylesheet" href="//cdn.web-fonts.ge/fonts/bpg-web-001-caps/css/bpg-web-001-caps.min.css">
+    <link rel="stylesheet" href="//cdn.web-fonts.ge/fonts/arial-geo-bolditalic/css/arial-geo-bolditalic.min.css">
+
     <style>
 /* Reset everything to the absolute edges */
 html, body {
@@ -267,7 +302,7 @@ html, body {
     border-radius: 2mm;
     padding: 4mm;
     margin-bottom: 4mm;
-    margin-top:10%;
+    margin-top:20%;
     color: var(--text-dark); /* Keeps text dark for readability */
 }
 
@@ -277,6 +312,61 @@ html, body {
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 
+img {
+    border: none;
+    margin-top: 10%;
+}
+
+.info-table,
+.info-table .info-label,
+.info-table .info-value,
+.price-box,
+.price-box .price-label,
+.price-box .price-amount,
+.price-box .price-per-sqm {
+    color: rgb(52, 87, 112);
+    font-size: 18px;
+    margin-left: 5px;
+    font-family: "BPG WEB 001 Caps", sans-serif;
+}
+
+.info-row {
+    margin-bottom: 15px;
+}
+
+.price-box {
+    margin-top: 15px;       
+    display: flex;
+    flex-direction: column;
+    gap: 12px;    
+        margin-left: 0;           
+}
+
+.gayidvebismenejeri{
+
+    color: rgb(52, 87, 112);
+    font-size: 28px;
+    font-weight:bolder;
+    margin-left: 25px;
+    font-family: "BPG WEB 001 Caps", sans-serif;
+    margin-top:20px;
+}
+
+.footer2{
+
+color: rgb(52, 87, 112);
+font-size: 20px;
+font-weight:bolder;
+margin-left: 25px;
+font-family: "BPG WEB 001 Caps", sans-serif;
+}
+
+.tableclass{
+    color: rgb(52, 87, 112);
+    font-size: 18px;
+    margin-left: 5px;
+    font-family: "BPG WEB 001 Caps", sans-serif;
+}
 
 </style>
     </style>
@@ -301,8 +391,8 @@ html, body {
         <div class="content-grid">
             <!-- LEFT COLUMN -->
             <div class="property-info">
-    <div class="info-container-bg" style="<?php echo (isset($backgroundfoto) && $backgroundfoto) ? 'background-image: url(\'' . $backgroundfoto . '\'); background-size: 60%; width: 36%; background-repeat: no-repeat;
-    height: 25%;' : ''; ?>">
+    <div class="info-container-bg" style="<?php echo (isset($backgroundfoto) && $backgroundfoto) ? 'background-image: url(\'' . $backgroundfoto . '\'); background-size: 60%; width: 38%; background-repeat: no-repeat;
+    height: 35%;' : ''; ?>">
                 
                 <div class="info-table">
                     <div class="info-row">
@@ -329,14 +419,109 @@ html, body {
                         <span class="info-label">სრული ფართი:</span>
                         <span class="info-value" id="totalspace"><?php echo $totalspace; ?> მ²</span>
                     </div>
-                </div>
+                
 
                 <div class="price-box">
-                    <div class="price-label">ჯამური ღირებულება</div>
-                    <div class="price-amount" id="totalprice">$ <?php echo number_format($totalprice); ?></div>
+                    <div class="price-per-sqm" id="kvmPrice">ჯამური ღირებულება: <?php echo number_format($totalprice); ?></div>
                     <div class="price-per-sqm" id="kvmPrice">ღირებულება მ²: $ <?php echo number_format($kvmdollar); ?></div>
                 </div>
                 </div>
+                <br> <br>
+                <br>
+                <br>
+                <br>
+
+                <div class="gayidvebismenejeri">გაყიდვების მენეჯერი</div>
+<table class="tableclass" style="border-collapse: collapse; margin-top: 10px; margin-left: 25px;">
+    <tr>
+        <td style="padding-right: 100px; vertical-align: top;">
+            <?php if(isset($gayidvebifoto) && $gayidvebifoto): ?>
+                <table style="border-collapse: collapse; margin-bottom: 10px;">
+                    <tr>
+                        <td style="vertical-align: middle; padding-right: 6px;">
+                            <img src="<?php echo $gayidvebifoto; ?>" alt="გაყიდვები" style="display:block; max-width:40px; height:auto;">
+                        </td>
+                        <td style="vertical-align: middle;">
+                            <?php echo $salesmenegername; ?>
+                        </td>
+                    </tr>
+                </table>
+            <?php endif; ?>
+
+            <?php if(isset($gayidvebi2foto) && $gayidvebi2foto): ?>
+                <table style="border-collapse: collapse;">
+                    <tr>
+                        <td style="vertical-align: middle; padding-right: 6px;">
+                            <img src="<?php echo $gayidvebi2foto; ?>" alt="გაყიდვები" style="display:block; max-width:40px; height:auto;">
+                        </td>
+                        <td style="vertical-align: middle;">
+                            <?php echo $salesmenegermail; ?>
+                        </td>
+                    </tr>
+                </table>
+            <?php endif; ?>
+        </td>
+        <td style="vertical-align: top;">
+            <?php if(isset($gayidvebi3foto) && $gayidvebi3foto): ?>
+                <table style="border-collapse: collapse;">
+                    <tr>
+                        <td style="vertical-align: middle; padding-right: 6px;">
+                            <img src="<?php echo $gayidvebi3foto; ?>" alt="გაყიდვები" style="display:block; max-width:40px; height:auto;">
+                        </td>
+                        <td style="vertical-align: middle;">
+                            <?php echo $salesmenegerphone; ?>
+                        </td>
+                    </tr>
+                </table>
+            <?php endif; ?>
+        </td>
+    </tr>
+</table>
+
+<div class="info-container-bg" style="<?php echo (isset($greenfoto) && $greenfoto) ? 'background-image: url(\'' . $greenfoto . '\'); background-size: 60%; width: 100%; background-repeat: no-repeat; height: 13%; margin-left: -20px; margin-top:18px;' : ''; ?>">
+    <div class="footer2">ᲨᲔᲗᲐᲕᲐᲖᲔᲑᲘᲡ ᲗᲐᲠᲘᲦᲘ:</div>
+    <table class="tableclass" style="border-collapse: collapse; margin-top: 25px; margin-left: 25px;">
+        <tr>
+            <!-- Column 1 -->
+            <td style="padding-right: 100px; vertical-align: top;">
+                <table style="border-collapse: collapse; margin-bottom: 10px;">
+                    <tr>
+                        <td style="vertical-align: middle;">
+                            ჯამური ღირებულება (USD):
+                        </td>
+                    </tr>
+                </table>
+                <table style="border-collapse: collapse;">
+                    <tr>
+                        <td style="vertical-align: middle;">
+                            ღირებულება მ2 (USD):
+                        </td>
+                    </tr>
+                </table>
+            </td>
+
+            <!-- Column 2 -->
+            <td style="vertical-align: top;">
+                <table style="border-collapse: collapse; margin-bottom: 10px;">
+                    <tr>
+                        <td style="vertical-align: middle;">
+                            ჯამური ღირებულება (GEL):
+                        </td>
+                    </tr>
+                </table>
+                <table style="border-collapse: collapse;">
+                    <tr>
+                        <td style="vertical-align: middle;">
+                            ღირებულება მ2 (GEL):
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+</div>
+
                 <div class="floor-plan-box" id="floorplan">
                     <?php if($floorplan): ?>
                         <img src="<?php echo $floorplan; ?>" alt="ბინის გეგმა">
@@ -356,43 +541,6 @@ html, body {
                     <?php endif; ?>
                 </div>
 
-                <div class="property-info">
-    <div class="info-container-bg">
-        <div class="section-title">ბინის შესახებ</div>
-        
-        <div class="info-table">
-            <div class="info-row">
-                <span class="info-label">პროექტი:</span>
-                <span class="info-value" id="projectName"><?php echo $projectName; ?></span>
-            </div>
-            <div class="info-row" id="korpusiDiv">
-                <span class="info-label">კორპუსი:</span>
-                <span class="info-value" id="korpusi"><?php echo $korpusi; ?></span>
-            </div>
-            <div class="info-row" id="sadarbazoDiv" style="display: none;">
-                <span class="info-label">ბლოკი:</span>
-                <span class="info-value" id="sadarbazo"><?php echo $sadarbazo; ?></span>
-            </div>
-            <div class="info-row" id="sartuliDiv">
-                <span class="info-label">სართული:</span>
-                <span class="info-value" id="sartuli"><?php echo $sartuli; ?></span>
-            </div>
-            <div class="info-row" id="flatNumDiv">
-                <span class="info-label">ბინის #:</span>
-                <span class="info-value" id="flatNum"><?php echo $flatNum; ?></span>
-            </div>
-            <div class="info-row" id="totalspaceDiv">
-                <span class="info-label">სრული ფართი:</span>
-                <span class="info-value" id="totalspace"><?php echo $totalspace; ?> მ²</span>
-            </div>
-        </div>
-
-        <div class="price-box">
-            <div class="price-label">ჯამური ღირებულება</div>
-            <div class="price-amount" id="totalprice">$ <?php echo number_format($totalprice); ?></div>
-            <div class="price-per-sqm" id="kvmPrice">ღირებულება მ²: $ <?php echo number_format($kvmdollar); ?></div>
-        </div>
-    </div>
     <div class="floor-plan-box" id="floorplan">
         <?php if($floorplan): ?>
             <img src="<?php echo $floorplan; ?>" alt="ბინის გეგმა">
@@ -400,7 +548,6 @@ html, body {
             <div class="image-placeholder">ბინის გეგმა</div>
         <?php endif; ?>
     </div>
-</div>
 
                 <div class="project-description">
                     მულტიფუნქციური საცხოვრებელი კომპლექსი „პარკ ბულვარი" აერთიანებს ურბანულ 
@@ -411,24 +558,7 @@ html, body {
             </div>
         </div>
 
-        <div class="footer">
-            <div class="contact-info">
-                <div>
-                    <strong>გაყიდვების მენეჯერი:</strong><br>
-                    <?php echo $salesmenegername ?: 'N/A'; ?>
-                </div>
-                <div>
-                    <strong>ტელეფონი:</strong><br>
-                    <?php echo $salesmenegerphone ?: '+995 591 165 555'; ?>
-                </div>
-            </div>
-            <div style="text-align: right;">
-                <strong>მისამართი:</strong><br>
-                ისანი, თბილისი
-            </div>
-        </div>
-    </div>
-
+ 
     <!-- PAGE 2 -->
     <div class="page page-break">
         <div class="layout-title">სართულის რენდერი და ხედები</div>
@@ -539,7 +669,7 @@ if (document.getElementById("projectName")) {
 }
 
 if (document.getElementById("kvmPrice")) {
-    document.getElementById("kvmPrice").innerText = `ღირებულება მ²: $ ${kvmdollarFormated}`;
+    document.getElementById("kvmPrice").innerText = ${kvmdollarFormated};
 }
 
 if (document.getElementById("totalprice")) {
