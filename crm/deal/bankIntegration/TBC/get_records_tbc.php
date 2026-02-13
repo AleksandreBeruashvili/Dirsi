@@ -70,26 +70,24 @@ if (!empty($_POST)) {
     //     'KeyCode' => "WzVO3Tm9",
     //     'Currency' => "GEL"
     // ];
-    $ch = curl_init($url);
-
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-
-    $response = curl_exec($ch);
-    $response=json_decode($response);
-
-    // printArr($response);
-    // printArr($data);
-
+    $options = [
+        "http" => [
+            "header"  => "Content-type: application/x-www-form-urlencoded\r\n",
+            "method"  => "POST",
+            "content" => http_build_query($data),
+            "timeout" => 60
+        ]
+    ];
+    
+    $context = stream_context_create($options);
+    
+    $response = file_get_contents($url, false, $context);
+    
     if ($response === false) {
-        $error = curl_error($ch);
-
-    } else {
-
+        die("Request Error");
     }
-    curl_close($ch);
-
+    
+    $response = json_decode($response);
     $data=$response->Data;
 
     // printArr($data);
@@ -236,14 +234,22 @@ if (!empty($_POST)) {
         <div class="mb-3 mt-3">
             <label for="CURRENCY" class="form-label">Currency:</label>
             <select onchange="hideacc()" required ID="CURRENCY" name="CURRENCY" class="form-select">
-                <option selected value="USD">USD</option>
-                <option value="GEL">GEL</option>
+                <option selected value="GEL">GEL</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="RUB">RUB</option>
+                <option value="GBP">GBP</option>
             </select>
         </div>
         <div class="mb-3 mt-3">
             <label for="ACCOUNT" id="acc_lable" class="form-label">Account:</label>
             <select ID="ACCOUNT" name="ACCOUNT" class="form-select">
-                <option value="7777777777777777">7777777777777777</option>
+                <option value="GE05TB7105536050100001">GE05TB7105536050100001 GEL</option>
+                <option value="GE64TB7105536050100006">GE64TB7105536050100006 GEL</option>
+                <option value="GE49TB7105536150100001">GE49TB7105536150100001 USD</option>
+                <option value="GE49TB7105536150100001">GE49TB7105536150100001 EUR</option>
+                <option value="GE91TB7105536050100005">GE91TB7105536050100005 RUB</option>
+                <option value="GE91TB7105536050100005">GE91TB7105536050100005 GBP</option>
             </select>
         </div>
         <div class="mb-3 mt-3">
