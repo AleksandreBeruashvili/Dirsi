@@ -1109,8 +1109,8 @@ $userID = $USER->GetID();
                 if (!textBlock) return;
 
                 if (
-                    textBlock.innerText.includes("System comment") ||
-                    textBlock.innerText.includes("Systematic comment")
+                    // textBlock.innerText.includes("System comment") ||
+                    textBlock.innerText.includes("სისტემური კომენტარი")
                 ) {
 
                     let actionBlock  = card.querySelector('.crm-timeline__card-action');
@@ -1134,11 +1134,31 @@ $userID = $USER->GetID();
                     uiToolbarContainer.children[1].children[3].style.display = "none";
                     uiToolbarContainer.children[1].children[4].style.display = "none";
                     uiToolbarContainer.children[1].children[5].style.display = "none";
-                    uiToolbarContainer.children[1].children[6].style.display = "none";
+                    if(uiToolbarContainer.children[1].children[6]){
+                        uiToolbarContainer.children[1].children[6].style.display = "none";
+                    }
 
                 }
 
+                if(userID == 2788){
+                    WorkflowButton=document.getElementById("crm_entity_bp_starter");
+                    if(WorkflowButton){
+                        WorkflowButton.style.display = "none";
+                    }
+
+                    let WorkflowContainer = document.querySelector('.crm-entity-bizproc-container');
+                    if(WorkflowContainer){
+                        WorkflowContainer.style.display = "none";
+                    }
+
+                    // crm-entity-bizproc-container
+                }
+
             }
+
+
+
+            
 
         }, 500);
 

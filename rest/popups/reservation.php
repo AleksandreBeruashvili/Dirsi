@@ -411,31 +411,31 @@ $contactInfo= getContactById($contactId);
     });
 
 
-    setTimeout(() => {
-        // Check if already initialized
-        if (document.querySelector('.gtranslate_wrapper a')) return;
+    // setTimeout(() => {
+    //     // Check if already initialized
+    //     if (document.querySelector('.gtranslate_wrapper a')) return;
 
-        const settingsScript = document.createElement('script');
-        settingsScript.textContent = `
-        window.gtranslateSettings = {
-            "default_language": "ka",
-            "languages": ["ka", "en", "ru"],
-            "wrapper_selector": ".gtranslate_wrapper",
-            "flag_size": 24
-        };
-    `;
-        document.body.appendChild(settingsScript);
+    //     const settingsScript = document.createElement('script');
+    //         settingsScript.textContent = `
+    //         window.gtranslateSettings = {
+    //             "default_language": "ka",
+    //             "languages": ["ka", "en", "ru"],
+    //             "wrapper_selector": ".gtranslate_wrapper",
+    //             "flag_size": 24
+    //         };
+    //     `;
+    //     document.body.appendChild(settingsScript);
 
-        const gtranslateScript = document.createElement('script');
-        gtranslateScript.src = "https://cdn.gtranslate.net/widgets/latest/flags.js";
-        gtranslateScript.defer = true;
-        document.body.appendChild(gtranslateScript);
+    //     const gtranslateScript = document.createElement('script');
+    //     gtranslateScript.src = "https://cdn.gtranslate.net/widgets/latest/flags.js";
+    //     gtranslateScript.defer = true;
+    //     document.body.appendChild(gtranslateScript);
 
-        const reservationForm = document.querySelector('.reservation-form');
-        if (reservationForm && !document.querySelector('.gtranslate_wrapper')) {
-            const translateHtml = document.createElement('div');
-            translateHtml.className = 'gtranslate_wrapper';
-            reservationForm.parentNode.insertBefore(translateHtml, reservationForm);
-        }
-    }, 3000);
+    //     const reservationForm = document.querySelector('.reservation-form');
+    //     if (reservationForm && !document.querySelector('.gtranslate_wrapper')) {
+    //         const translateHtml = document.createElement('div');
+    //         translateHtml.className = 'gtranslate_wrapper';
+    //         reservationForm.parentNode.insertBefore(translateHtml, reservationForm);
+    //     }
+    // }, 3000);
 </script>
