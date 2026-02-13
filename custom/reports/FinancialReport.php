@@ -25,13 +25,6 @@ function getPaymentPlan($arFilter = array())
         $arFilds = $ob->GetFields();
         $arProps = $ob->GetProperties();
 
-//        $arPushs["ID"] = $arFilds["ID"];
-//        $arPushs["DATE"] = $arProps["TARIGI"]["VALUE"];
-//        $arPushs["PAYMENT"] = "";
-//        $arPushs["PAYMENT_Gel"] = "";
-//        $arPushs["PLAN"] = str_replace("|USD","",$arProps["TANXA"]["VALUE"]);
-//        $arPushs["PLAN_Gel"] = $arProps["amount_GEL"]["VALUE"];
-//        $arPushs["TYPE"] = "PLAN";
         $arPushs["PLAN_DATE"] = $arProps["TARIGI"]["VALUE"];
         $arPushs["PAYMENT_DATE"] = "";
         $arPushs["PLAN"] = str_replace("|USD","",$arProps["TANXA"]["VALUE"]);
@@ -83,14 +76,6 @@ function getPayments($arFilter = array())
         $arProps = $ob->GetProperties();
 
         $arPushs = array();
-//        $arPushs["ID"] = $arFilds["ID"];
-//        $arPushs["DATE"] = $arProps["date"]["VALUE"];
-//        $arPushs["PAYMENT"] = str_replace("|USD","",$arProps["TANXA"]["VALUE"]);
-//        $arPushs["PAYMENT_Gel"] = $arProps["tanxa_gel"]["VALUE"];
-//        $arPushs["PLAN"] = "";
-//        $arPushs["PLAN_Gel"] = "";
-//        $arPushs["TYPE"] = "PAYMENT";
-//        $arPushs["refund"] = $arProps["refund"]["VALUE"];
         $arPushs["PLAN_DATE"] = "";
         $arPushs["PAYMENT_DATE"] = $arProps["date"]["VALUE"];
 
@@ -159,12 +144,6 @@ function getApprovedInstallment($arFilter = array()) {
 }
 
 
-//function sortByDate($a, $b) {
-//    $dateA = DateTime::createFromFormat('d/m/Y', $a['DATE']);
-//    $dateB = DateTime::createFromFormat('d/m/Y', $b['DATE']);
-//    return $dateA <=> $dateB;
-//}
-
 function sortByDate($a, $b) {
     $dateA = $a["PLAN_DATE"] ?: $a["PAYMENT_DATE"];
     $dateB = $b["PLAN_DATE"] ?: $b["PAYMENT_DATE"];
@@ -186,16 +165,6 @@ function getContactName($id) {
 }
 
 
-// $arrForAdd ["UF_CRM_1761658559005"] = $prodNumber;     //ბინის N
-// $arrForAdd ["UF_CRM_1761658577987"] =$prodFLOOR; //სართული
-// $arrForAdd ["UF_CRM_1761658516561"] = $productData["PROJECT"];    //პროექტი
-// $arrForAdd ["UF_CRM_1762948106980"] = $productData["KORPUSIS_NOMERI_XE3NX2"];//ბლოკი
-// $arrForAdd ["UF_CRM_1761658503260"] = $productData["KVM_PRICE"];  //კვ/მ ფასი
-// $arrForAdd ["UF_CRM_1761658532158"] = $prodPRODUCT_TYPE;      //ფართის ტიპი
-// $arrForAdd ["UF_CRM_1761658608306"] = $prodTOTAL_AREA;    //საერთო ფართი
-// $arrForAdd ["UF_CRM_1762867479699"] = $productData["_15MYD6"];     //სადარბაზო
-// $arrForAdd ["UF_CRM_1761658765237"]  = $productData["LIVING_SPACE"];    //საცხოვრებელი ფართი მ²
-
 $deal_ID = $_GET["dealid"];
 $dealData    = getDealInfoByID($deal_ID);
 $href="/crm/deal/details/$deal_ID/";
@@ -205,26 +174,20 @@ $prodType = $dealData["UF_CRM_1761658532158"];
 $project = $dealData["UF_CRM_1761658516561"];
 $contactId = $dealData["CONTACT_ID"];
 $contact=getContactName($contactId);
-$xelshNom = $dealData["UF_CRM_1699907477758"];
+$xelshekrulebiNom = $dealData["UF_CRM_1770640981002"];
 
 
 
 $dealData["UF_CRM_1702019032102"] == 322 ? $valuta = "₾" : $valuta = "$";
 
-/*if($dealData["UF_CRM_1702019032102"] == 322){
-    $payments = getPaymentsGEL(array("IBLOCK_ID" => 25,"PROPERTY_DEAL"=>$deal_ID));
-    $paymentPlans = getPaymentPlanGEL(array("IBLOCK_ID" => 24,"PROPERTY_DEAL"=>$deal_ID));
-
-}
-else{*/
 $payments = getPayments(array("IBLOCK_ID" => 21,"PROPERTY_DEAL"=>$deal_ID));
 $paymentPlans = getPaymentPlan(array("IBLOCK_ID" => 20,"PROPERTY_DEAL"=>$deal_ID));
-//}
+
 $financeArr = array_merge($paymentPlans, $payments);
 
 
 usort($financeArr, 'sortByDate');
-//printArr($financeArr);
+
 for ($i = 0; $i<count($financeArr);$i++){
     if($i==0){
         if($financeArr[$i]["TYPE"]=="PLAN") {
@@ -397,6 +360,7 @@ function getNbgKurs($date){
         <p>სართული:  <?php echo $floor; ?></p>
         <p><?php echo "$prodType:  N$number"; ?></p>
         <p>განვადების ტიპი:  <?php echo $approvedInstallment["SELECTID_GRAPH"]; ?></p>
+        <p>ხელშეკრულების ნომერი:  <?php echo $xelshekrulebiNom; ?></p>
 
     </div>
     <button onclick="exportTableToExcel()" style="background-color: #0c970c;border-radius: 6px;height: 30px;width: 95px">
@@ -486,49 +450,6 @@ function getNbgKurs($date){
 
 
     function exportTableToExcel(){
-        // var tableSelect = document.getElementById("table");
-
-        // let wb = XLSX.utils.book_new();
-        // wb.Props = {
-        //     Title: "financialReport",
-        //     Subject: "financialReport",
-        //     Author:"w2",
-        //     CreatedDate: new Date()
-        // };
-        // let ws_data = [];
-        // let row = [];
-        // let ws;
-
-
-        // for (let i = 0; i < tableSelect.rows.length; i++) {
-        //     for (let j = 0; j < tableSelect.rows[i].cells.length; j++) {
-        //         if(i != 0 && j==2){
-        //             let number = tableSelect.rows[i].cells[j].innerText.replace("$","");
-        //             number = number.replace(",",".");
-        //             row.push(Number(number));
-        //         }else if (i != 0 && j==3){
-        //             let number = tableSelect.rows[i].cells[j].innerText.replace("$","");
-        //             number = number.replace(",",".");
-        //             row.push(Number(number));
-        //         }
-        //         else if (i != 0 && j==4){
-        //             let number = tableSelect.rows[i].cells[j].innerText.replace(",",".");
-        //             row.push(Number(number));
-        //         }
-        //         else{
-        //             row.push(tableSelect.rows[i].cells[j].innerText);
-        //         }
-        //     }
-        //     ws_data.push(row);
-        //     row=[];
-        // }
-
-        // ws = XLSX.utils.aoa_to_sheet(ws_data);
-        // XLSX.utils.book_append_sheet(wb, ws, "financialReport");
-        // var wbout = XLSX.writeFile(wb,"financialReport.xlsx");
-
-
-
         var tableSelect = document.getElementById("table");
 
         let wb = XLSX.utils.book_new();
@@ -546,36 +467,46 @@ function getNbgKurs($date){
         ws_data.push(["პროექტი:", ("<?php echo $project; ?>")]);
         ws_data.push(["სართული:", "<?php echo $floor; ?>"]);
 
-        var prodType = "<?php echo $prodType; ?>"; // PHP მონაცემის გადაცემა JavaScript-ში
+        var prodType = "<?php echo $prodType; ?>";
 
         if (prodType === "ბინა") {
-            var prodTypeENG = "Apartment";
+            var prodTypeLabel = "ბინა";
         } else {
-            var prodTypeENG = "Parking";
+            var prodTypeLabel = "პარკინგი";
         }
 
-        ws_data.push([prodTypeENG, "N<?php echo $number; ?>"]);
+        ws_data.push([prodTypeLabel, "N<?php echo $number; ?>"]);
         ws_data.push(["განვადების ტიპი:", ("<?php echo $approvedInstallment['SELECTID_GRAPH']; ?>")]);
-        ws_data.push(["ხელშ. ნომერი:", "<?php echo $xelshNom; ?>"]);
-        ws_data.push([]); // ცარიელი ხაზი (გაყრისთვის)
+        ws_data.push(["ხელშეკრულების ნომერი:", "<?php echo $xelshekrulebiNom; ?>"]);
+        ws_data.push([]); // ცარიელი ხაზი
 
-        // **ცხრილის სათაურების თარგმნა (Header Row)**
-        let translatedHeaders = ["N", "Date", "განვადება $", "განვადება ₾", "გადახდილი $", "გადახდილი ₾", "ნაშთი"];
-
+        // **ფრონტის სვეტების იდენტური სათაურები**
+        let translatedHeaders = ["განვადების თარიღი", "გადახდის თარიღი", "განვადება $", "ეროვნული ბანკის კურსი", "გადახდილი $", "გადახდილი ₾", "ნაშთი"];
         ws_data.push(translatedHeaders);
 
-        // **მონაცემების დამუშავება**
-        for (let i = 1; i < tableSelect.rows.length; i++) { // იწყება 1-დან, რადგან 0 სათაურია
+        // **მონაცემების დამუშავება - ფრონტის ცხრილიდან პირდაპირ**
+        for (let i = 1; i < tableSelect.rows.length; i++) {
             let row = [];
             for (let j = 0; j < tableSelect.rows[i].cells.length; j++) {
                 let cellText = tableSelect.rows[i].cells[j].innerText.trim();
 
-                if (j == 1) { // "თარიღი" (Date) სვეტი
+                // j=0: განვადების თარიღი (ტექსტი)
+                // j=1: გადახდის თარიღი (ტექსტი)
+                // j=2: განვადება $ (რიცხვი)
+                // j=3: ეროვნული ბანკის კურსი (რიცხვი)
+                // j=4: გადახდილი $ (რიცხვი)
+                // j=5: გადახდილი ₾ (რიცხვი)
+                // j=6: ნაშთი (რიცხვი)
+
+                if (j == 0 || j == 1) {
+                    // თარიღის სვეტები - ტექსტად
                     row.push(cellText);
-                } else if ([2, 3, 4, 5].includes(j)) { // თანხის ველები
-                    let number = cellText.replace("$", "").replace("₾", "").replace(",", ".");
+                } else if ([2, 3, 4, 5, 6].includes(j)) {
+                    // რიცხვითი სვეტები
+                    let number = cellText.replace("$", "").replace("₾", "").replace(",", ".").replace("-", "");
+                    let isNegative = cellText.indexOf("-") !== -1;
                     if(Number(number)){
-                        row.push(Number(number));
+                        row.push(isNegative ? -Number(number) : Number(number));
                     }else{
                         row.push("");
                     }
@@ -590,7 +521,6 @@ function getNbgKurs($date){
         XLSX.utils.book_append_sheet(wb, ws, "financialReport");
 
         XLSX.writeFile(wb, "financialReport.xlsx");
-
     }
 
 
@@ -615,7 +545,7 @@ function getNbgKurs($date){
         ws_data.push(["Project:", getLatinName("<?php echo $project; ?>")]);
         ws_data.push(["Floor:", "<?php echo $floor; ?>"]);
 
-        var prodType = "<?php echo $prodType; ?>"; // PHP მონაცემის გადაცემა JavaScript-ში
+        var prodType = "<?php echo $prodType; ?>";
 
         if (prodType === "ბინა") {
             var prodTypeENG = "Apartment";
@@ -623,9 +553,7 @@ function getNbgKurs($date){
             var prodTypeENG = "Parking";
         }
 
-        var approvedInstallment = "<?php echo $approvedInstallment['SELECTID_GRAPH']; ?>"; // PHP მონაცემის გადაცემა JavaScript-ში
-
-
+        var approvedInstallment = "<?php echo $approvedInstallment['SELECTID_GRAPH']; ?>";
 
         if (approvedInstallment === "არასტანდარტული") {
             var approvedInstallmentENG = "Non-standard";
@@ -644,25 +572,28 @@ function getNbgKurs($date){
 
         ws_data.push([prodTypeENG, "N<?php echo $number; ?>"]);
         ws_data.push(["Plan Type:", approvedInstallmentENG]);
-        ws_data.push(["Contract Number:", "<?php echo $xelshNom; ?>"]);
-        ws_data.push([]); // ცარიელი ხაზი (გაყრისთვის)
+        ws_data.push(["Agreement Number:", "<?php echo $xelshekrulebiNom; ?>"]);
+        ws_data.push([]); // ცარიელი ხაზი
 
-        // **ცხრილის სათაურების თარგმნა (Header Row)**
-        let translatedHeaders = ["N", "თარიღი", "Plan $", "PLan ₾", "Paid $", "Paid ₾", "Left to pay"];
+        // **ფრონტის სვეტების იდენტური სათაურები ინგლისურად**
+        let translatedHeaders = ["Installment Date", "Payment Date", "Installment $", "NBG Rate", "Paid $", "Paid ₾", "Left to pay"];
         ws_data.push(translatedHeaders);
 
-        // **მონაცემების დამუშავება**
-        for (let i = 1; i < tableSelect.rows.length; i++) { // იწყება 1-დან, რადგან 0 სათაურია
+        // **მონაცემების დამუშავება - ფრონტის ცხრილიდან პირდაპირ**
+        for (let i = 1; i < tableSelect.rows.length; i++) {
             let row = [];
             for (let j = 0; j < tableSelect.rows[i].cells.length; j++) {
                 let cellText = tableSelect.rows[i].cells[j].innerText.trim();
 
-                if (j == 1) { // "თარიღი" (Date) სვეტი
+                if (j == 0 || j == 1) {
+                    // თარიღის სვეტები - ტექსტად
                     row.push(cellText);
-                } else if ([2, 3, 4, 5].includes(j)) { // თანხის ველები
-                    let number = cellText.replace("$", "").replace("₾", "").replace(",", ".");
+                } else if ([2, 3, 4, 5, 6].includes(j)) {
+                    // რიცხვითი სვეტები
+                    let number = cellText.replace("$", "").replace("₾", "").replace(",", ".").replace("-", "");
+                    let isNegative = cellText.indexOf("-") !== -1;
                     if(Number(number)){
-                        row.push(Number(number));
+                        row.push(isNegative ? -Number(number) : Number(number));
                     }else{
                         row.push("");
                     }
