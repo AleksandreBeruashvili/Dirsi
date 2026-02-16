@@ -1017,7 +1017,7 @@ $userID = $USER->GetID();
 ?>
 <script>
     pathname = window.location.pathname.split("/");
-    const userID = <?php echo json_encode($userID); ?>;
+    userID = <?php echo json_encode($userID); ?>;
     if(pathname[1] == "crm" && pathname[2] == "deal" && pathname[4] != "0"){
 
         setTimeout(() => {
