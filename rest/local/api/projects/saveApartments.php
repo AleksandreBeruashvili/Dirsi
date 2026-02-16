@@ -142,8 +142,6 @@ function DATE_SityvieradNewFormat($date){
 }
 
 
-
-
 // ============================ MAIN CODE ============================
 
 $deal_id = $_GET["deal_id"];
@@ -167,6 +165,7 @@ if ($deal_id) {
     $prodTOTAL_AREA = "";
     $LIVING_SPACE = "";
     $sawyisiGirebuleba = "";
+    $bedrooms = "";
     // end initialization
 
     $rows = [];
@@ -207,6 +206,7 @@ if ($deal_id) {
         $prodTOTAL_AREA ? $prodTOTAL_AREA .= " /" . $productData["TOTAL_AREA"] : $prodTOTAL_AREA = $productData["TOTAL_AREA"];
         $LIVING_SPACE ? $LIVING_SPACE .= " /" . $productData["LIVING_SPACE"] : $LIVING_SPACE = $productData["LIVING_SPACE"];
         $sawyisiGirebuleba ? $sawyisiGirebuleba .= " /" . $productData["PRICE"] : $sawyisiGirebuleba = $productData["PRICE"];
+        $bedrooms ? $bedrooms .= " /" . $productData["Bedrooms"] : $bedrooms = $productData["Bedrooms"];
     }
     
     $arrForAdd ["UF_CRM_1761658503260"] = $KVM_PRICE;         //კვ.მ ღირებულება
@@ -220,6 +220,7 @@ if ($deal_id) {
     $arrForAdd ["UF_CRM_1761658608306"] = $prodTOTAL_AREA;      //საერთო ფართი მ²
     $arrForAdd ["UF_CRM_1761658765237"] = $LIVING_SPACE;      //საცხოვრებელი ფართი მ²
     $arrForAdd ["UF_CRM_1761658642424"] = $sawyisiGirebuleba; // საწყისი
+    $arrForAdd ["UF_CRM_1770888201367"] = $bedrooms; // საწყისი
 
     $added = CCrmDeal::SaveProductRows($deal_id, $rows);
     if($added){
