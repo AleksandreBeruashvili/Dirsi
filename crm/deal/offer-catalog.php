@@ -467,27 +467,27 @@ font-family: "BPG WEB 001 Caps", sans-serif;
                 
                 <div class="info-table">
                     <div class="info-row">
-                        <span class="info-label">პროექტი:</span>
+                        <span class="info-label">ᲞᲠᲝᲔᲥᲢᲘ:</span>
                         <span class="info-value" id="projectName"><?php echo $projectName; ?></span>
                     </div>
                     <div class="info-row" id="korpusiDiv">
-                        <span class="info-label">კორპუსი:</span>
+                        <span class="info-label">ᲙᲝᲠᲞᲣᲡᲘ:</span>
                         <span class="info-value" id="korpusi"><?php echo $korpusi; ?></span>
                     </div>
                     <div class="info-row" id="sadarbazoDiv" style="display: none;">
-                        <span class="info-label">ბლოკი:</span>
+                        <span class="info-label">ᲑᲚᲝᲙᲘ:</span>
                         <span class="info-value" id="sadarbazo"><?php echo $sadarbazo; ?></span>
                     </div>
                     <div class="info-row" id="sartuliDiv">
-                        <span class="info-label">სართული:</span>
+                        <span class="info-label">ᲡᲐᲠᲗᲣᲚᲘ:</span>
                         <span class="info-value" id="sartuli"><?php echo $sartuli; ?></span>
                     </div>
                     <div class="info-row" id="flatNumDiv">
-                        <span class="info-label">ბინის #:</span>
+                        <span class="info-label">ᲑᲘᲜᲘᲡ #:</span>
                         <span class="info-value" id="flatNum"><?php echo $flatNum; ?></span>
                     </div>
                     <div class="info-row" id="totalspaceDiv">
-                        <span class="info-label">სრული ფართი:</span>
+                        <span class="info-label">ᲡᲠᲣᲚᲘ ᲤᲐᲠᲗᲘ:</span>
                         <span class="info-value" id="totalspace"><?php echo $totalspace; ?> მ²</span>
                     </div>
 
