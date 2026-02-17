@@ -34,22 +34,27 @@ if (!empty($_POST)) {
     $floor = $_POST["floor"];
     $project = $_POST["project"];
     $block = $_POST["block"];
-    
-    // Note: Ensure these variable names match your form names
-    $flat_type = $_POST["flat_type"]; 
+    $flat_type = $_POST["flat_type"];
 
     $file = $_FILES["file"];
     $flatNumbersArray = array_map('trim', explode(',', $flatNumbers));
 
+    $floorArray = !empty($floor) 
+        ? array_map('trim', explode(',', $floor)) 
+        : array();
+
     $baseFilter = array(
         "IBLOCK_ID" => 14,
-        "SECTION_ID" => $project, // Changed from IBLOCK_SECTION_ID for better GetList compatibility
+        "SECTION_ID" => $project,
         "PROPERTY_60" => $flat_type,
         "PROPERTY_73" => $block,
         "PROPERTY_214" => $ptoNumber,
         "PROPERTY_213" => $building,
-        "PROPERTY_61" => $floor
     );
+
+    if (!empty($floorArray)) {
+        $baseFilter["PROPERTY_61"] = $floorArray; 
+    }
 
     $successCount = 0;
     $errors = array();
