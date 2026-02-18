@@ -45,14 +45,18 @@ if(!empty($_POST)){
         "KeyCode"=> $list[0]["KEY_KODE"]
     ];
 
-    $ch = curl_init($url);
+    $postData = http_build_query($data);
 
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+    $context = stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => 'Content-Type: application/x-www-form-urlencoded',
+            'content' => $postData
+        ]
+    ]);
 
-    $response = curl_exec($ch);
-    $response=json_decode($response);
+    $response = file_get_contents($url, false, $context);
+    $response = json_decode($response);
 
     printArr($response);
 

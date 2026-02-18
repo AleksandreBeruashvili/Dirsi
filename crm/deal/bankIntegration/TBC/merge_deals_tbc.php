@@ -144,7 +144,7 @@ if(!empty($_POST)) {
 
                 if (!empty($deal_id)) {
 
-                    $list_element = getCIBlockElementsByFilter(array("IBLOCK_ID" => 65, "ID" => $_POST["PAYMENT_" . $h]));
+                    $list_element = getCIBlockElementsByFilter(array("IBLOCK_ID" => 35, "ID" => $_POST["PAYMENT_" . $h]));
 
                     $arForAdd = array(
                         'IBLOCK_ID' => 21,
@@ -174,7 +174,7 @@ if(!empty($_POST)) {
                     $arPropsOld["tanxa_gel"] = $tanxa_larshi;
                     $arPropsOld["PROJECT"] = $deal[0]["UF_CRM_1693385948133"];
                     $arPropsOld["KORPUSI"] = $deal[0]["UF_CRM_1702018321416"];
-                    $arPropsOld["BINIS_NOMERI"] = $deal[0]["UF_CRM_1693385964548"];
+                    $arPropsOld["BINIS_NOMERI"] = $deal[0]["UF_CRM_1761658559005"];
                     $arPropsOld["ZETIPI"] = $deal[0]["UF_CRM_1693385992603"];
                     $arPropsOld["ANGARISHIS_TIPI"] = $deal[0]["UF_CRM_1705413820965"];
                     $arPropsOld["KONTRAKT_DATE"] = $deal[0]["UF_CRM_1693398443196"];
@@ -240,7 +240,7 @@ if(!empty($_POST)) {
 
 $stage_arr=array("WON");
 
-$lists=getCIBlockElementsByFilter(array("IBLOCK_ID"=>65));
+$lists=getCIBlockElementsByFilter(array("IBLOCK_ID"=>35));
 
 $merge_deals=array();
 
@@ -305,8 +305,8 @@ foreach ($lists as $list){
                     $dealmodel["NAME"] = $deal["TITLE"];
                     $dealmodel["ID"] = $deal["ID"];
                     $dealmodel["OPPORTUNITY"] = $deal["OPPORTUNITY"];
-                    $dealmodel["kontraktor"] = $deal["UF_CRM_1699907477758"];
-                    $dealmodel["binisNom1"] = $deal["UF_CRM_1693385964548"];
+                    $dealmodel["kontraktor"] = $deal["UF_CRM_1770640981002"];
+                    $dealmodel["binisNom1"] = $deal["UF_CRM_1761658559005"];
                     $dealmodel["PROJECT"] = $deal["UF_CRM_1693385948133"];
 
                     $deal_ID =  $deal["ID"];
