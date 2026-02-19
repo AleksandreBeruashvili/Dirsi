@@ -64,10 +64,10 @@ if ($dealID) {
         "PROPERTY_DEAL" => $dealID
     ));
     
-    if (count($payed) || $dealData["STAGE_ID"] == "WON") {
-        header("Location: /custom/calculator/restruct.php?dealid=$dealID");
-        exit();
-    }
+    // if (count($payed) || $dealData["STAGE_ID"] == "WON") {
+    //     header("Location: /custom/calculator/restruct.php?dealid=$dealID");
+    //     exit();
+    // }
     
     $dealProds = CCrmDeal::LoadProductRows($dealID);
     $chabarebatype = "მწვანე კარკასი";
@@ -130,7 +130,13 @@ if (is_numeric($docID)) {
     $jsonGraph = str_replace("&quot;", "\"", $calculation["GRAPH_JSON"]);
     $graphHeaderByDoc = json_decode($json, true);
     $graphByDoc = json_decode($jsonGraph, true);
-    $ganvadebaType = $calculation["planType"];
+    $planTypeToCode = [
+        "არასტანდარტული" => "customType",
+        "სტანდარტული"    => "mortgage",
+        "ერთიანი გადახდა" => "allCash",
+        "ბანკის სესხი"   => "bankLoan",
+    ];
+    $ganvadebaType = $planTypeToCode[$calculation["planType"]] ?? $calculation["planType"];
     
     if ($binisNomeri != $graphHeaderByDoc["binisNomeri"]) {
         exit("არასწორი გრაფიკი");
@@ -1984,7 +1990,8 @@ async function saveGraph() {
         advancePayment: `${advancePayment} $ / ${advancePaymentPercent} %`,
         bookPayment: `${bookPayment} $`,
         lastPayment: `${lastPayment} $ / ${lastPaymentPercent} %`,
-        DistributedPayment: `${distributedPayment} $ / ${distributedPaymentPercent} %`
+        DistributedPayment: `${distributedPayment} $ / ${distributedPaymentPercent} %`,
+        ganvadebaType: getValue('ganvadebaType')
     };
     
     try {
