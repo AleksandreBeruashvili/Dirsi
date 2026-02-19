@@ -172,7 +172,7 @@ if(!empty($_POST)) {
                     $arPropsOld["TANXA"] = $_POST["VALUE_" . $h];
                     $arPropsOld["BANK_PAYMENT_ID"] = $_POST["PAYMENT_" . $h];
                     $arPropsOld["tanxa_gel"] = $tanxa_larshi;
-                    $arPropsOld["PROJECT"] = $deal[0]["UF_CRM_1693385948133"];
+                    $arPropsOld["PROJECT"] = $deal[0]["UF_CRM_1761658516561"];
                     $arPropsOld["KORPUSI"] = $deal[0]["UF_CRM_1702018321416"];
                     $arPropsOld["BINIS_NOMERI"] = $deal[0]["UF_CRM_1761658559005"];
                     $arPropsOld["ZETIPI"] = $deal[0]["UF_CRM_1693385992603"];
@@ -305,14 +305,15 @@ foreach ($lists as $list){
                     $dealmodel["NAME"] = $deal["TITLE"];
                     $dealmodel["ID"] = $deal["ID"];
                     $dealmodel["OPPORTUNITY"] = $deal["OPPORTUNITY"];
-                    $dealmodel["kontraktor"] = $deal["UF_CRM_1770640981002"];
+                    // $dealmodel["kontraktor"] = $deal["UF_CRM_1770640981002"];
+                    $dealmodel["kontraktor"] = $deal["UF_CRM_1766563053146"];
                     $dealmodel["binisNom1"] = $deal["UF_CRM_1761658559005"];
-                    $dealmodel["PROJECT"] = $deal["UF_CRM_1693385948133"];
+                    $dealmodel["PROJECT"] = $deal["UF_CRM_1761658516561"];
 
                     $deal_ID =  $deal["ID"];
                     $dealData    = getDealInfoByID($deal_ID);
 
-                    $paymentPlans = getPaymentPlan(array("IBLOCK_ID" => 22,"PROPERTY_DEAL"=>$deal_ID));
+                    $paymentPlans = getPaymentPlan(array("IBLOCK_ID" => 20,"PROPERTY_DEAL"=>$deal_ID));
                     $payments = getPayments(array("IBLOCK_ID" => 21,"PROPERTY_DEAL"=>$deal_ID));
 
                     $financeArr = array_merge($paymentPlans, $payments);
@@ -328,22 +329,23 @@ foreach ($lists as $list){
                                 $financeArr[$i]["leftToPay"] = -$financeArr[$i]["PAYMENT"];
                             }
                         }
-                 else {
-                    // წინამდებარე დარჩენილი გადასახდელის მნიშვნელობა
-                    $leftToPayPrevious = floatval(str_replace([' ', ','], '', $financeArr[$i-1]["leftToPay"]));
+                        else {
+                            // წინამდებარე დარჩენილი გადასახდელის მნიშვნელობა
+                            $leftToPayPrevious = floatval(str_replace([' ', ','], '', $financeArr[$i-1]["leftToPay"]));
 
-                    // თუ ჩანაწერის ტიპი არის PLAN, ვამატებთ
-                    if ($financeArr[$i]["TYPE"] == "PLAN") {
-                        $planCurrent = floatval(str_replace([' ', ','], '', $financeArr[$i]["PLAN"]));
-                        $financeArr[$i]["leftToPay"] = round($leftToPayPrevious + $planCurrent, 2);
-                    } 
-                    // თუ არა, მაშინ PAYMENT-ს ვაკლებთ
-                    else {
-                        $paymentCurrent = floatval(str_replace([' ', ','], '', $financeArr[$i]["PAYMENT"]));
-                        $financeArr[$i]["leftToPay"] = round($leftToPayPrevious - $paymentCurrent, 2);
+                            // თუ ჩანაწერის ტიპი არის PLAN, ვამატებთ
+                            if ($financeArr[$i]["TYPE"] == "PLAN") {
+                                $planCurrent = floatval(str_replace([' ', ','], '', $financeArr[$i]["PLAN"]));
+                                $financeArr[$i]["leftToPay"] = round($leftToPayPrevious + $planCurrent, 2);
+                            } 
+                            // თუ არა, მაშინ PAYMENT-ს ვაკლებთ
+                            else {
+                                $paymentCurrent = floatval(str_replace([' ', ','], '', $financeArr[$i]["PAYMENT"]));
+                                $financeArr[$i]["leftToPay"] = round($leftToPayPrevious - $paymentCurrent, 2);
+                            }
+                        }
                     }
-                }
-                    }
+
                     $data = $financeArr;
                     $today = date('m/d/Y');
 
@@ -517,7 +519,7 @@ ob_end_clean();
     let errors=<?echo json_encode($error_deals);?>;
 
     var dropdowndata={
-        ParkBoulevard:"ParkBoulevard",
+        ParkBoulevard:"Park Boulevard",
     };
 
     console.log(data);
@@ -581,8 +583,8 @@ ob_end_clean();
 
                 for (var y = 0; y < selectedOptions.length; y++) {
 
-                    if (selectedOptions[y] == "ParkBoulevard") {
-                        alloweproj.push('ParkBoulevard');
+                    if (selectedOptions[y] == "Park Boulevard") {
+                        alloweproj.push('Park Boulevard');
                     }
                 }
 
