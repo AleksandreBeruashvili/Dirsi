@@ -16,6 +16,19 @@ function getContactById($id) {
         return $arContact;
     }
 }
+function addWorkDays($startDate, $daysToAdd) {
+    $date = DateTime::createFromFormat('d/m/Y', $startDate);
+    $addedDays = 0;
+    while ($addedDays < $daysToAdd) {
+        $date->modify('+1 day');
+        $dayOfWeek = $date->format('w'); 
+        if ($dayOfWeek != 0) {
+            $addedDays++;
+        }
+    }
+    return $date->format('d/m/Y');
+}
+
 
 function getDealInfoByIDToolbar($dealId)
 {
@@ -36,6 +49,9 @@ $deal =getDealInfoByIDToolbar($dealId);
 
 $contactId = intval($deal["CONTACT_ID"]);
 $contactInfo= getContactById($contactId);
+
+$today = date("d/m/Y");
+$vadaValue = addWorkDays($today, 2);
 
 ?>
 
@@ -234,6 +250,7 @@ $contactInfo= getContactById($contactId);
     deal = <? echo json_encode($deal); ?>;
     ResChange = <? echo json_encode($ResChange); ?>;
 
+    vadaValue = <? echo json_encode($vadaValue); ?>;
     console.log("ResChange");
     console.log(ResChange);
 
@@ -272,7 +289,9 @@ $contactInfo= getContactById($contactId);
             if(document.getElementById("reservationType").value=="uvado" || document.getElementById("reservationType").value=="fasiani"){
                 document.getElementById("vadaDiv").style.display="";
             }else{
+                document.getElementById("vada").value=vadaValue;
                 document.getElementById("vadaDiv").style.display="none";
+
             }
 
         }

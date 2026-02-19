@@ -1371,16 +1371,35 @@ if($arfilter){
             }
         }, 1000);
 
+        // if(userID != 1){
+        //     setTimeout(() => {
+        //         if(stageId.includes("3") || stageId.includes("4") || stageId.includes("WON")){
+        //             console.log(stageId)
+        //             uiPageSliderContent = document.getElementById("ui-page-slider-content");
+        //             if(uiPageSliderContent){
+        //                 uiPageSliderContent.style.pointerEvents = "none";
+        //                 // uiPageSliderContent.style.disabled = "true";
+        //             }
+        //         }
+        //     }, 50);
+        // }
+
         if(userID != 1){
+            if(stageId.includes("3") || stageId.includes("4") || stageId.includes("WON")){
+                // დაუყოვნებლივ CSS-ით ვბლოკავთ — setTimeout-ს არ ელოდება
+                var freezeStyle = document.createElement('style');
+                freezeStyle.textContent = '#ui-page-slider-content { pointer-events: none !important; }';
+                document.head.appendChild(freezeStyle);
+            }
+
             setTimeout(() => {
                 if(stageId.includes("3") || stageId.includes("4") || stageId.includes("WON")){
-                    // console.log(stageId)
                     uiPageSliderContent = document.getElementById("ui-page-slider-content");
                     if(uiPageSliderContent){
                         uiPageSliderContent.style.pointerEvents = "none";
                     }
                 }
-            }, 300);
+            }, 50);
         }
 
     }

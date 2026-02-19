@@ -526,6 +526,8 @@ if($dealId){
             moreButton: '#crm_scope_detail_c_deal__more_button',
             toolbar: '.ui-side-panel-toolbar',
             terminationPopup: '#popup-window-content-entity_progress_TERMINATION',
+            afterTitleBox: '.ui-toolbar-after-title-box',
+            bizprocContainer: '.crm-entity-bizproc-container',
             
             // ტაბები
             catalog: '#crm_scope_detail_c_deal__catalog',
@@ -554,6 +556,21 @@ if($dealId){
 			if(Utils.isAdmin()) return; 
             const btn = this.getElement(this.selectors.moreButton);
             Utils.setElementDisplay(btn, false);
+        },
+        
+        hideAfterTitleBox() {
+            const afterTitleBox = this.getElement(this.selectors.afterTitleBox);
+            Utils.setElementDisplay(afterTitleBox, false);
+        },
+        
+        hideBizprocContainer() {
+            const bizprocContainer = this.getElement(this.selectors.bizprocContainer);
+            Utils.setElementDisplay(bizprocContainer, false);
+        },
+        
+        hideWidgetAddBtn() {
+            const widgetAddBtn = this.getElement('.crm-entity-card-widget-add-btn-container');
+            Utils.setElementDisplay(widgetAddBtn, false);
         },
         
         hideTerminationAcceptButton() {
@@ -701,6 +718,10 @@ if($dealId){
         openAgreement(dealId) {
             this.open(`/rest/popups/agreementCheck.php?DEAL_ID=${dealId}`, 'ხელშეკრულების გადამოწმება');
         },
+
+        openNonStandardAgreement(dealId) {
+            this.open(`/rest/popups/nonStandardAgreement.php?DEAL_ID=${dealId}`, 'არასტანდარტული ხელშეკრულება');
+        },
         
         openDocuments(dealId) {
             this.open(`/crm/deal/buttons_page.php?dealid=${dealId}`, 'დოკუმენტები');
@@ -766,6 +787,9 @@ if($dealId){
             const agreement = DOMManager.getElement(DOMManager.selectors.agreementSection);
             const showAgreement = ['2', '3', '4', STAGES.WON].includes(stageId);
             Utils.setElementDisplay(agreement, showAgreement);
+
+
+            
         }
     };
 
@@ -833,6 +857,17 @@ if($dealId){
                     onClick: () => PopupManager.openAgreement(dealIdForToolbar)
                 });
             }
+
+            // არასტანდარტული ხელშეკრულება
+            if (Utils.hasProduct() && stageId === '2') {
+                this.addButton({
+                    id: 'nonStandardAgreementBtn',
+                    icon: ButtonFactory.icons.documents,
+                    label: 'Non-standard agreement',
+                    onClick: () => PopupManager.openNonStandardAgreement(dealIdForToolbar)
+                });
+            }
+            
             
             // რეზერვაციის ღილაკი
             if (Utils.hasProduct()) {
@@ -880,7 +915,7 @@ if($dealId){
             }
             
             // დოკუმენტების ღილაკი
-            const docStages = ['2', '3', '4', 'WON'];
+            const docStages = ['2', '3', '4'];
             if (Utils.isStageIn(stageId, docStages)) {
                 this.addButton({
                     id: 'documentsBtn',
@@ -891,7 +926,7 @@ if($dealId){
             }
             
             // კალკულატორის ღილაკი
-            if (Utils.hasProduct() && stageId !== 'NEW' && stageId !== 'PREPARATION') {
+            if (Utils.hasProduct() && stageId !== 'NEW' && stageId !== 'PREPARATION' && stageId !== 'WON') {
                 this.addButton({
                     id: 'kalkButton',
                     icon: ButtonFactory.icons.calculator,
@@ -1136,6 +1171,18 @@ if($dealId){
                 DOMManager.hideTerminationAcceptButton();
             }, 100);
 
+            this._afterTitleBoxTimer = setInterval(() => {
+                DOMManager.hideAfterTitleBox();
+            }, 100);
+
+            this._bizprocContainerTimer = setInterval(() => {
+                DOMManager.hideBizprocContainer();
+            }, 100);
+
+            this._widgetAddBtnTimer = setInterval(() => {
+                DOMManager.hideWidgetAddBtn();
+            }, 100);
+
             if (pathname[1] === 'crm' && pathname[2] === 'deal' && pathname[4] !== '0') {
                 this._sectionTimer = setInterval(() => {
                     TabVisibilityManager.updateSectionVisibility(deal['STAGE_ID']);
@@ -1153,6 +1200,14 @@ if($dealId){
         // More ღილაკის დამალვა
         DOMManager.hideMoreButton();
         
+        // After Title Box-ის დამალვა
+        DOMManager.hideAfterTitleBox();
+        
+        // Bizproc Container-ის დამალვა
+        DOMManager.hideBizprocContainer();
+        
+        // Widget Add Button-ის დამალვა
+        DOMManager.hideWidgetAddBtn();
 
         // const observer = new MutationObserver(() => {
         //     ButtonManager.initButtons();

@@ -750,6 +750,24 @@ $nbgKursi = getNBGkursi($dateForNBG);
         </div>
 
         <div class="form-field">
+            <label>საწყისი ფასი ₾</label>
+            <input id="startPriceGel" class="form-control" disabled>
+        </div>
+
+        <div class="form-field">
+            <label>საწყისი m² ფასი ₾</label>
+            <input id="startSqmPriceGel" class="form-control" disabled>
+        </div>
+
+        <input id="discount" type="hidden" value="0">
+    </div>
+
+    <!-- ფასები - GEL -->
+    <div class="form-row element-to-hide">
+
+
+
+        <div class="form-field">
             <label>ფასდაკლება</label>
             <select id="discountBY" class="form-select green-border">
                 <option value="fullPrice" selected>სრულ ფართზე</option>
@@ -770,21 +788,6 @@ $nbgKursi = getNBGkursi($dateForNBG);
             <input id="discountNum" class="form-control green-border" value="0" 
                    oninput="validateNumericInput(event,this)" 
                    onblur="handleInputFinish(this,'discountNum')">
-        </div>
-
-        <input id="discount" type="hidden" value="0">
-    </div>
-
-    <!-- ფასები - GEL -->
-    <div class="form-row element-to-hide">
-        <div class="form-field">
-            <label>საწყისი ფასი ₾</label>
-            <input id="startPriceGel" class="form-control" disabled>
-        </div>
-
-        <div class="form-field">
-            <label>საწყისი m² ფასი ₾</label>
-            <input id="startSqmPriceGel" class="form-control" disabled>
         </div>
 
         <div class="form-field">
