@@ -88,6 +88,9 @@ $arFilter = array("ID" => $prod_ID);
 $product = getCIBlockElementsByFilter($arFilter);
 
 $korpusi = $product[0]['KORPUSIS_NOMERI_XE3NX2'];
+$building = $product[0]['BUILDING'];
+
+
 $sadarbazo = $product[0]['_0AF2S0'];
 $sartuli = $product[0]['FLOOR'];
 $flatNum = $product[0]['Number'];
@@ -481,7 +484,7 @@ img {
                             </div>
                             <div class="info-row" id="korpusiDiv">
                                 <span class="info-label">ᲙᲝᲠᲞᲣᲡᲘ:</span>
-                                <span class="info-value" id="korpusi"><?php echo $korpusi; ?></span>
+                                <span class="info-value" id="korpusi"><?php echo $building; ?><?php echo $korpusi; ?> </span>
                             </div>
                             <div class="info-row" id="sadarbazoDiv" style="display: none;">
                                 <span class="info-label">ᲑᲚᲝᲙᲘ:</span>
