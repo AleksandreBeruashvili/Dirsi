@@ -250,7 +250,7 @@ html, body {
 .header-top {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start; /* Changed from center */
+    align-items: flex-start;
     width: 100%;
     margin: 0;
     padding: 0;
@@ -260,17 +260,16 @@ html, body {
     width: 100%;
     margin: 0;
     padding: 0;
-    line-height: 0; /* Remove any line-height gaps */
+    line-height: 0;
 }
 
-/* Ensure logo image touches the top/sides with zero gaps */
 .logo-placeholder img {
     display: block;
     max-width: 100%;
     height: auto;
     margin: 0;
     padding: 0;
-    vertical-align: top; /* Prevents baseline gap */
+    vertical-align: top;
 }
 
 .divider {
@@ -279,8 +278,6 @@ html, body {
     margin: 5mm 0;
     width: 100%;
 }
-
-
 
 @media print {
     @page {
@@ -294,39 +291,57 @@ html, body {
     
     .page {
         page-break-after: always;
-        padding:0;
-    }
-    
-    .header {
-
+        padding: 0;
     }
 }
 
 .page__workarea-content {
     padding: 0;
+}
 
-  }
-
-  .app__page {
+.app__page {
     padding: 0;
-  }
+}
 
-  .page{
+.page {
     width: 234mm;
-  }
+}
 
-  .info-container-bg {
+.info-container-bg {
     padding: 5mm;
     border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white overlay */
+    background-color: rgba(255, 255, 255, 0.9);
 }
+
+/* info-table is now a flex row: left=text, right=sartulinew image */
 .info-table {
     border-radius: 2mm;
     padding: 4mm;
     margin-bottom: 4mm;
-    margin-top:20%;
-    color: var(--text-dark); /* Keeps text dark for readability */
+    color: var(--text-dark);
     margin-top: 35%;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.info-table-text {
+    flex: 1;
+}
+
+.info-table-image {
+    flex: 0 0 40%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.info-table-image img {
+    width: 100%;
+    height: auto;
+    margin-top: 0;
+    border: none;
 }
 
 .info-container-bg .section-title {
@@ -351,8 +366,9 @@ img {
     font-size: 18px;
     margin-left: 5px;
     font-family: "BPG WEB 001 Caps", sans-serif;
-    line-height: 1.8;       /* ← ADD THIS for line spacing */
+    line-height: 1.8;
 }
+
 .info-row {
     margin-bottom: 20px;
 }
@@ -362,40 +378,35 @@ img {
     display: flex;
     flex-direction: column;
     gap: 12px;    
-        margin-left: 0;   
-        font-family: "BPG WEB 001 Caps", sans-serif;
-        
+    margin-left: 0;   
+    font-family: "BPG WEB 001 Caps", sans-serif;
 }
 
-.gayidvebismenejeri{
-
+.gayidvebismenejeri {
     color: rgb(52, 87, 112);
     font-size: 28px;
-    font-weight:bolder;
+    font-weight: bolder;
     margin-left: 25px;
     font-family: "BPG WEB 001 Caps", sans-serif;
     margin-top: -60px;
 }
 
-
-
-.footer2{
-
-color: rgb(52, 87, 112);
-font-size: 20px;
-font-weight:bolder;
-margin-left: 25px;
-font-family: "BPG WEB 001 Caps", sans-serif;
+.footer2 {
+    color: rgb(52, 87, 112);
+    font-size: 20px;
+    font-weight: bolder;
+    margin-left: 25px;
+    font-family: "BPG WEB 001 Caps", sans-serif;
 }
 
-.tableclass{
+.tableclass {
     color: rgb(52, 87, 112);
     font-size: 18px;
     margin-left: 5px;
     font-family: "BPG WEB 001 Caps", sans-serif;
 }
 
-/* ── PAGE 3: full-bleed A4 background ── */
+/* PAGE 3: full-bleed A4 background */
 .page-fullbleed {
     width: 234mm;
     height: 297mm;
@@ -422,24 +433,21 @@ font-family: "BPG WEB 001 Caps", sans-serif;
     vertical-align: top;
     z-index: 9999;
 }
+
 @media print {
     .thirdpic, .thirdpic img {
         display: block !important;
         visibility: visible !important;
         width: 100% !important;
     }
-    .fourthpic, .fourthpic img{
-        width:98%; 
-        height:auto; 
-        display:block; 
+    .fourthpic, .fourthpic img {
+        width: 98%; 
+        height: auto; 
+        display: block; 
         margin-top: 0; 
         margin-bottom: 0;
     }
 }
-
-
-
-</style>
     </style>
 </head>
 <body>
@@ -454,163 +462,165 @@ font-family: "BPG WEB 001 Caps", sans-serif;
                         PARK BOULEVARD
                     <?php endif; ?>
                 </div>
-               
             </div>
             <div class="divider"></div>
         </div>
 
         <div class="content-grid">
-            <!-- LEFT COLUMN -->
             <div class="property-info">
-    <div class="info-container-bg" style="<?php echo (isset($backgroundfoto) && $backgroundfoto) ? 'background-image: url(\'' . $backgroundfoto . '\'); background-size: 100%; margin-top: -25px; width: 100%; background-repeat: no-repeat;
-    height: 35%;' : ''; ?>">
-                
-                <div class="info-table">
-                    <div class="info-row">
-                        <span class="info-label">ᲞᲠᲝᲔᲥᲢᲘ:</span>
-                        <span class="info-value" id="projectName"><?php echo $projectName; ?></span>
-                    </div>
-                    <div class="info-row" id="korpusiDiv">
-                        <span class="info-label">ᲙᲝᲠᲞᲣᲡᲘ:</span>
-                        <span class="info-value" id="korpusi"><?php echo $korpusi; ?></span>
-                    </div>
-                    <div class="info-row" id="sadarbazoDiv" style="display: none;">
-                        <span class="info-label">ᲑᲚᲝᲙᲘ:</span>
-                        <span class="info-value" id="sadarbazo"><?php echo $sadarbazo; ?></span>
-                    </div>
-                    <div class="info-row" id="sartuliDiv">
-                        <span class="info-label">ᲡᲐᲠᲗᲣᲚᲘ:</span>
-                        <span class="info-value" id="sartuli"><?php echo $sartuli; ?></span>
-                    </div>
-                    <div class="info-row" id="flatNumDiv">
-                        <span class="info-label">ᲑᲘᲜᲘᲡ #:</span>
-                        <span class="info-value" id="flatNum"><?php echo $flatNum; ?></span>
-                    </div>
-                    <div class="info-row" id="totalspaceDiv">
-                        <span class="info-label">ᲡᲠᲣᲚᲘ ᲤᲐᲠᲗᲘ:</span>
-                        <span class="info-value" id="totalspace"><?php echo $totalspace; ?> მ²</span>
+                <div class="info-container-bg" style="<?php echo (isset($backgroundfoto) && $backgroundfoto) ? 'background-image: url(\'' . $backgroundfoto . '\'); background-size: 100%; margin-top: -25px; width: 100%; background-repeat: no-repeat; height: 35%;' : ''; ?>">
+
+                    <!-- info-table: text on left, sartulinew image on right -->
+                    <div class="info-table">
+
+                        <!-- LEFT: property text fields -->
+                        <div class="info-table-text">
+                            <div class="info-row">
+                                <span class="info-label">ᲞᲠᲝᲔᲥᲢᲘ:</span>
+                                <span class="info-value" id="projectName"><?php echo $projectName; ?></span>
+                            </div>
+                            <div class="info-row" id="korpusiDiv">
+                                <span class="info-label">ᲙᲝᲠᲞᲣᲡᲘ:</span>
+                                <span class="info-value" id="korpusi"><?php echo $korpusi; ?></span>
+                            </div>
+                            <div class="info-row" id="sadarbazoDiv" style="display: none;">
+                                <span class="info-label">ᲑᲚᲝᲙᲘ:</span>
+                                <span class="info-value" id="sadarbazo"><?php echo $sadarbazo; ?></span>
+                            </div>
+                            <div class="info-row" id="sartuliDiv">
+                                <span class="info-label">ᲡᲐᲠᲗᲣᲚᲘ:</span>
+                                <span class="info-value" id="sartuli"><?php echo $sartuli; ?></span>
+                            </div>
+                            <div class="info-row" id="flatNumDiv">
+                                <span class="info-label">ᲑᲘᲜᲘᲡ #:</span>
+                                <span class="info-value" id="flatNum"><?php echo $flatNum; ?></span>
+                            </div>
+                            <div class="info-row" id="totalspaceDiv">
+                                <span class="info-label">ᲡᲠᲣᲚᲘ ᲤᲐᲠᲗᲘ:</span>
+                                <span class="info-value" id="totalspace"><?php echo $totalspace; ?> მ²</span>
+                            </div>
+                            <div class="info-row" id="enddateDiv">
+                                <span class="info-label">ᲛᲨᲔᲜᲔᲑᲚᲝᲑᲘᲡ ᲓᲐᲡᲠᲣᲚᲔᲑᲘᲡ ᲗᲐᲠᲘᲦᲘ:</span>
+                                <span class="info-value" id="enddate"><?php echo $enddate; ?></span>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT: sartulinew (floor sketch) image -->
+                        <div class="info-table-image" id="sartulinew"></div>
+
+                    </div><!-- /info-table -->
+
+                    <br><br><br><br><br>
+
+                    <div class="gayidvebismenejeri">გაყიდვების მენეჯერი</div>
+                    <table class="tableclass" style="border-collapse: collapse; margin-top: 10px; margin-left: 25px;">
+                        <tr>
+                            <td style="padding-right: 100px; vertical-align: top;">
+                                <?php if(isset($gayidvebifoto) && $gayidvebifoto): ?>
+                                    <table style="border-collapse: collapse; margin-bottom: 10px;">
+                                        <tr>
+                                            <td style="vertical-align: middle; padding-right: 6px;">
+                                                <img src="<?php echo $gayidvebifoto; ?>" alt="გაყიდვები" style="display:block; max-width:40px; height:auto;">
+                                            </td>
+                                            <td style="vertical-align: middle;">
+                                                <?php echo $salesmenegername; ?>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                <?php endif; ?>
+
+                                <?php if(isset($gayidvebi2foto) && $gayidvebi2foto): ?>
+                                    <table style="border-collapse: collapse;">
+                                        <tr>
+                                            <td style="vertical-align: middle; padding-right: 6px;">
+                                                <img src="<?php echo $gayidvebi2foto; ?>" alt="გაყიდვები" style="display:block; max-width:40px; height:auto;">
+                                            </td>
+                                            <td style="vertical-align: middle;">
+                                                <?php echo $salesmenegermail; ?>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                <?php endif; ?>
+                            </td>
+                            <td style="vertical-align: top;">
+                                <?php if(isset($gayidvebi3foto) && $gayidvebi3foto): ?>
+                                    <table style="border-collapse: collapse;">
+                                        <tr>
+                                            <td style="vertical-align: middle; padding-right: 6px;">
+                                                <img src="<?php echo $gayidvebi3foto; ?>" alt="გაყიდვები" style="display:block; max-width:40px; height:auto;">
+                                            </td>
+                                            <td style="vertical-align: middle;">
+                                                <?php echo $salesmenegerphone; ?>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="info-container-bg" style="<?php echo (isset($greenfoto) && $greenfoto) ? 'background-image: url(\'' . $greenfoto . '\'); background-size: 100%; width: 100%; background-repeat: no-repeat; margin-left: -20px; height: 90px;' : ''; ?>">
+                        <div class="footer2">ᲨᲔᲗᲐᲕᲐᲖᲔᲑᲘᲡ ᲗᲐᲠᲘᲦᲘ:</div>
+                        <table class="tableclass" style="border-collapse: collapse; margin-top: 25px; margin-left: 25px;">
+                            <tr>
+                                <!-- Column 1 -->
+                                <td style="padding-right: 100px; vertical-align: top;">
+                                    <table style="border-collapse: collapse; margin-bottom: 10px;">
+                                        <tr>
+                                            <td style="vertical-align: middle;">
+                                                ჯამური ღირებულება (USD):
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <table style="border-collapse: collapse;">
+                                        <tr>
+                                            <td style="vertical-align: middle;">
+                                                ღირებულება მ2 (USD):
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+
+                                <!-- Column 2 -->
+                                <td style="vertical-align: top;">
+                                    <table style="border-collapse: collapse; margin-bottom: 10px;">
+                                        <tr>
+                                            <td style="vertical-align: middle;">
+                                                ჯამური ღირებულება (GEL):
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <table style="border-collapse: collapse;">
+                                        <tr>
+                                            <td style="vertical-align: middle;">
+                                                ღირებულება მ2 (GEL):
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
 
-                    <div class="info-row" id="enddateDiv">
-                        <span class="info-label">ᲛᲨᲔᲜᲔᲑᲚᲝᲑᲘᲡ ᲓᲐᲡᲠᲣᲚᲔᲑᲘᲡ ᲗᲐᲠᲘᲦᲘ:</span>
-                        <span class="info-value" id="enddate"><?php echo $enddate; ?></span>
-                    </div>
-                
-            
                 </div>
-                <br> <br>
-                <br>
-                <br>
-                <br>
-
-                <div class="gayidvebismenejeri">გაყიდვების მენეჯერი</div>
-<table class="tableclass" style="border-collapse: collapse; margin-top: 10px; margin-left: 25px;">
-    <tr>
-        <td style="padding-right: 100px; vertical-align: top;">
-            <?php if(isset($gayidvebifoto) && $gayidvebifoto): ?>
-                <table style="border-collapse: collapse; margin-bottom: 10px;">
-                    <tr>
-                        <td style="vertical-align: middle; padding-right: 6px;">
-                            <img src="<?php echo $gayidvebifoto; ?>" alt="გაყიდვები" style="display:block; max-width:40px; height:auto;">
-                        </td>
-                        <td style="vertical-align: middle;">
-                            <?php echo $salesmenegername; ?>
-                        </td>
-                    </tr>
-                </table>
-            <?php endif; ?>
-
-            <?php if(isset($gayidvebi2foto) && $gayidvebi2foto): ?>
-                <table style="border-collapse: collapse;">
-                    <tr>
-                        <td style="vertical-align: middle; padding-right: 6px;">
-                            <img src="<?php echo $gayidvebi2foto; ?>" alt="გაყიდვები" style="display:block; max-width:40px; height:auto;">
-                        </td>
-                        <td style="vertical-align: middle;">
-                            <?php echo $salesmenegermail; ?>
-                        </td>
-                    </tr>
-                </table>
-            <?php endif; ?>
-        </td>
-        <td style="vertical-align: top;">
-            <?php if(isset($gayidvebi3foto) && $gayidvebi3foto): ?>
-                <table style="border-collapse: collapse;">
-                    <tr>
-                        <td style="vertical-align: middle; padding-right: 6px;">
-                            <img src="<?php echo $gayidvebi3foto; ?>" alt="გაყიდვები" style="display:block; max-width:40px; height:auto;">
-                        </td>
-                        <td style="vertical-align: middle;">
-                            <?php echo $salesmenegerphone; ?>
-                        </td>
-                    </tr>
-                </table>
-            <?php endif; ?>
-        </td>
-    </tr>
-</table>
-
-<div class="info-container-bg" style="<?php echo (isset($greenfoto) && $greenfoto) ? 'background-image: url(\'' . $greenfoto . '\'); background-size: 100%; width: 100%; background-repeat: no-repeat; margin-left: -20px; height: 90px;' : ''; ?>">
-    <div class="footer2">ᲨᲔᲗᲐᲕᲐᲖᲔᲑᲘᲡ ᲗᲐᲠᲘᲦᲘ:</div>
-    <table class="tableclass" style="border-collapse: collapse; margin-top: 25px; margin-left: 25px;">
-        <tr>
-            <!-- Column 1 -->
-            <td style="padding-right: 100px; vertical-align: top;">
-                <table style="border-collapse: collapse; margin-bottom: 10px;">
-                    <tr>
-                        <td style="vertical-align: middle;">
-                            ჯამური ღირებულება (USD):
-                        </td>
-                    </tr>
-                </table>
-                <table style="border-collapse: collapse;">
-                    <tr>
-                        <td style="vertical-align: middle;">
-                            ღირებულება მ2 (USD):
-                        </td>
-                    </tr>
-                </table>
-            </td>
-
-            <!-- Column 2 -->
-            <td style="vertical-align: top;">
-                <table style="border-collapse: collapse; margin-bottom: 10px;">
-                    <tr>
-                        <td style="vertical-align: middle;">
-                            ჯამური ღირებულება (GEL):
-                        </td>
-                    </tr>
-                </table>
-                <table style="border-collapse: collapse;">
-                    <tr>
-                        <td style="vertical-align: middle;">
-                            ღირებულება მ2 (GEL):
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-</div>
-</div>
+            </div>
+        </div>
+    </div><!-- /PAGE 1 -->
 
 
-<!-- PAGE 2 -->
-<div style="page-break-before: always;"></div>
-<div class="page" style="text-align: center;">
-<div class="sartulinew" id="sartulinew"></div>
+    <!-- PAGE 2 -->
+    <div style="page-break-before: always;"></div>
+    <div class="page" style="text-align: center;">
 
+        <div class="threeDRender" id="threeDRender" style="width:100%; <?php echo (isset($binisrenderfoto) && $binisrenderfoto) ? 'background-image: url(\'' . $binisrenderfoto . '\'); background-size: 100%; background-repeat: no-repeat; background-position: center; min-height: 600px; margin-top: -20px;' : ''; ?>">
+        </div>
 
-<div class="threeDRender" id="threeDRender" style="width:100%; <?php echo (isset($binisrenderfoto) && $binisrenderfoto) ? 'background-image: url(\'' . $binisrenderfoto . '\'); background-size: 100%; background-repeat: no-repeat; background-position: center; min-height: 600px; margin-top: -20px;' : ''; ?>">
-</div>
+        <div class="floorplan" id="floorplan" style="width:100%; <?php echo (isset($sartulirenderfoto) && $sartulirenderfoto) ? 'background-image: url(\'' . $sartulirenderfoto . '\'); background-size: 100%; background-repeat: no-repeat; background-position: center; min-height: 600px;' : ''; ?>"></div>
 
-<div class="floorplan" id="floorplan" style="width:100%; <?php echo (isset($sartulirenderfoto) && $sartulirenderfoto) ? 'background-image: url(\'' . $sartulirenderfoto . '\'); background-size: 100%; background-repeat: no-repeat; background-position: center; min-height: 600px;' : ''; ?>"></div>
+    </div>
 
-</div>
-
-    <div class="thirdpic" id="thirdpic" ></div>
-
-    <div class="fourthpic" id="fourthpic" ></div>
+    <div class="thirdpic" id="thirdpic"></div>
+    <div class="fourthpic" id="fourthpic"></div>
 
 <script>
 function formatNumber(num) {
@@ -623,40 +633,48 @@ function formatNumber(num) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-        var containers = [
-            document.querySelector('.workarea-content-paddings'),
-            document.querySelector('#workarea-content'),
-            document.querySelector('.bx-layout-inner-inner-cont')
-        ];
-        containers.forEach(function(el) {
-            if (el) {
-                el.style.padding = "0";
-                el.style.margin = "0";
-            }
-        });
+    var containers = [
+        document.querySelector('.workarea-content-paddings'),
+        document.querySelector('#workarea-content'),
+        document.querySelector('.bx-layout-inner-inner-cont')
+    ];
+    containers.forEach(function(el) {
+        if (el) {
+            el.style.padding = "0";
+            el.style.margin = "0";
+        }
     });
+});
 
-let threeD = <?php echo json_encode($threeD); ?>;
-let floorplan = <?php echo json_encode($floorplan); ?>;
-let thirdpicfoto = <?php echo json_encode($thirdpicfoto); ?>;
+let threeD        = <?php echo json_encode($threeD); ?>;
+let floorplan     = <?php echo json_encode($floorplan); ?>;
+let thirdpicfoto  = <?php echo json_encode($thirdpicfoto); ?>;
 let fourthpicfoto = <?php echo json_encode($fourthpicfoto); ?>;
+let sartulinew    = <?php echo json_encode($sartulinew); ?>;
 
-
+// Inject sartulinew image into the right column inside info-table
+if (sartulinew && document.getElementById("sartulinew")) {
+    document.getElementById("sartulinew").innerHTML = `<img src="${sartulinew}"     style=" width: 100%;
+    height: auto;
+    border: none;
+    margin-top: -250px;
+    margin-right: 50%;" alt="სართულის ნახაზი">`;
+}
 
 if (threeD && document.getElementById("threeDRender")) {
-    document.getElementById("threeDRender").innerHTML += `<img src='${threeD}' style='width:80%; height:auto; margin-top:70px;' alt='სართულის რენდერი'>`;
+    document.getElementById("threeDRender").innerHTML += `<img src="${threeD}" style="width:80%; height:auto; margin-top: -100px;" alt="სართულის რენდერი">`;
 }
 
 if (floorplan && document.getElementById("floorplan")) {
-    document.getElementById("floorplan").innerHTML = `<img src='${floorplan}' style='width:80%; height:auto; margin-top: 200px;' alt='ბინის გეგმა'>`;
+    document.getElementById("floorplan").innerHTML = `<img src="${floorplan}" style="width:80%; height:auto;" alt="ბინის გეგმა">`;
 }
 
 if (thirdpicfoto && document.getElementById("thirdpic")) {
-    document.getElementById("thirdpic").innerHTML = `<img src='${thirdpicfoto}' style='width:100%; height:auto; display:block; margin-top: 0; height: 1200px;'>`;
+    document.getElementById("thirdpic").innerHTML = `<img src="${thirdpicfoto}" style="width:100%; height:auto; display:block; margin-top:0; height:1200px;">`;
 }
 
 if (fourthpicfoto && document.getElementById("fourthpic")) {
-    document.getElementById("fourthpic").innerHTML = `<img src='${fourthpicfoto}' style='width:100%; height:auto; display:block; margin-top: 0; margin-bottom: 60px;'>`;
+    document.getElementById("fourthpic").innerHTML = `<img src="${fourthpicfoto}" style="width:100%; height:auto; display:block; margin-top:0; margin-bottom:60px;">`;
 }
 </script>
 
