@@ -61,6 +61,9 @@ $actualAddressENG = trim($_POST["actualAddressENG"]);
 $miznobrioba = trim($_POST["miznobrioba"]);
 $contactType = trim($_POST["contactType"]);
 
+$registrationInRest = trim($_POST["registrationInRest"]);
+$keytReceived = trim($_POST["keytReceived"]);
+
 
 if($dealId){
     $arErrorsTmp = array();
@@ -89,6 +92,8 @@ if($dealId){
             "actualAddressENG" => $actualAddressENG,
             "miznobrioba" => $miznobrioba,
             "contactType" => $contactType,
+            "registrationInRest" => $registrationInRest,
+            "keytReceived" => $keytReceived,
             "TargetUser" => "user_" . $currentUserId
         ],
         $arErrorsTmp

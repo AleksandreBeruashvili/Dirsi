@@ -233,6 +233,26 @@ $deal = getDealInfoByIDToolbar($dealId);
                 clearError("contactType");
             }
 
+            if (!$("#agreementFile").val()) {
+                showError("agreementFile", "გთხოვთ დაამატეთ ხელშეკრულება");
+                valid = false;
+            } else {
+                clearError("agreementFile");
+            }
+            
+            if (!$("#identityFile").val()) {
+                showError("identityFile", "გთხოვთ დაამატეთ პიროვნების დამადასტურებელი დოკუმენტი");
+                valid = false;
+            } else {
+                clearError("identityFile");
+            }
+            if (!$("#comment").val()) {
+                showError("comment", "გთხოვთ შეიყვანეთ კომენტარი");
+                valid = false;
+            } else {
+                clearError("comment");
+            }
+
             return valid;
         }
 

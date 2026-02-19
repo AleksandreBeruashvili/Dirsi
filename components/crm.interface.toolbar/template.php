@@ -814,7 +814,8 @@ if($dealId){
             const queue = Utils.getProductQueue();
             
             // გაყიდვის ღილაკი
-            if (Utils.hasProduct() && stageId === '2') {
+            if (Utils.hasProduct() && (stageId === '3')) {
+                // stageId === '2' || 
                 this.addButton({
                     id: 'sellBtn',
                     icon: ButtonFactory.icons.sale,

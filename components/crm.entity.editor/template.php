@@ -1373,7 +1373,7 @@ if($arfilter){
 
         if(userID != 1){
             setTimeout(() => {
-                if(stageId.includes("2") || stageId.includes("3") || stageId.includes("4") || stageId.includes("WON")){
+                if(stageId.includes("3") || stageId.includes("4") || stageId.includes("WON")){
                     // console.log(stageId)
                     uiPageSliderContent = document.getElementById("ui-page-slider-content");
                     if(uiPageSliderContent){
