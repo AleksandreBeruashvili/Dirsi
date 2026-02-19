@@ -665,7 +665,7 @@ if (sartulinew && document.getElementById("sartulinew")) {
 }
 
 if (threeD && document.getElementById("threeDRender")) {
-    document.getElementById("threeDRender").innerHTML += `<img src="${threeD}" style="width:80%; height:auto; margin-top: -100px;" alt="სართულის რენდერი">`;
+    document.getElementById("threeDRender").innerHTML += `<img src="${threeD}" style="width:60%; height:auto; margin-top: 40px;" alt="სართულის რენდერი">`;
 }
 
 if (floorplan && document.getElementById("floorplan")) {
