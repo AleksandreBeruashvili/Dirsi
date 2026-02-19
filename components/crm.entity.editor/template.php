@@ -971,53 +971,57 @@ GLOBAL $USER;
 $userID = $USER->GetID();
 
 
-// function getCIBlockElementsByFilterT($arFilter = array())
-// {
-//     $arElements = array();
-//     $arSelect = array("ID", "IBLOCK_ID", "NAME", "DATE_ACTIVE_FROM", "DATE_CREATE", "PROPERTY_*");
-//     $res = CIBlockElement::GetList(array(), $arFilter, false, array("nPageSize" => 999), $arSelect);
-//     while ($ob = $res->GetNextElement()) {
-//         $arFilds = $ob->GetFields();
-//         $arProps = $ob->GetProperties();
-//         $arPushs = array();
-//         foreach ($arFilds as $key => $arFild)
-//             $arPushs[$key] = $arFild;
-//         foreach ($arProps as $key => $arProp)
-//             $arPushs[$key] = $arProp["VALUE"];
-//         array_push($arElements, $arPushs);
-//     }
-//     return $arElements;
-// }
+function getDealsInfoByIDEntity($arfilter)
+{
+    $res = CCrmDeal::GetList(array("ID" => "ASC"), $arfilter, array());
+    while ($arDeal = $res->Fetch()) {
+        $arDeals[] = $arDeal;
+    }
+    if ($arDeals) {
+        return $arDeals;
+    }
+}
+
+$url = "//{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
+$url = explode('/', $url);
+$dealId = $url[6];
+
+$arfilter = array();
+
+if($url[4] == "deal"){
+	$dealId = $url[6];
+
+    $arfilter = array(
+        "ID" => $dealId
+    );
+
+}else if($url[4] == "contact"){
+    $contactId = $url[6];
+    $arfilter = array(
+        "CONTACT_ID" => $contactId
+    );
+}
 
 
-// $url = "//{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
-// $url = explode('/', $url);
-// $dealId = $url[6];
+if($arfilter){
+    $deals = getDealsInfoByIDEntity($arfilter);
+    $stageIds = array();
+    foreach($deals as $deal){
+        $stageIds[] = $deal["STAGE_ID"];
+    }
+    $stageIds = array_unique($stageIds);
+    $stageId = implode("|", $stageIds);
+}
 
-// if($dealId){
-// 	$deal = getDealInfoByIDToolbar($dealId);
 
-// $prods = $prods = CCrmDeal::LoadProductRows($dealId);
-// if ($prods) {
-// 	$arFilter = array("ID" => $prods[0]['PRODUCT_ID']);
-// 	$Product = getCIBlockElementsByFilterT($arFilter);
-// }
-
-// 	$newStageId = $deal["STAGE_ID"];
-// 	$arrForPipeline = explode(":", $deal["STAGE_ID"]);
-// 	if (count($arrForPipeline) == 2) {
-// 		$pipeline = str_replace("C", "", $arrForPipeline[0]);
-// 	} else {
-// 		$pipeline = 0;
-// 	}
-
-// }
 
 
 ?>
 <script>
     pathname = window.location.pathname.split("/");
-    const userID = <?php echo json_encode($userID); ?>;
+    userID = <?php echo json_encode($userID); ?>;
+    stageId = <?php echo json_encode($stageId); ?>;
+
     if(pathname[1] == "crm" && pathname[2] == "deal" && pathname[4] != "0"){
 
         setTimeout(() => {
@@ -1365,10 +1369,38 @@ $userID = $USER->GetID();
                 }
                 citizenOfBlock.style.display = "none";    
             }
-
         }, 1000);
 
+        // if(userID != 1){
+        //     setTimeout(() => {
+        //         if(stageId.includes("3") || stageId.includes("4") || stageId.includes("WON")){
+        //             console.log(stageId)
+        //             uiPageSliderContent = document.getElementById("ui-page-slider-content");
+        //             if(uiPageSliderContent){
+        //                 uiPageSliderContent.style.pointerEvents = "none";
+        //                 // uiPageSliderContent.style.disabled = "true";
+        //             }
+        //         }
+        //     }, 50);
+        // }
+
+        if(userID != 1){
+            if(stageId.includes("3") || stageId.includes("4") || stageId.includes("WON")){
+                // დაუყოვნებლივ CSS-ით ვბლოკავთ — setTimeout-ს არ ელოდება
+                var freezeStyle = document.createElement('style');
+                freezeStyle.textContent = '#ui-page-slider-content { pointer-events: none !important; }';
+                document.head.appendChild(freezeStyle);
+            }
+
+            setTimeout(() => {
+                if(stageId.includes("3") || stageId.includes("4") || stageId.includes("WON")){
+                    uiPageSliderContent = document.getElementById("ui-page-slider-content");
+                    if(uiPageSliderContent){
+                        uiPageSliderContent.style.pointerEvents = "none";
+                    }
+                }
+            }, 50);
+        }
 
     }
-
 </script>

@@ -64,10 +64,10 @@ if ($dealID) {
         "PROPERTY_DEAL" => $dealID
     ));
     
-    if (count($payed) || $dealData["STAGE_ID"] == "WON") {
-        header("Location: /custom/calculator/restruct.php?dealid=$dealID");
-        exit();
-    }
+    // if (count($payed) || $dealData["STAGE_ID"] == "WON") {
+    //     header("Location: /custom/calculator/restruct.php?dealid=$dealID");
+    //     exit();
+    // }
     
     $dealProds = CCrmDeal::LoadProductRows($dealID);
     $chabarebatype = "მწვანე კარკასი";
@@ -130,7 +130,13 @@ if (is_numeric($docID)) {
     $jsonGraph = str_replace("&quot;", "\"", $calculation["GRAPH_JSON"]);
     $graphHeaderByDoc = json_decode($json, true);
     $graphByDoc = json_decode($jsonGraph, true);
-    $ganvadebaType = $calculation["planType"];
+    $planTypeToCode = [
+        "არასტანდარტული" => "customType",
+        "სტანდარტული"    => "mortgage",
+        "ერთიანი გადახდა" => "allCash",
+        "ბანკის სესხი"   => "bankLoan",
+    ];
+    $ganvadebaType = $planTypeToCode[$calculation["planType"]] ?? $calculation["planType"];
     
     if ($binisNomeri != $graphHeaderByDoc["binisNomeri"]) {
         exit("არასწორი გრაფიკი");
@@ -750,6 +756,24 @@ $nbgKursi = getNBGkursi($dateForNBG);
         </div>
 
         <div class="form-field">
+            <label>საწყისი ფასი ₾</label>
+            <input id="startPriceGel" class="form-control" disabled>
+        </div>
+
+        <div class="form-field">
+            <label>საწყისი m² ფასი ₾</label>
+            <input id="startSqmPriceGel" class="form-control" disabled>
+        </div>
+
+        <input id="discount" type="hidden" value="0">
+    </div>
+
+    <!-- ფასები - GEL -->
+    <div class="form-row element-to-hide">
+
+
+
+        <div class="form-field">
             <label>ფასდაკლება</label>
             <select id="discountBY" class="form-select green-border">
                 <option value="fullPrice" selected>სრულ ფართზე</option>
@@ -770,21 +794,6 @@ $nbgKursi = getNBGkursi($dateForNBG);
             <input id="discountNum" class="form-control green-border" value="0" 
                    oninput="validateNumericInput(event,this)" 
                    onblur="handleInputFinish(this,'discountNum')">
-        </div>
-
-        <input id="discount" type="hidden" value="0">
-    </div>
-
-    <!-- ფასები - GEL -->
-    <div class="form-row element-to-hide">
-        <div class="form-field">
-            <label>საწყისი ფასი ₾</label>
-            <input id="startPriceGel" class="form-control" disabled>
-        </div>
-
-        <div class="form-field">
-            <label>საწყისი m² ფასი ₾</label>
-            <input id="startSqmPriceGel" class="form-control" disabled>
         </div>
 
         <div class="form-field">
@@ -1981,7 +1990,8 @@ async function saveGraph() {
         advancePayment: `${advancePayment} $ / ${advancePaymentPercent} %`,
         bookPayment: `${bookPayment} $`,
         lastPayment: `${lastPayment} $ / ${lastPaymentPercent} %`,
-        DistributedPayment: `${distributedPayment} $ / ${distributedPaymentPercent} %`
+        DistributedPayment: `${distributedPayment} $ / ${distributedPaymentPercent} %`,
+        ganvadebaType: getValue('ganvadebaType')
     };
     
     try {

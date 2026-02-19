@@ -25,6 +25,8 @@ $actualAddressENG = $root->GetVariable("actualAddressENG");
 $miznobrioba = $root->GetVariable("miznobrioba");
 $contType = $root->GetVariable("contType");
 
+$registrationInRest = $root->GetVariable("registrationInRest");
+$keytReceived = $root->GetVariable("keytReceived");
 
 if($clientPhone){
     $fieldMulti = new \CCrmFieldMulti();
@@ -135,6 +137,8 @@ $CCrmDeal = new CCrmDeal();
 $upd = array(
     "UF_CRM_1770204779269" => $miznobrioba,
     "UF_CRM_1770204855111" => $contType,
+    "UF_CRM_1771499394" => $registrationInRest,
+    "UF_CRM_1771499429" => $keytReceived,
 );
 $CCrmDeal->Update($dealId, $upd);
 

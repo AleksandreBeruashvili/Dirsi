@@ -107,10 +107,12 @@ function getUniqueValues($products, $field) {
 // ------------------------------MAIN CODE---------------------------------
 
 // Get filter values from request
-$filterProject = isset($_GET['project']) ? $_GET['project'] : '';
-// $filterPhase = isset($_GET['phase']) ? $_GET['phase'] : '';
-$filterBlock = isset($_GET['block']) ? $_GET['block'] : '';
-$filterResponsible = isset($_GET['responsible']) ? $_GET['responsible'] : '';
+$filterProject     = isset($_GET['project'])      ? trim($_GET['project'])      : '';
+$filterBlock       = isset($_GET['block'])        ? trim($_GET['block'])        : '';
+$filterBuilding    = isset($_GET['building'])     ? trim($_GET['building'])     : '';
+$filterFloor       = isset($_GET['floor'])        ? trim($_GET['floor'])        : '';
+$filterProductType = isset($_GET['prodType'])     ? trim($_GET['prodType'])     : '';
+$filterResponsible = isset($_GET['responsible'])  ? trim($_GET['responsible'])  : '';
 
 $arFilter = array("STAGE_ID" => "WON");
 $deals = getDealsByFilter($arFilter);
@@ -123,6 +125,10 @@ $projects = getUniqueValues($products, 'PROJECT');
 // $phases = getUniqueValues($products, 'phase');
 $blocks = array_diff(getUniqueValues($products, 'KORPUSIS_NOMERI_XE3NX2'), ['P']);
 $responsibles = getUniqueValues($products, 'DEAL_RESPONSIBLE_NAME');
+$buildings = getUniqueValues($products, 'BUILDING');
+$floors = getUniqueValues($products, 'FLOOR');
+$prodTypes = ["Flat (1 Bed.)", "Flat (2 Bed.)", "Flat (3 Bed.)"];
+$prodTypes = array_merge(getUniqueValues($products, 'PRODUCT_TYPE'), $prodTypes);
 
 // Apply filters
 $filteredProducts = array();
@@ -140,6 +146,24 @@ foreach ($products as $product) {
     }
     if ($filterResponsible && $product['DEAL_RESPONSIBLE_NAME'] != $filterResponsible) {
         $match = false;
+    }
+
+    if ($filterBuilding && $product['BUILDING'] != $filterBuilding) {
+        $match = false;
+    }
+
+    if ($filterFloor && $product['FLOOR'] != $filterFloor) {
+        $match = false;
+    }
+
+    if ($filterProductType) {
+        if (str_contains($filterProductType, "Flat")) {
+            preg_match('/\d+/', $filterProductType, $matches);
+            $bedroom = $matches[0];
+            if ($product['Bedrooms'] !== $bedroom) $match = false;
+        } else {
+            if ($product['PRODUCT_TYPE'] !== $filterProductType) $match = false;
+        }
     }
     
     if ($match) {
@@ -306,18 +330,6 @@ ob_end_clean();
                 </select>
             </div>
             
-            <!-- <div class="filter-group">
-                <label for="phase">Phase:</label>
-                <select name="phase" id="phase">
-                    <option value="">All Phases</option>
-                    <?php foreach ($phases as $phase): ?>
-                        <option value="<?= htmlspecialchars($phase) ?>" <?= $filterPhase == $phase ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($phase) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div> -->
-            
             <div class="filter-group">
                 <label for="block">Block:</label>
                 <select name="block" id="block">
@@ -329,14 +341,50 @@ ob_end_clean();
                     <?php endforeach; ?>
                 </select>
             </div>
+
+            <div class="filter-group">
+                <label for="building">Building:</label>
+                <select name="building" id="building">
+                    <option value="">All Buildings</option>
+                    <?php foreach ($buildings as $building): ?>
+                        <option value="<?= htmlspecialchars($building) ?>" <?= $filterBuilding == $building ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($building) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="floor">Floor:</label>
+                <select name="floor" id="floor">
+                    <option value="">All Floors</option>
+                    <?php foreach ($floors as $floor): ?>
+                        <option value="<?= htmlspecialchars($floor) ?>" <?= $filterFloor == $floor ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($floor) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="prodType">Product Type:</label>
+                <select name="prodType" id="prodType">
+                    <option value="">All Product Types</option>
+                    <?php foreach ($prodTypes as $prodType): ?>
+                        <option value="<?= htmlspecialchars($prodType) ?>" <?= $filterProductType == $prodType ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($prodType) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
             
             <div class="filter-group">
                 <label for="responsible">Responsible:</label>
                 <select name="responsible" id="responsible">
                     <option value="">All Responsible</option>
-                    <?php foreach ($responsibles as $responsible): ?>
-                        <option value="<?= htmlspecialchars($responsible) ?>" <?= $filterResponsible == $responsible ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($responsible) ?>
+                    <?php foreach ($responsibles as $id => $name): ?>
+                        <option value="<?= htmlspecialchars($id) ?>" <?= $filterResponsible == $id ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($name) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -419,7 +467,7 @@ foreach ($apartmentTypes as $aptType) {
         ?>
         <tr>
             <td><?= $prodType ?></td>
-            <td><?= $infos['თავისუფალი']['num'] ?? 0 ?></td>
+            <td><?= $infos['თავისუფალი']['num'] + $infos['დაჯავშნილი']['num'] ?? 0 ?></td>
             <td><?= $infos['დაჯავშნილი']['num'] ?? 0 ?></td>
             <td><?= $infos['გაყიდული']['num'] ?? 0 ?></td>
             <td><?= $infos['NFS']['num'] ?? 0 ?></td>
@@ -459,7 +507,7 @@ foreach ($apartmentTypes as $aptType) {
             ?>
             <tr>
                 <td><?= $prodType ?></td>
-                <td><?= number_format($resArray[$prodType]['თავისუფალი']['total_area'] ?? 0, 2) ?></td>
+                <td><?= number_format($resArray[$prodType]['თავისუფალი']['total_area'] + $resArray[$prodType]['დაჯავშნილი']['total_area'] ?? 0, 2) ?></td>
                 <td><?= number_format($resArray[$prodType]['დაჯავშნილი']['total_area'] ?? 0, 2) ?></td>
                 <td><?= number_format($resArray[$prodType]['გაყიდული']['total_area'] ?? 0, 2) ?></td>
                 <td><?= number_format($resArray[$prodType]['NFS']['total_area'] ?? 0, 2) ?></td>
@@ -500,7 +548,7 @@ foreach ($apartmentTypes as $aptType) {
         ?>
         <tr>
             <td><?= $prodType ?></td>
-            <td><?= number_format($infos['თავისუფალი']['price'] ?? 0, 2) ?></td>
+            <td><?= number_format($infos['თავისუფალი']['price'] + $infos['დაჯავშნილი']['price'] ?? 0, 2) ?></td>
             <td><?= number_format($infos['დაჯავშნილი']['price'] ?? 0, 2) ?></td>
             <td><?= number_format($infos['გაყიდული']['price'] ?? 0, 2) ?></td>
             <td><?= number_format($infos['NFS']['price'] ?? 0, 2) ?></td>

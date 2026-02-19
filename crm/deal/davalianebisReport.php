@@ -14,11 +14,7 @@ function getDealsByFilter($arFilter, $project = '', $arSelect = array(), $arSort
     $result["deals_data"] = array();
     $result["deals_IDs"] = array();
 
-    // if (!empty($project)) {
-    //     $arFilter["UF_CRM_1761658516561"] = $project;
-    // }
-
-    $res_deals = CCrmDeal::GetList($arSort, $arFilter, array("ID", "DATE_CREATE", "CONTACT_ID","COMPANY_ID", "TITLE","CONTACT_FULL_NAME","OPPORTUNITY","COMPANY_TITLE","UF_CRM_1761658532158","ASSIGNED_BY_ID","UF_CRM_1762948106980", "UF_CRM_1764317005", "UF_CRM_1761658516561"));
+    $res_deals = CCrmDeal::GetList($arSort, $arFilter, array("ID", "DATE_CREATE", "CONTACT_ID","COMPANY_ID", "TITLE","CONTACT_FULL_NAME","OPPORTUNITY","COMPANY_TITLE","UF_CRM_1761658532158","ASSIGNED_BY_ID","UF_CRM_1766560177934", "UF_CRM_1764317005", "UF_CRM_1761658516561", "UF_CRM_1766736693236", "UF_CRM_1761658577987", "UF_CRM_1770888201367", "UF_CRM_1770640981002"));
     while($arDeal = $res_deals->Fetch()) {
         $arDeal["payment"] = 0;
         $result["deals_data"][$arDeal["ID"]] = $arDeal;
@@ -35,9 +31,8 @@ function getDaricxvebi($deals_IDs) {
     // daricxvebi
     $arSelect = Array("ID", "IBLOCK_SECTION_ID", "IBLOCK_ID", "NAME", "DATE_ACTIVE_FROM", "PROPERTY_*");
     $arFilter = array(
-        "IBLOCK_ID"             => 20,
-        "PROPERTY_DEAL"         => $deals_IDs,
-        "<=PROPERTY_TARIGI"     => date("Y-m-d")
+        "IBLOCK_ID"     => 20,
+        "PROPERTY_DEAL" => $deals_IDs,
     );
 
     $res = CIBlockElement::GetList(Array("PROPERTY_TARIGI" => "ASC"), $arFilter, false, Array("nPageSize" => 99999), $arSelect);
@@ -164,32 +159,59 @@ function getProducts($dealIds) {
 // =============================== MAIN CODE ===============================
 
 // Get filter values from request
-$filterProject = isset($_GET['project']) ? trim($_GET['project']) : '';
-// $filterPhase = isset($_GET['phase']) ? trim($_GET['phase']) : '';
-$filterBlock = isset($_GET['block']) ? trim($_GET['block']) : '';
-$filterResponsible = isset($_GET['responsible']) ? trim($_GET['responsible']) : '';
+$filterProject     = isset($_GET['project'])      ? trim($_GET['project'])      : '';
+$filterBlock       = isset($_GET['block'])        ? trim($_GET['block'])        : '';
+$filterBuilding    = isset($_GET['building'])     ? trim($_GET['building'])     : '';
+$filterFloor       = isset($_GET['floor'])        ? trim($_GET['floor'])        : '';
+$filterProductType = isset($_GET['prodType'])     ? trim($_GET['prodType'])     : '';
+$filterResponsible = isset($_GET['responsible'])  ? trim($_GET['responsible'])  : '';
+// --- NEW FILTERS ---
+$filterDateFrom    = isset($_GET['date_from'])    ? trim($_GET['date_from'])    : '';
+$filterDateTo      = isset($_GET['date_to'])      ? trim($_GET['date_to'])      : '';
+$filterCustomField = isset($_GET['custom_field']) ? trim($_GET['custom_field']) : '';
 
 // Build the filter array with applied filters
 $arFilter = ["STAGE_ID" => "WON"];
 
-// Apply project filter (assuming UF_CRM_1761658516561 is the project field)
+// Apply project filter 
 if (!empty($filterProject)) {
     $arFilter["UF_CRM_1761658516561"] = $filterProject;
 }
 
-// Apply phase filter (you'll need to replace with actual field code)
-// if (!empty($filterPhase)) {
-//     $arFilter["UF_CRM_1764317005"] = $filterPhase; 
-// }
-
-// Apply block filter (you'll need to replace with actual field code)
+// Apply block filter 
 if (!empty($filterBlock)) {
-    $arFilter["UF_CRM_1762948106980"] = $filterBlock; // Replace with actual block field code
+    $arFilter["UF_CRM_1766560177934"] = $filterBlock; 
+}
+
+// Apply building filter 
+if (!empty($filterBuilding)) {
+    $arFilter["UF_CRM_1766736693236"] = $filterBuilding; 
+}
+
+// Apply floor filter 
+if (!empty($filterFloor)) {
+    $arFilter["UF_CRM_1761658577987"] = $filterFloor; 
+}
+
+// Apply prod type filter 
+if (!empty($filterProductType)) {
+    if (str_contains($filterProductType, "Flat")) {
+        preg_match('/\d+/', $filterProductType, $matches);
+        $bedroom = $matches[0];
+        $arFilter["UF_CRM_1770888201367"] = $bedroom; 
+    } else {
+        $arFilter["UF_CRM_1761658532158"] = $filterProductType; 
+    }
 }
 
 // Apply responsible filter
 if (!empty($filterResponsible)) {
     $arFilter["ASSIGNED_BY_ID"] = $filterResponsible;
+}
+
+// Apply custom string field filter (LIKE search)
+if (!empty($filterCustomField)) {
+    $arFilter["%UF_CRM_1770640981002"] = $filterCustomField;
 }
 
 // Get deals with applied filters
@@ -205,13 +227,70 @@ if ($result === false) {
 }
 
 $daricxvebi = getDaricxvebi($deals_IDs);
-$gadaxdebi = getGadaxdebi($deals_IDs);
+$gadaxdebi  = getGadaxdebi($deals_IDs);
+
+// Filter gadaxdebi by payment date range if provided
+if (!empty($filterDateFrom) || !empty($filterDateTo)) {
+    $gadaxdebi = array_filter($gadaxdebi, function($g) use ($filterDateFrom, $filterDateTo) {
+        $raw = trim($g["gadaxda_date"]);
+        if (empty($raw)) return false;
+
+        // Try multiple formats
+        $dateStr = null;
+
+        if (preg_match('/^(\d{2})\.(\d{2})\.(\d{4})/', $raw, $m)) {
+            // DD.MM.YYYY
+            $dateStr = $m[3] . '-' . $m[2] . '-' . $m[1];
+        } elseif (preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $raw, $m)) {
+            // YYYY-MM-DD (with or without time)
+            $dateStr = $m[1] . '-' . $m[2] . '-' . $m[3];
+        } elseif (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})/', $raw, $m)) {
+            // MM/DD/YYYY
+            $dateStr = $m[3] . '-' . $m[1] . '-' . $m[2];
+        } else {
+            // Last resort: let PHP parse it
+            $ts = strtotime($raw);
+            if ($ts === false) return true; // can't parse, don't filter out
+            $dateStr = date('Y-m-d', $ts);
+        }
+
+        if (!empty($filterDateFrom) && $dateStr < $filterDateFrom) return false;
+        if (!empty($filterDateTo)   && $dateStr > $filterDateTo)   return false;
+        return true;
+    });
+
+    $daricxvebi = array_filter($daricxvebi, function($d) use ($filterDateFrom, $filterDateTo) {
+        $raw = trim($d["daricxva_date"]);
+        if (empty($raw)) return false;
+
+        $dateStr = null;
+
+        if (preg_match('/^(\d{2})\.(\d{2})\.(\d{4})/', $raw, $m)) {
+            $dateStr = $m[3] . '-' . $m[2] . '-' . $m[1];
+        } elseif (preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $raw, $m)) {
+            $dateStr = $m[1] . '-' . $m[2] . '-' . $m[3];
+        } elseif (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})/', $raw, $m)) {
+            $dateStr = $m[3] . '-' . $m[1] . '-' . $m[2];
+        } else {
+            $ts = strtotime($raw);
+            if ($ts === false) return true;
+            $dateStr = date('Y-m-d', $ts);
+        }
+
+        if (!empty($filterDateFrom) && $dateStr < $filterDateFrom) return false;
+        if (!empty($filterDateTo)   && $dateStr > $filterDateTo)   return false;
+        return true;
+    });
+}
+
 $products = getProducts($deals_IDs);
 
 // Get unique values for filter dropdowns
 $projects = array();
-// $phases = array();
 $blocks = array();
+$buildings = array();
+$floors = array();
+$prodTypes = ["Flat (1 Bed.)", "Flat (2 Bed.)", "Flat (3 Bed.)"];
 $responsibles = array();
 
 // Fetch all deals to populate filter options
@@ -229,15 +308,32 @@ if ($allDealsResult !== false) {
             $responsibles[$deal["ASSIGNED_BY_ID"]] = getUserName($deal["ASSIGNED_BY_ID"]);
         }
 
-        // if (!empty($deal["UF_CRM_1764317005"]) && !in_array($deal["UF_CRM_1764317005"], $phases)) {
-        //     $phases[] = $deal["UF_CRM_1764317005"];
-        // }
+        if (!empty($deal["UF_CRM_1766560177934"]) && !in_array($deal["UF_CRM_1766560177934"], $blocks) && $deal["UF_CRM_1766560177934"] !== 'P') {
+            $blocks[] = $deal["UF_CRM_1766560177934"];
+        }
 
-        if (!empty($deal["UF_CRM_1762948106980"]) && !in_array($deal["UF_CRM_1762948106980"], $blocks) && $deal["UF_CRM_1762948106980"] !== 'P') {
-            $blocks[] = $deal["UF_CRM_1762948106980"];
+        if (!empty($deal["UF_CRM_1766736693236"]) && !in_array($deal["UF_CRM_1766736693236"], $buildings)) {
+            $buildings[] = $deal["UF_CRM_1766736693236"];
+        }
+
+        if (!empty($deal["UF_CRM_1761658577987"]) && !in_array($deal["UF_CRM_1761658577987"], $floors)) {
+            $floors[] = $deal["UF_CRM_1761658577987"];
+        }
+
+        if (!empty($deal["UF_CRM_1761658532158"]) && !in_array($deal["UF_CRM_1761658532158"], $prodTypes) && $deal["UF_CRM_1761658532158"] !== "Flat") {
+            $prodTypes[] = $deal["UF_CRM_1761658532158"];
         }
     }
 }
+
+sort($projects);
+sort($blocks);
+sort($buildings);
+usort($floors, function($a, $b) {
+    return (int)$a - (int)$b;
+});
+
+asort($responsibles);
 
 // Process deals data
 foreach ($deals as &$deal) {
@@ -264,23 +360,10 @@ foreach ($gadaxdebi as $g) {
 
 $resArray = [];
 foreach ($deals as $deal) {
-    $prodType = $deal["UF_CRM_1761658532158"];
-    $bedroomAmount = isset($products[$deal["ID"]]["Bedrooms"]) ? $products[$deal["ID"]]["Bedrooms"] : '';
+    $product = $products[$deal["ID"]];
+    $prodType = $product["PRODUCT_TYPE"];
 
-    if ($deal["UF_CRM_1762948106980"] === 'P') {
-        $prodType = "გარე პარკინგი";
-    }
-
-    if (!isset($resArray[$prodType])) {
-        $resArray[$prodType] = ["jamuriGayidvebisAmount" => 0,
-                                "jamuriDaricxvaUpToToday" => 0,
-                                "jamuriGadaxdaUpToToday" => 0,
-                                "mimdinareDavalianeba" => 0];
-    }
-    $resArray[$prodType]["jamuriGayidvebisAmount"] += (float) ($deal["OPPORTUNITY"] ?? 0);
-    $resArray[$prodType]["jamuriDaricxvaUpToToday"] += (float) ($deal["jamuriDaricxvaUpToToday"] ?? 0);
-    $resArray[$prodType]["jamuriGadaxdaUpToToday"] +=  (float) ($deal["jamuriGadaxdaUpToToday"] ?? 0);
-    $resArray[$prodType]["mimdinareDavalianeba"] = $resArray[$prodType]["jamuriDaricxvaUpToToday"] - $resArray[$prodType]["jamuriGadaxdaUpToToday"];
+    if (!$prodType) continue;
 
     if ($product["PRODUCT_TYPE"] === "Flat") {
         if ($product["Bedrooms"] === "1") {
@@ -304,57 +387,41 @@ foreach ($deals as $deal) {
         $resArray[$prodTypeAnothaOne]["jamuriDaricxvaUpToToday"] += (float) ($deal["jamuriDaricxvaUpToToday"] ?? 0);
         $resArray[$prodTypeAnothaOne]["jamuriGadaxdaUpToToday"] +=  (float) ($deal["jamuriGadaxdaUpToToday"] ?? 0);
         $resArray[$prodTypeAnothaOne]["mimdinareDavalianeba"] = $resArray[$prodTypeAnothaOne]["jamuriDaricxvaUpToToday"] - $resArray[$prodTypeAnothaOne]["jamuriGadaxdaUpToToday"];
-    }
-}
-
-$apartmentTypes = ["Flat (1 Bed.)", "Flat (2 Bed.)", "Flat (3 Bed.)"];
-$generalProducts = [];
-$apartmentProducts = [];
-
-foreach ($resArray as $prodType => $data) {
-    if (in_array($prodType, $apartmentTypes)) {
-        $apartmentProducts[$prodType] = $data;
     } else {
-        $generalProducts[$prodType] = $data;
+        if (!isset($resArray[$prodType])) {
+            $resArray[$prodType] = ["jamuriGayidvebisAmount" => 0,
+                                    "jamuriDaricxvaUpToToday" => 0,
+                                    "jamuriGadaxdaUpToToday" => 0,
+                                    "mimdinareDavalianeba" => 0];
+        }
+
+        $resArray[$prodType]["jamuriGayidvebisAmount"] += (float) ($deal["OPPORTUNITY"] ?? 0);
+        $resArray[$prodType]["jamuriDaricxvaUpToToday"] += (float) ($deal["jamuriDaricxvaUpToToday"] ?? 0);
+        $resArray[$prodType]["jamuriGadaxdaUpToToday"] +=  (float) ($deal["jamuriGadaxdaUpToToday"] ?? 0);
+        $resArray[$prodType]["mimdinareDavalianeba"] = $resArray[$prodType]["jamuriDaricxvaUpToToday"] - $resArray[$prodType]["jamuriGadaxdaUpToToday"];
     }
 }
 
-// Calculate totals for general products
 $generalTotals = [
-    "jamuriGayidvebisAmount" => 0,
+    "jamuriGayidvebisAmount"  => 0,
     "jamuriDaricxvaUpToToday" => 0,
-    "jamuriGadaxdaUpToToday" => 0,
-    "mimdinareDavalianeba" => 0
+    "jamuriGadaxdaUpToToday"  => 0,
+    "mimdinareDavalianeba"    => 0,
 ];
 
-foreach ($generalProducts as $data) {
-    $generalTotals["jamuriGayidvebisAmount"] += $data["jamuriGayidvebisAmount"];
+foreach ($resArray as $data) {
+    $generalTotals["jamuriGayidvebisAmount"]  += $data["jamuriGayidvebisAmount"];
     $generalTotals["jamuriDaricxvaUpToToday"] += $data["jamuriDaricxvaUpToToday"];
-    $generalTotals["jamuriGadaxdaUpToToday"] += $data["jamuriGadaxdaUpToToday"];
-    $generalTotals["mimdinareDavalianeba"] += $data["mimdinareDavalianeba"];
+    $generalTotals["jamuriGadaxdaUpToToday"]  += $data["jamuriGadaxdaUpToToday"];
 }
-
-// Calculate totals for apartments
-$apartmentTotals = [
-    "jamuriGayidvebisAmount" => 0,
-    "jamuriDaricxvaUpToToday" => 0,
-    "jamuriGadaxdaUpToToday" => 0,
-    "mimdinareDavalianeba" => 0
-];
-
-foreach ($apartmentProducts as $data) {
-    $apartmentTotals["jamuriGayidvebisAmount"] += $data["jamuriGayidvebisAmount"];
-    $apartmentTotals["jamuriDaricxvaUpToToday"] += $data["jamuriDaricxvaUpToToday"];
-    $apartmentTotals["jamuriGadaxdaUpToToday"] += $data["jamuriGadaxdaUpToToday"];
-    $apartmentTotals["mimdinareDavalianeba"] += $data["mimdinareDavalianeba"];
-}
+$generalTotals["mimdinareDavalianeba"] = $generalTotals["jamuriDaricxvaUpToToday"] - $generalTotals["jamuriGadaxdaUpToToday"];
 
 ob_end_clean();
 
 ?>
 
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>  <!-- delete column-->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
 <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
@@ -383,11 +450,15 @@ ob_end_clean();
         margin-bottom: 5px;
         color: #333;
     }
-    .filter-group select {
+    .filter-group select,
+    .filter-group input[type="date"],
+    .filter-group input[type="text"] {
         padding: 8px 12px;
         border: 1px solid #ddd;
         border-radius: 4px;
         font-size: 14px;
+        height: 38px;
+        box-sizing: border-box;
     }
     .filter-buttons {
         display: flex;
@@ -470,18 +541,6 @@ ob_end_clean();
                 </select>
             </div>
             
-            <!-- <div class="filter-group">
-                <label for="phase">Phase:</label>
-                <select name="phase" id="phase">
-                    <option value="">All Phases</option>
-                    <?php foreach ($phases as $phase): ?>
-                        <option value="<?= htmlspecialchars($phase) ?>" <?= $filterPhase == $phase ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($phase) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div> -->
-            
             <div class="filter-group">
                 <label for="block">Block:</label>
                 <select name="block" id="block">
@@ -489,6 +548,42 @@ ob_end_clean();
                     <?php foreach ($blocks as $block): ?>
                         <option value="<?= htmlspecialchars($block) ?>" <?= $filterBlock == $block ? 'selected' : '' ?>>
                             <?= htmlspecialchars($block) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="building">Building:</label>
+                <select name="building" id="building">
+                    <option value="">All Buildings</option>
+                    <?php foreach ($buildings as $building): ?>
+                        <option value="<?= htmlspecialchars($building) ?>" <?= $filterBuilding == $building ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($building) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="floor">Floor:</label>
+                <select name="floor" id="floor">
+                    <option value="">All Floors</option>
+                    <?php foreach ($floors as $floor): ?>
+                        <option value="<?= htmlspecialchars($floor) ?>" <?= $filterFloor == $floor ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($floor) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="prodType">Product Type:</label>
+                <select name="prodType" id="prodType">
+                    <option value="">All Product Types</option>
+                    <?php foreach ($prodTypes as $prodType): ?>
+                        <option value="<?= htmlspecialchars($prodType) ?>" <?= $filterProductType == $prodType ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($prodType) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -504,6 +599,27 @@ ob_end_clean();
                         </option>
                     <?php endforeach; ?>
                 </select>
+            </div>
+
+            <!-- NEW: Payment date range filters -->
+            <div class="filter-group">
+                <label for="date_from">Payment Date From:</label>
+                <input type="date" name="date_from" id="date_from"
+                       value="<?= htmlspecialchars($filterDateFrom) ?>">
+            </div>
+
+            <div class="filter-group">
+                <label for="date_to">Payment Date To:</label>
+                <input type="date" name="date_to" id="date_to"
+                       value="<?= htmlspecialchars($filterDateTo) ?>">
+            </div>
+
+            <!-- NEW: Custom field string filter -->
+            <div class="filter-group">
+                <label for="custom_field">Contract №:</label>
+                <input type="text" name="custom_field" id="custom_field"
+                       value="<?= htmlspecialchars($filterCustomField) ?>"
+                       placeholder="Search...">
             </div>
             
             <div class="filter-buttons">
@@ -526,12 +642,12 @@ ob_end_clean();
         </tr>
     </thead>
     <tbody>
-        <?php if (empty($generalProducts)): ?>
+        <?php if (empty($resArray)): ?>
         <tr>
             <td colspan="5" style="text-align: center;">No data available</td>
         </tr>
         <?php else: ?>
-            <?php foreach ($generalProducts as $prodType => $data): ?>
+            <?php foreach ($resArray as $prodType => $data): ?>
             <tr>
                 <td><?php echo htmlspecialchars($prodType); ?></td>
                 <td class="amount"><?php echo number_format($data["jamuriGayidvebisAmount"], 2); ?></td>

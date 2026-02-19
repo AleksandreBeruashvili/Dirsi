@@ -44,9 +44,15 @@ if (count($json["data"])) {
 
         $arPropsOld = array();
         $arPropsOld["JSON"] = json_encode($json);
-        $arPropsOld["TYPE"] = $json["selected_type"];
+        $arPropsOld["TYPE"] = $json["graph"];
         $arPropsOld["SELECTID_GRAPH"] = $json["graph"];
-        $arPropsOld["planType"] = $graphName;
+        $ganvadebaTypeMap = [
+            "customType" => "არასტანდარტული",
+            "mortgage"   => "სტანდარტული",
+            "allCash"    => "ერთიანი გადახდა",
+            "bankLoan"   => "ბანკის სესხი",
+        ];
+        $arPropsOld["planType"] = $ganvadebaTypeMap[$json["ganvadebaType"]] ?? $json["ganvadebaType"];
         $arPropsOld["AUTHOR"] = $json["author"];
         $arPropsOld["commentInput"] = $json["commentInput"];
         $arPropsOld["PERIOD"] = $json["period"];

@@ -57,7 +57,7 @@ if (!function_exists('new_stage')) {
                     $element["QUEUE"] .= "|$dealID";
                 }
                 if ($element["OWNER_DEAL"] == $dealID) {
-                    $notification = $element["PRODUCT_TYPE"] . " N" . $element["Number"] . " is available ";
+                    $notification = $element["PRODUCT_TYPE"] . " N" . $element["Number"] . " გათავისუფლდა ";
                     sendNotificationToQueue($element["QUEUE"], $notification);
                     sendNotificationToResponsible($dealID, $notification);
                     if ($element["QUEUE"]) {
@@ -117,7 +117,7 @@ if (!function_exists('reservation')) {
 
             if (empty($errors)) {
                 $logText = updateProdElement($elementsForUpdate);
-                $logText .= " is booked";
+                $logText .= " დაიჯავშნა";
                 if ($sendNotification) {
                     sendNotificationToResponsible($dealID, $logText);
                 } else {
@@ -167,7 +167,7 @@ if (!function_exists('sold')) {
 
             if (empty($errors)) {
                 $logText = updateProdElement($elementsForUpdate);
-                $logText .= " is sold";
+                $logText .= " გაყიდულია";
                 if ($sendNotification) sendNotificationToResponsible($dealID, $logText);
             } else {
                 $logText = changeDealStageToNew($deal, $errors);
@@ -195,7 +195,7 @@ if (!function_exists('junk')) {
                 $element["QUEUE"] = str_replace("|$dealID", "", $element["QUEUE"]);
 
                 if ($element["OWNER_DEAL"] == $dealID) {
-                    $notification = $element["PRODUCT_TYPE"] . " N" . $element["Number"] . " is available ";
+                    $notification = $element["PRODUCT_TYPE"] . " N" . $element["Number"] . " გათავისუფლდა ";
                     sendNotificationToQueue($element["QUEUE"], $notification);
                     sendNotificationToResponsible($dealID, $notification);
                     if ($element["QUEUE"]) {
@@ -224,7 +224,7 @@ if (!function_exists('junk')) {
                 }
                 $elementsForUpdate[$product["PRODUCT_ID"]] = $element;
             }
-            $logtext = updateProdElement($elementsForUpdate) . "is available";
+            $logtext = updateProdElement($elementsForUpdate) . "გათავისუფლდა";
             if (!$needNotification) {
                 $logtext = false;
             }

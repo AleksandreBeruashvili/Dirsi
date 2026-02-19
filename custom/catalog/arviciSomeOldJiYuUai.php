@@ -1018,16 +1018,17 @@ ob_end_clean();
 
         /* ========================== TRANSLATE BOX ========================== */
         .gtranslate_wrapper {
-            flex-wrap: wrap;
             display: flex;
+            height: 30px;
             width: 75px;
             justify-content: center;
             align-items: center;
             position: absolute;
-            top: 25px;
-            left: 191px;
+            top: 32px;
+            left: 186.5px;
             z-index: 9999;
             background: white;
+            padding: 3px;
             border-radius: 6px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
         }
@@ -1037,7 +1038,7 @@ ob_end_clean();
             display: flex;
             min-width: 200px;
             width: fit-content;
-            height: 40px;
+            height: 30px;
             margin-left: 10px;
             margin-top: 17px;
             padding: 15px;
@@ -1339,12 +1340,12 @@ ob_end_clean();
 
                 <ul id="popupDetails"></ul>
 
-                <!-- <button id="toggleDetailsBtn">► დამატებითი დეტალები</button>
+                <button id="toggleDetailsBtn">► დამატებითი დეტალები</button>
                 <div class="popup-footer"></div>
 
                 <div id="popupDetailsWrapper">
                     <ul id="popupDetailsMore"></ul>
-                </div> -->
+                </div>
 
             </div>
 
@@ -1419,7 +1420,7 @@ ob_end_clean();
 
         // show products box
         productsBoxWrapper.style.display = "flex";
-        productsBoxWrapper.innerHTML += `<span class="border-text">დილზე დამატებული უძრავი ქონება</span>`;
+        productsBoxWrapper.innerHTML += `<span class="border-text">დილზე დამატებული ბინები</span>`;
 
         // if the deal has products
         if (Array.isArray(products) && products.length !== 0) {
@@ -1686,14 +1687,6 @@ ob_end_clean();
             option.textContent = project["NAME"];
             projectSelect.appendChild(option);
         });
-
-        // Set default project to "33"
-        projectSelect.value = "33";
-        
-        // Trigger the change event to load blocks
-        setTimeout(() => {
-            projectSelect.dispatchEvent(new Event('change', { bubbles: true }));
-        }, 100);
     }
 
     // ================================ FETCH APARTMENTS ================================
@@ -1828,17 +1821,35 @@ ob_end_clean();
             blockWidths[key] = (maxCount * 40) + ((maxCount - 1) * 5);
         });
 
-        // Render building and block labels
+        // Render building labels row
+        let buildingRow = `<div class="floor-row" id="building-labels" style="margin-bottom: 5px;">`;
+        selectedBuildings.forEach(building => {
+            const blocks = Object.keys(buildingBlockStructure[building] || {}).sort();
+            
+            // Calculate total width: sum of all block widths for this building
+            let totalWidth = 0;
+            blocks.forEach(block => {
+                const key = `${building}-${block}`;
+                totalWidth += blockWidths[key] || 0;
+            });
+            // Add gaps between blocks (5px per gap)
+            totalWidth += (blocks.length - 1) * 5;
+            
+            buildingRow += `<div style="width: ${totalWidth}px; text-align: center; font-size: 18px; color: #1a1a1f; font-weight: 700; flex-shrink: 0;">${building}</div>`;
+        });
+        buildingRow += `</div>`;
+        container.innerHTML += buildingRow;
+        
+        // Render block labels row
         let blockLabel = `<div class="floor-row" id="block-labels">`;
         selectedBuildings.forEach(building => {
             const blocks = Object.keys(buildingBlockStructure[building] || {}).sort();
             
             blocks.forEach(block => {
                 const key = `${building}-${block}`;
-                const width = blockWidths[key] || 350;
-                blockLabel += `<div id="label-div" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; height: 40px; flex-shrink: 0;">
-                    <div style="font-size: 11px; color: #666; font-weight: 500;">${building}</div>
-                    <div style="font-weight: 600;">${block}</div>
+                const width = blockWidths[key] || 40;
+                blockLabel += `<div id="label-div" style="display: flex; align-items: center; justify-content: center; width: ${width}px; height: 30px; flex-shrink: 0; font-weight: 700; font-size: 14px;" data-building="${building}" data-block="${block}">
+                    ${block}
                 </div>`;
             });
         });
@@ -2144,12 +2155,6 @@ ob_end_clean();
         });
     });
 
-    function addLi(label, value, detailsList) {
-        if (value !== undefined && value !== null && value !== "") {
-            detailsList.innerHTML += `<li><b>${label}: </b> ${value}</li>`;
-        }
-    }
-
     // ================================== POPUP ==================================
     async function openPopup(apartmentInfo) {
         const popup = document.getElementById("apartmentPopup");
@@ -2205,39 +2210,23 @@ ob_end_clean();
         
         // // fill details
         const detailsList = document.getElementById("popupDetails");
-        detailsList.innerHTML = ""; // reset
 
-        addLi("პროექტი", apartment["PROJECT"], detailsList);
-        addLi("პროექტის დასრულების თარიღი: ", apartment["projEndDate"], detailsList);
-        addLi("ბლოკი", apartment["KORPUSIS_NOMERI_XE3NX2"] !== "P" ? apartment["KORPUSIS_NOMERI_XE3NX2"] : "", detailsList);
-        addLi("სადარბაზო", apartment["_15MYD6"], detailsList);
-        addLi("კორპუსი: ", apartment["BUILDING"], detailsList);
-        addLi("სართული", apartment["FLOOR"], detailsList);
-        if (apartment["PRICE"] || apartment["KVM_PRICE"]) {
-            detailsList.innerHTML += `
-                <li>
-                    <div style="display:flex; justify-content:space-between; width:85%;">
-                        ${apartment["PRICE"] ? `<div><b>სრული ფასი $: </b>${apartment["PRICE"]}</div>` : ""}
-                        ${apartment["KVM_PRICE"] ? `<div><b>ფასი მ<sup>2</sup> $: </b>${apartment["KVM_PRICE"]}</div>` : ""}
-                    </div>
-                </li>
-            `;
-        }
-        if (apartment["PRICE_GEL"]) {
-            detailsList.innerHTML += `
-                <li>
-                    <div style="display:flex; justify-content:space-between; width:85%;">
-                        ${apartment["PRICE_GEL"] ? `<div><b>სრული ფასი $: </b>${apartment["PRICE"]}</div>` : ""}
-                        <div><b>NBG კურსი: </b> ${nbg}</div>
-                    </div>
-                </li>
-            `;
-        }
-
-        addLi("სრული ფართი მ<sup>2</sup>", apartment["TOTAL_AREA"], detailsList);
-        addLi("ფართი (საცხოვრებელი)", apartment["LIVING_SPACE"], detailsList);
-        addLi("ფართი (საზაფხულო)", apartment["__FVE8A2"], detailsList);
-        addLi("საძინებლების რაოდენობა: ", apartment["Bedrooms"], detailsList);
+        
+        detailsList.innerHTML = `
+            <li><b>პროექტი: </b> ${apartment["PROJECT"] || "—"}</li>
+            <li><b>ბლოკი: </b> ${apartment["KORPUSIS_NOMERI_XE3NX2"] || "—"}</li>
+            <li><b>სადარბაზო: </b> ${apartment["_15MYD6"] || "—"}</li>
+            <li><b>სართული: </b> ${apartment["FLOOR"] || "—"}</li>
+            <li>
+                <div style="display: flex; justify-content: space-between; width:85%;">
+                    <div><b>სრული ფასი $: </b> ${apartment["PRICE"] || "—"}</div>
+                    <div><b>ფასი m<sup>2</sup> $: </b> ${apartment["KVM_PRICE"] || "—"}</div>
+                </div>
+            </li>
+            <li><b>სრული ფართი: </b> ${apartment["TOTAL_AREA"] || "—"}</li>
+            <li><b>ფართი (საცხოვრებელი): </b> ${apartment["LIVING_SPACE"] || "—"}</li>
+            <li><b>ფართი (საზაფხულო): </b> ${apartment["__FVE8A2"] || "—"}</li>
+        `;
         
         if(apartment["OWNER_DEAL"]){
             let ownerDeal = `<a href="/crm/deal/details/${apartment["OWNER_DEAL"]}/" target="_blank">${apartment["OWNER_DEAL"]}</a>`;
@@ -2273,16 +2262,12 @@ ob_end_clean();
         }
         
         // დამატებითი დეტალები
-        // const moreDetailsList = document.getElementById("popupDetailsMore");
-        // moreDetailsList.innerHTML = ""; // reset
-        // moreDetailsList.innerHTML = `
-        //     <li><b>საძინებლების რაოდენობა: </b> ${apartment["Bedrooms"] || "—"}</li>
-        //     <li><b>კორპუსი: </b> ${apartment["BUILDING"] || "—"}</li>
-        //     <li><b>პროექტის დასრულების თარიღი: </b> ${apartment["projEndDate"] || "—"}</li>
-        // `;
-        // addLi("საძინებლების რაოდენობა: ", apartment["Bedrooms"], moreDetailsList);
-        // addLi("კორპუსი: ", apartment["BUILDING"], moreDetailsList);
-        // addLi("პროექტის დასრულების თარიღი: ", apartment["projEndDate"], moreDetailsList);
+        const moreDetailsList = document.getElementById("popupDetailsMore");
+        moreDetailsList.innerHTML = `
+            <li><b>საძინებლების რაოდენობა: </b> ${apartment["Bedrooms"] || "—"}</li>
+            <li><b>building: </b> ${apartment["BUILDING"] || "—"}</li>
+            <li><b>პროექტის დასრულების თარიღი: </b> ${apartment["projEndDate"] || "—"}</li>
+        `;
         
         // LOOSEN UP MY BUTTONS BABE (UH HUH) 
         // BUT YOU KEEP FRONTIN' (HUH)
@@ -2343,17 +2328,17 @@ ob_end_clean();
     });
 
     // popup extra details toggle
-    // document.getElementById("toggleDetailsBtn").addEventListener("click", function () {
-    //     const wrapper = document.getElementById("popupDetailsWrapper");
+    document.getElementById("toggleDetailsBtn").addEventListener("click", function () {
+        const wrapper = document.getElementById("popupDetailsWrapper");
 
-    //     wrapper.classList.toggle("open");
+        wrapper.classList.toggle("open");
 
-    //     if (wrapper.classList.contains("open")) {
-    //         this.textContent = "▼ დამალე";
-    //     } else {
-    //         this.textContent = "► დამატებითი დეტალები";
-    //     }
-    // });
+        if (wrapper.classList.contains("open")) {
+            this.textContent = "▼ დამალე";
+        } else {
+            this.textContent = "► დამატებითი დეტალები";
+        }
+    });
     
     
     // update filter texts when filtered
@@ -2785,13 +2770,10 @@ ob_end_clean();
             translateContainer.style.display = "flex";
             translateContainer.style.justifyContent = "center";
             translateContainer.style.alignItems = "center";
-            translateContainer.style.width = "104px";
-            translateContainer.style.height = "30px";
-            translateContainer.style.top = "25px";
-            translateContainer.style.left = "12px";
-
-            let filterContainer = document.querySelector("#filterContainer");
-            filterContainer.style.paddingTop = "25px";
+            translateContainer.style.width = "45px";
+            translateContainer.style.height = "20px";
+            translateContainer.style.top = "40px";
+            translateContainer.style.left = "192px";
         }
         
         containerDiv.insertBefore(translateContainer, containerDiv.firstChild);
@@ -2857,7 +2839,7 @@ ob_end_clean();
     function closeCarousel() {
         const carousel = document.getElementById("imageCarouselPopup");
         carousel.classList.remove("active");
-        document.querySelector(".gtranslate_wrapper").style.display = "flex";
+        document.querySelector(".gtranslate_wrapper").style.display = "block";;
     }
 
     function updateCarouselImage() {

@@ -363,6 +363,28 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
             </div>
         </div>
 
+        <!-- Row 9: Purpose + Contract type -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="registrationInRest" class="required">რეგისტრაცია რეესტრშია</label>
+                <select class="form-control" id="registrationInRest" name="registrationInRest" required>
+                    <option value="">აირჩიეთ...</option>
+                    <option value="1">დიახ</option>
+                    <option value="0">არა</option>
+                </select>
+                <div class="error" id="registrationInRest-error">გთხოვთ აირჩიოთ რეგისტრაცია რეესტრშია</div>
+            </div>
+            <div class="form-group">
+                <label for="keytReceived" class="required">გასაღები გადაცემულია</label>
+                <select class="form-control" id="keytReceived" name="keytReceived" required>
+                    <option value="">აირჩიეთ...</option>
+                    <option value="1">დიახ</option>
+                    <option value="0">არა</option>
+                </select>
+                <div class="error" id="keytReceived-error">გთხოვთ აირჩიოთ გასაღები გადაცემულია</div>
+            </div>
+        </div>
+
         <div class="button-group">
             <button type="button" class="btn btn-secondary" onclick="closePopup()">გაუქმება</button>
             <button type="submit" class="btn btn-primary">გაგზავნა</button>
@@ -486,6 +508,21 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
     }
     else{
         document.getElementById("miznobrioba").value="";
+    }
+
+
+    if(deal["UF_CRM_1771499394"]=="1"){
+        document.getElementById("registrationInRest").value="1";
+    }
+    else{
+        document.getElementById("registrationInRest").value="";
+    }
+
+    if(deal["UF_CRM_1771499429"]=="1"){
+        document.getElementById("keytReceived").value="1";
+    }
+    else{
+        document.getElementById("keytReceived").value="";
     }
 
     function clearError(id) {
@@ -679,6 +716,8 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
 
             formData.append("miznobrioba", $("#miznobrioba").val());
             formData.append("contactType", $("#contactType").val());
+            formData.append("registrationInRest", $("#registrationInRest").val());
+            formData.append("keytReceived", $("#keytReceived").val());
 
             $.ajax({
                 url: "/rest/popupsservices/sell.php",
