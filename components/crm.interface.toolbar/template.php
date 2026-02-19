@@ -697,6 +697,10 @@ if($dealId){
         openReservation(dealId, isChange = false) {
             this.open(`/rest/popups/reservation.php?ResChange=${isChange ? 1 : 0}&DEAL_ID=${dealId}`, isChange ? 'Reservation Change' : 'რეზერვაცია');
         },
+
+        openAgreement(dealId) {
+            this.open(`/rest/popups/agreementCheck.php?DEAL_ID=${dealId}`, 'ხელშეკრულების გადამოწმება');
+        },
         
         openDocuments(dealId) {
             this.open(`/crm/deal/buttons_page.php?dealid=${dealId}`, 'დოკუმენტები');
@@ -818,6 +822,16 @@ if($dealId){
                     onClick: () => this.handleSellClick()
                 });
             }
+
+            // ხელშეკრულების გადამოწმების ღილაკი
+            if (Utils.hasProduct() && stageId === '2') {
+                this.addButton({
+                    id: 'agreementBtn',
+                    icon: ButtonFactory.icons.documents,
+                    label: 'Contract validation',
+                    onClick: () => PopupManager.openAgreement(dealIdForToolbar)
+                });
+            }
             
             // რეზერვაციის ღილაკი
             if (Utils.hasProduct()) {
@@ -912,7 +926,10 @@ if($dealId){
                 alert('დაფიქსირდა შეცდომა! სცადეთ თავიდან.');
             }
         },
-        
+
+
+
+
         async handleQueueClick() {
             try {
                 const response = await fetch('/rest/popupsservices/javshnisRigi.php', {
