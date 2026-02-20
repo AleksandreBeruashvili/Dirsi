@@ -138,7 +138,6 @@ unset($items);
         /* Logo Container */
         .logo-container {
             text-align: center;
-            margin-bottom: 30px;
         }
 
         .logo-container img {
@@ -152,7 +151,7 @@ unset($items);
             font-size: 36px;
             font-weight: 600;
             text-align: center;
-            color: #174173;
+            color: #19833b;
             text-transform: uppercase;
             letter-spacing: 2px;
             margin-top: 20px;
@@ -177,14 +176,14 @@ unset($items);
 
         .group-title {
             font-family: 'Montserrat', sans-serif;
-            background-color: #174173;   /* 🔵 always blue */
+            background-color: #19833b;   /* 🔵 always blue */
             color: #ffffff;              /* white text */
             padding: 14px 20px;
             font-size: 18px;
             font-weight: 600;
             cursor: pointer;
             border-radius: 25px;
-            border: 2px solid #174173;
+            border: 2px solid #19833b;
             transition: all 0.3s ease-in-out;
             text-align: center;
         }
@@ -206,18 +205,18 @@ unset($items);
             padding: 14px 20px;
             border-radius: 25px;
             background: #ffffff;
-            border: 2px solid #174173;
+            border: 2px solid #19833b;
             font-size: 16px;
             font-weight: 600;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease-in-out;
             text-decoration: none;
-            color: #174173;
+            color: #19833b;
         }
 
         .button1:hover {
-            background: #174173;
+            background: #19833b;
             transform: translateY(-2px);
             color: #ffffff;
         }
@@ -236,7 +235,7 @@ unset($items);
 <body class="background">
 
     <div class="logo-container">
-        <img src="/crm/deal/main/asGeorgiaLogo.png?" 
+        <img src="/crm/deal/main/newLogo.jpg?" 
             alt="Company Logo">
     </div>
 
