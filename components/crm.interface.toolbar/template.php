@@ -876,7 +876,7 @@ if($dealId){
                 
                 const allowedStages = ['UC_12CJ1Z', 'UC_2EW8VW', 'EXECUTING', 'UC_F3FOBF'];
                 const isAllowedStage = Utils.isStageIn(stageId, allowedStages) || 
-                    (stageId !== 'UC_15207E' && stageId !== 'UC_BAUB5P');
+                    (stageId !== 'UC_15207E' && stageId !== 'UC_BAUB5P' && stageId !== '2'  && stageId !== '3'  && stageId !== '4' && stageId !== 'WON');
                 
                 if (canReserve && isAllowedStage) {
                     this.addButton({
@@ -926,14 +926,24 @@ if($dealId){
             }
             
             // კალკულატორის ღილაკი
-            if (Utils.hasProduct() && stageId !== 'NEW' && stageId !== 'PREPARATION' && stageId !== 'WON') {
-                this.addButton({
-                    id: 'kalkButton',
-                    icon: ButtonFactory.icons.calculator,
-                    label: 'Calculator',
-                    onClick: () => PopupManager.openCalculator(dealIdForToolbar)
-                });
-            }
+            if (
+                    Utils.hasProduct() &&
+                    stageId !== 'NEW' &&
+                    stageId !== 'PREPARATION' &&
+                    (
+                        stageId !== 'WON' || Utils.isAdmin()
+                    )
+                ) {
+                    this.addButton({
+                        id: 'kalkButton',
+                        icon: ButtonFactory.icons.calculator,
+                        label: 'Calculator',
+                        onClick: () => PopupManager.openCalculator(dealIdForToolbar)
+                    });
+                }
+
+
+            
             
             // ფინანსური რეპორტის ღილაკი
             const finStages = ['1', '2', '3', 'WON'];

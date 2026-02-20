@@ -120,7 +120,8 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST['action']) && $_POST['a
         // ----- ელემენტის შექმნა -----
         $arProps = [
                 'date'      => $date,
-                'DEAL'      => ['D_' . $dealBitrixId],
+                // 'DEAL'      => ['D_' . $dealBitrixId],
+                'DEAL'   => $dealBitrixId,
                 'DEAL_ID'   => $dealBitrixId,
                 'TANXA'     => $usdAmount . '|USD',
                 'FULL_NAME' => $clientName,

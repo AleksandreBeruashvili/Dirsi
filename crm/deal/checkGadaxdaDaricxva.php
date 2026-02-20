@@ -15,8 +15,9 @@ function getDealsByFilter($arFilter, $arSelect = array(), $arSort = array("ID"=>
         "ID",
         "OPPORTUNITY",
         "UF_CRM_1761658516561",    // project
+        "UF_CRM_1766563053146",    // contract number
         "UF_CRM_1762416342444",    // xelshekrulebis gaformis tarigi
-        "UF_CRM_1762948106980",    // korpusi
+        "UF_CRM_1766736693236",    // korpusi
         "UF_CRM_1761658559005",    // binis nomeri
         "UF_CRM_1761658577987",    // sartuli
         "CURRENCY_ID",             // valuta
@@ -156,8 +157,9 @@ foreach($deals as $deal){
 
     $res["productID"] = "<a target='_blank' href='/crm/catalog/14/product/$prodID/'>$prodID</a>";
 
+    $res["contractNumber"] = $deal["UF_CRM_1766563053146"];
     $res["project"] = $deal["UF_CRM_1761658516561"];
-    $res["corpus"] = $deal["UF_CRM_1762948106980"];
+    $res["corpus"] = $deal["UF_CRM_1766736693236"];
     $res["flatNum"] = $deal["UF_CRM_1761658559005"];
     $res["flatFloor"] = $deal["UF_CRM_1761658577987"];
     $res["xelshGafDate"] = $deal["UF_CRM_1762416342444"];
@@ -295,6 +297,7 @@ ob_end_clean();
         <td></td>
         <td></td>
         <td></td>
+        <td></td>
         <td id="clientCountHeader">რაოდენობა: <?php echo $clientCount; ?></td>
         <td id="priceSum">ჯამი: <?php echo number_format($dealSum, 2); ?></td>
         <td id="daricxvaSum">ჯამი: <?php echo number_format($daricxvaSum, 2); ?></td>
@@ -303,6 +306,7 @@ ob_end_clean();
     <tr>
         <th>ID</th>
         <th>პროდუქტის ID</th>
+        <th>ხელშეკრულების ნომერი</th>
         <th>დოკუმენტი</th>
         <th>პროექტი</th>
         <th>კორპუსი</th>
@@ -371,6 +375,7 @@ ob_end_clean();
             row.innerHTML = `
             <td class="tableData"><a target='_blank' href='/crm/deal/details/${safe(item.ID)}/'>${safe(item.ID)}</a></td>
             <td>${safe(item.productID)}</td>
+            <td>${safe(item.contractNumber)}</td>
             <td>${safe(item.docs)}</td>
             <td>${safe(item.project)}</td>
             <td>${safe(item.corpus)}</td>
@@ -479,7 +484,7 @@ ob_end_clean();
                     let cellText = tbody.rows[i].cells[j].innerText || "";
 
                     // For numeric columns (price, daricxva, gadaxda - columns 10, 11, 12)
-                    if(j >= 10) {
+                    if(j >= 11) {
                         let numberString = cellText.replace(/,/g, "");
                         let number = parseFloat(numberString);
                         row.push(isNaN(number) ? 0 : number);

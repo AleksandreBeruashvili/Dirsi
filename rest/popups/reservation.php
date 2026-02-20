@@ -192,14 +192,14 @@ $vadaValue = addWorkDays($today, 2);
 
         <div id="vadaDiv" class="form-group" style="display: none;">
             <label for="vada" class="required">ვადა</label>
-            <input type="date" class="form-control" id="vada" name="vada">
+            <input type="date" class="form-control" id="vada" name="vada" onchange="blockWeekend(this)">
             <div class="error" id="vada-error">გთხოვთ შეიყვანოთ ვადა</div>
         </div>
 
 
         <div id="resChangeDiv" class="form-group" style="display: none;">
             <label for="resChange" class="required">ახალი რეზერვაციის თარიღი</label>
-            <input type="date" class="form-control" id="resChange" name="resChange">
+            <input type="date" class="form-control" id="resChange" name="resChange" onchange="blockWeekend(this)">
             <div class="error" id="resChange-error">გთხოვთ შეიყვანოთ რეზერვაციის თარიღი</div>
         </div>
 
@@ -282,6 +282,16 @@ $vadaValue = addWorkDays($today, 2);
         document.getElementById("resChangeDiv").style.display="none"
     }
 
+
+    function blockWeekend(input) {
+        if (!input.value) return;
+        var date = new Date(input.value);
+        var day = date.getUTCDay(); // 0=კვირა, 6=შაბათი
+        if (day === 0 || day === 6) {
+            alert("შაბათი და კვირა არ არის სამუშაო დღე. გთხოვთ აირჩიოთ სამუშაო დღე.");
+            input.value = "";
+        }
+    }
 
     function javshnisTypeFunc(){
 
@@ -368,7 +378,19 @@ $vadaValue = addWorkDays($today, 2);
                     showError(field, "გთხოვთ შეავსოთ ეს ველი");
                     isValid = false;
                 } else {
-                    clearError(field);
+                    // შაბათ-კვირის შემოწმება date ველებზე
+                    if (field === "vada" || field === "resChange") {
+                        var d = new Date(value);
+                        var day = d.getUTCDay();
+                        if (day === 0 || day === 6) {
+                            showError(field, "შაბათი და კვირა არ არის სამუშაო დღე");
+                            isValid = false;
+                        } else {
+                            clearError(field);
+                        }
+                    } else {
+                        clearError(field);
+                    }
                 }
             });
 
