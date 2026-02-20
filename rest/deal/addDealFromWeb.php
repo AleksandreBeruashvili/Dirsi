@@ -178,6 +178,20 @@ function registerDealFromWebsite($name, $phone, $email, $flat_type, $message) {
         return array("status" => "error", "message" => $CCrmDeal->LAST_ERROR);
     }
 
+
+
+    if($dealId){
+        $arErrorsTmp = array();
+        $wfId = CBPDocument::StartWorkflow(  
+            96,                                                           //პროცესის ID
+            array("crm", "CCrmDocumentDeal", "DEAL_$dealId"),        // deal || contact || lead || company
+            array("TargetUser" => "user_1"),
+            $arErrorsTmp
+        );
+    }
+    
+
+
     // 3. სათაურის განახლება – WebSite Deal # {ID}
     $updateFields = array("TITLE" => "WebSite Deal # " . $dealId);
     $updateOptions = array("CURRENT_USER" => 1, 'DISABLE_USER_FIELD_CHECK' => true);
