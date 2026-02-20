@@ -61,12 +61,14 @@ function createContact($name, $phone, $email) {
         "NAME"           => $name,
         "OPENED"         => "Y",
         "ASSIGNED_BY_ID" => 1,
-        "FM"             => array(
-            "EMAIL" => array(
-                "n0" => array("VALUE" => $email, "VALUE_TYPE" => "WORK")
-            )
-        )
+        "FM"             => array()
     );
+
+    if (!empty($email)) {
+        $contactFields["FM"]["EMAIL"] = array(
+            "n0" => array("VALUE" => $email, "VALUE_TYPE" => "WORK")
+        );
+    }
 
     if (!empty($phone)) {
         $contactFields["FM"]["PHONE"] = array(
@@ -215,11 +217,6 @@ $email       = trim($json["email"]        ?? "");
 $flat_type   = $json["flat_type"]         ?? null;
 $message     = $json["message"]           ?? null;
 
-if (empty($email)) {
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(array("status" => "error", "message" => "email is required"));
-    exit;
-}
 
 // ─── შედეგი ────────────────────────────────────────────────────────────────
 $result = registerDealFromWebsite($name, $phone, $email, $flat_type, $message);
