@@ -484,7 +484,7 @@ ob_end_clean();
                     let cellText = tbody.rows[i].cells[j].innerText || "";
 
                     // For numeric columns (price, daricxva, gadaxda - columns 10, 11, 12)
-                    if(j >= 10) {
+                    if(j >= 11) {
                         let numberString = cellText.replace(/,/g, "");
                         let number = parseFloat(numberString);
                         row.push(isNaN(number) ? 0 : number);
