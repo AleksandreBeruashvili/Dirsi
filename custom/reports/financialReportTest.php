@@ -208,7 +208,6 @@ $contact=getContactName($contactId);
 $xelshNom = $dealData["UF_CRM_1699907477758"];
 
 
-
 $dealData["UF_CRM_1702019032102"] == 322 ? $valuta = "₾" : $valuta = "$";
 
 /*if($dealData["UF_CRM_1702019032102"] == 322){
@@ -221,6 +220,16 @@ $payments = getPayments(array("IBLOCK_ID" => 21,"PROPERTY_DEAL"=>$deal_ID));
 $paymentPlans = getPaymentPlan(array("IBLOCK_ID" => 20,"PROPERTY_DEAL"=>$deal_ID));
 //}
 $financeArr = array_merge($paymentPlans, $payments);
+
+$totalPaid = 0;
+foreach ($payments as $p) {
+    if ($p["refund"] == "YES") {
+        $totalPaid -= $p["PAYMENT"];
+    } else {
+        $totalPaid += $p["PAYMENT"];
+    }
+}
+$totalPaid = round($totalPaid, 2);
 
 
 usort($financeArr, 'sortByDate');
@@ -400,6 +409,8 @@ function getNbgKurs($date){
         <p>სართული:  <?php echo $floor; ?></p>
         <p><?php echo "$prodType:  N$number"; ?></p>
         <p>განვადების ტიპი:  <?php echo $approvedInstallment["SELECTID_GRAPH"]; ?></p>
+        <p>ხელშ. ნომერი:  <?php echo $dealData["UF_CRM_1766563053146"]; ?></p>
+        <p>ჯამური გადახდილი:  $<?php echo number_format($totalPaid, 2, '.', ' '); ?></p>
 
     </div>
     <button onclick="exportTableToExcel()" style="background-color: #0c970c;border-radius: 6px;height: 30px;width: 95px">
@@ -407,6 +418,10 @@ function getNbgKurs($date){
     </button>
     <button onclick="exportTableToExcelENG()" style="background-color: #0c970c;border-radius: 6px;height: 30px;width: 115px">
         <span class="glyphicon glyphicon-export"></span> Export ENG
+    </button>
+    <button onclick="window.location.href='/custom/reports/generateStatement.php?deal_id=<?php echo $deal_ID; ?>'"
+            style="background-color: #1e88e5;border-radius: 6px;height: 30px;width: 115px; color:white; border:none; cursor:pointer;">
+        <span class="glyphicon glyphicon-file"></span> Statement
     </button>
     <div class="cover">
         <div class="cover_icon">
@@ -457,8 +472,8 @@ function getNbgKurs($date){
             rows += `
                 <td>
                     <button onclick="window.location.href='${invoiceUrl}'"
-                       style="background-color:#1e88e5; color:white; padding:5px 12px;
-                              border-radius:4px; border:none; font-size:11px; cursor:pointer;">
+                       style="background-color:#1e88e5; color:white; padding:2px 7px;
+                            border-radius:4px; border:none; font-size:10px; cursor:pointer; line-height:1.4;"
                         <i class="fa fa-file-word-o"></i> ინვოისი
                     </button>
                 </td>
