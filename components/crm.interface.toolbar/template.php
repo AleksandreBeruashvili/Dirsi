@@ -665,7 +665,9 @@ if($dealId){
             calendar: `<svg class="custom-action-icon" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>`,
             documents: `<svg class="custom-action-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`,
             calculator: `<svg class="custom-action-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M7 2C5.9 2 5 2.9 5 4v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2H7zm0 2h10v4H7V4zm0 6h4v4H7v-4zm0 6h4v4H7v-4zm6-6h4v4h-4v-4zm0 6h4v4h-4v-4z"/></svg>`,
-            chart: `<svg class="custom-action-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3v18h18v-2H5V3H3zm8 6h2v9h-2V9zm4-4h2v13h-2V5zM7 12h2v6H7v-6z"/></svg>`
+            chart: `<svg class="custom-action-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3v18h18v-2H5V3H3zm8 6h2v9h-2V9zm4-4h2v13h-2V5zM7 12h2v6H7v-6z"/></svg>`,
+            registry: `<svg class="custom-action-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-3 8H7v-2h3v2zm7 0h-5v-2h5v2zm0-4H7v-2h10v2z"/></svg>`,
+            key: `<svg class="custom-action-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>`,
         },
         
         createButton(config) {
@@ -709,6 +711,14 @@ if($dealId){
         
         openSell(dealId) {
             this.open(`/rest/popups/sell.php?DEAL_ID=${dealId}`, 'გაყიდვა');
+        },
+
+        openRegistryRegistration(dealId) {
+            this.open(`/rest/popups/registryRegistration.php?DEAL_ID=${dealId}`, `რეესტრში რეგისტრაცია`);
+        },
+
+        openHandingKey(dealId) {
+            this.open(`/rest/popups/handingKey.php?DEAL_ID=${dealId}`, `გასაღების გადაცემა`);
         },
         
         openReservation(dealId, isChange = false) {
@@ -953,6 +963,25 @@ if($dealId){
                     icon: ButtonFactory.icons.chart,
                     label: 'Financial Report',
                     onClick: () => PopupManager.openFinancialReport(dealIdForToolbar)
+                });
+            }
+
+            // რეესტრში რეგისტრაციის ღილაკი
+            if (Utils.hasProduct() && (stageId === 'WON')) {
+                this.addButton({
+                    id: 'registryRegistrationBtn',
+                    icon: ButtonFactory.icons.registry,
+                    label: 'Registration',
+                    onClick: () => PopupManager.openRegistryRegistration(dealIdForToolbar)
+                });
+            }
+
+            if (Utils.hasProduct() && (userID == 17 || userID == 1)) {
+                this.addButton({
+                    id: 'handingKeyBtn',
+                    icon: ButtonFactory.icons.key,
+                    label: 'Handing key',
+                    onClick: () => PopupManager.openHandingKey(dealIdForToolbar)
                 });
             }
         },
