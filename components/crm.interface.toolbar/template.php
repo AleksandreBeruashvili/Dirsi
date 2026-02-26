@@ -976,7 +976,7 @@ if($dealId){
                 });
             }
 
-            if (Utils.hasProduct() && (userID == 17 || userID == 1)) {
+            if (Utils.hasProduct() && (userID == 17 || userID == 1) && (stageId === 'WON')) {
                 this.addButton({
                     id: 'handingKeyBtn',
                     icon: ButtonFactory.icons.key,
