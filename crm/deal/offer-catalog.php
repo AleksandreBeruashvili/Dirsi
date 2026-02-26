@@ -103,7 +103,9 @@ $kvmezo = $product[0]['yardKvmPrice'];
 $kvmterasa = $product[0]['terraceprice_per'];
 
 $enddate = $product[0]['projEndDate'];
-
+if ($building == 9 || $building == 11) {
+    $enddate = "დასრულებულია";
+}
 $sartulinew = $product[0]["binis_naxazi"];
 $floorplan = $product[0]['binis_gegmareba'];
 $threeD = $product[0]["render_3D"];
