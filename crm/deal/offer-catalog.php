@@ -117,6 +117,13 @@ $projectName = $deals[0]['UF_CRM_1693385948133'];
 $kvmPrice = $product[0]['livingarea_price_per'];
 $projectID = $product[0]['IBLOCK_SECTION_ID'];
 $projectName = $product[0]['PROJECT'];
+$totalprice = $product[0]['PRICE'];
+$totalpriceGEL = $product[0]['RETAIL_PRICE__CO8K0T'];
+
+
+$kvmprice = $product[0]['KVM_PRICE'];
+$kvmpriceGEL = $product[0]['_M2__SUXOA7'];
+
 
 $fartisType1 = $product[0]['PRODUCT_TYPE'];
 
@@ -567,18 +574,18 @@ img {
                         <table class="tableclass" style="border-collapse: collapse; margin-top: 25px; margin-left: 25px;">
                             <tr>
                                 <!-- Column 1 -->
-                                <td style="padding-right: 100px; vertical-align: top;">
+                                <td style="padding-right: 70px; vertical-align: top;">
                                     <table style="border-collapse: collapse; margin-bottom: 10px;">
                                         <tr>
                                             <td style="vertical-align: middle;">
-                                                ჯამური ღირებულება (USD):
+                                                ჯამური ღირებულება (USD): $<?php echo $totalprice; ?>
                                             </td>
                                         </tr>
                                     </table>
                                     <table style="border-collapse: collapse;">
                                         <tr>
                                             <td style="vertical-align: middle;">
-                                                ღირებულება მ2 (USD):
+                                                ღირებულება მ2 (USD): $<?php echo $kvmprice; ?>
                                             </td>
                                         </tr>
                                     </table>
@@ -589,14 +596,14 @@ img {
                                     <table style="border-collapse: collapse; margin-bottom: 10px;">
                                         <tr>
                                             <td style="vertical-align: middle;">
-                                                ჯამური ღირებულება (GEL):
+                                                ჯამური ღირებულება (GEL): ₾<?php echo $totalpriceGEL; ?>
                                             </td>
                                         </tr>
                                     </table>
                                     <table style="border-collapse: collapse;">
                                         <tr>
                                             <td style="vertical-align: middle;">
-                                                ღირებულება მ2 (GEL):
+                                                ღირებულება მ2 (GEL): ₾<?php echo $kvmpriceGEL; ?>
                                             </td>
                                         </tr>
                                     </table>
