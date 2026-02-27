@@ -74,7 +74,7 @@ $salesmenegermail = $salesmeneger["EMAIL"];
 $salesmenegerworkphone = $salesmeneger["WORK_PHONE"];
 $misamarti = $salesmeneger["PERSONAL_STREET"];
 
-$date = date("Y-m-d");
+$date = date("Y/m/d");
 $url = "https://nbg.gov.ge/gw/api/ct/monetarypolicy/currencies?Currencies=USD&date={$date}";
 $seb = file_get_contents($url);
 $seb = json_decode($seb);
@@ -104,7 +104,7 @@ $kvmterasa = $product[0]['terraceprice_per'];
 
 $enddate = $product[0]['projEndDate'];
 if ($building == 9 || $building == 11) {
-    $enddate = "დასრულებულია";
+    $enddate = "Завершенный";
 }
 $sartulinew = $product[0]["binis_naxazi"];
 $floorplan = $product[0]['binis_gegmareba'];
@@ -578,7 +578,7 @@ img {
                     </table>
 
                     <div class="info-container-bg" style="<?php echo (isset($greenfoto) && $greenfoto) ? 'background-image: url(\'' . $greenfoto . '\'); background-size: 100%; width: 100%; background-repeat: no-repeat; margin-left: -20px; height: 90px;' : ''; ?>">
-                        <div class="footer2">ДАТА ПРЕДЛОЖЕНИЯ:</div>
+                        <div class="footer2">ДАТА ПРЕДЛОЖЕНИЯ: <?php echo $date; ?></div>
                         <table class="tableclass" style="border-collapse: collapse; margin-top: 25px; margin-left: 25px;">
                             <tr>
                                 <!-- Column 1 -->
