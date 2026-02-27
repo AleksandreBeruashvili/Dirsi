@@ -135,13 +135,13 @@ if($fartisType1=="ბინა"){
     $fartisType=$fartisType1;
 }
 
-$arFilter = array("ID" => 10983);
+$arFilter = array("ID" => 18784);
 $boulvard = getCIBlockElementsByFilter($arFilter);
 if (count($boulvard)) {
     $boulvardfoto = CFile::GetPath($boulvard[0]["PHOTO"]);
 }
 
-$arFilter = array("ID" => 10996);
+$arFilter = array("ID" => 18785);
 $background = getCIBlockElementsByFilter($arFilter);
 if (count($background)) {
     $backgroundfoto = CFile::GetPath($background[0]["PHOTO"]);
@@ -191,7 +191,7 @@ if (count($green)) {
     $greenfoto = CFile::GetPath($green[0]["PHOTO"]);
 }
 	
-$arFilter = array("ID" => 11539);
+$arFilter = array("ID" => 18787);
 $sartulirender = getCIBlockElementsByFilter($arFilter);
 if (count($sartulirender)) {
     $sartulirenderfoto = CFile::GetPath($sartulirender[0]["PHOTO"]);
@@ -201,25 +201,25 @@ if (count($sartulirender)) {
 
 
 	
-$arFilter = array("ID" => 11538);
+$arFilter = array("ID" => 18786);
 $binisrender = getCIBlockElementsByFilter($arFilter);
 if (count($binisrender)) {
     $binisrenderfoto = CFile::GetPath($binisrender[0]["PHOTO"]);
 }
 
 
-$arFilter = array("ID" => 11540);
+$arFilter = array("ID" => 18788);
 $thirdpic = getCIBlockElementsByFilter($arFilter);
 if (count($thirdpic)) {
     $thirdpicfoto = CFile::GetPath($thirdpic[0]["PHOTO"]);
 }
 	
 if ($building == 9) {
-    $fourthpicID = 18775;
+    $fourthpicID = 18790;
 } elseif ($building == 11) {
-    $fourthpicID = 18774;
+    $fourthpicID = 18791;
 } else {
-    $fourthpicID = 11544;
+    $fourthpicID = 18789;
 }
 $arFilter = array("ID" => $fourthpicID);
 $fourthpic = getCIBlockElementsByFilter($arFilter);
@@ -494,31 +494,31 @@ img {
                         <!-- LEFT: property text fields -->
                         <div class="info-table-text">
                             <div class="info-row">
-                                <span class="info-label">ᲞᲠᲝᲔᲥᲢᲘ:</span>
+                                <span class="info-label">ПРОЕКТ:</span>
                                 <span class="info-value" id="projectName"><?php echo $projectName; ?></span>
                             </div>
                             <div class="info-row" id="korpusiDiv">
-                                <span class="info-label">ᲙᲝᲠᲞᲣᲡᲘ:</span>
+                                <span class="info-label">КОРПУС:</span>
                                 <span class="info-value" id="korpusi"><?php echo $building; ?><?php echo $korpusi; ?> </span>
                             </div>
                             <div class="info-row" id="sadarbazoDiv" style="display: none;">
-                                <span class="info-label">ᲑᲚᲝᲙᲘ:</span>
+                                <span class="info-label">БЛОК:</span>
                                 <span class="info-value" id="sadarbazo"><?php echo $sadarbazo; ?></span>
                             </div>
                             <div class="info-row" id="sartuliDiv">
-                                <span class="info-label">ᲡᲐᲠᲗᲣᲚᲘ:</span>
+                                <span class="info-label">ЭТАЖ:</span>
                                 <span class="info-value" id="sartuli"><?php echo $sartuli; ?></span>
                             </div>
                             <div class="info-row" id="flatNumDiv">
-                                <span class="info-label">ᲑᲘᲜᲘᲡ #:</span>
+                                <span class="info-label">N. КВАРТИРЫ:</span>
                                 <span class="info-value" id="flatNum"><?php echo $flatNum; ?></span>
                             </div>
                             <div class="info-row" id="totalspaceDiv">
-                                <span class="info-label">ᲡᲠᲣᲚᲘ ᲤᲐᲠᲗᲘ:</span>
+                                <span class="info-label">ОБЩАЯ ПЛОЩАДЬ:</span>
                                 <span class="info-value" id="totalspace"><?php echo $totalspace; ?> მ²</span>
                             </div>
                             <div class="info-row" id="enddateDiv">
-                                <span class="info-label">ᲛᲨᲔᲜᲔᲑᲚᲝᲑᲘᲡ ᲓᲐᲡᲠᲣᲚᲔᲑᲘᲡ ᲗᲐᲠᲘᲦᲘ:</span>
+                                <span class="info-label">ДАТА ЗАВЕРШЕНИЯ СТРОИТЕЛЬСТВА:</span>
                                 <span class="info-value" id="enddate"><?php echo $enddate; ?></span>
                             </div>
                         </div>
@@ -530,7 +530,7 @@ img {
 
                     <br><br><br><br><br>
 
-                    <div class="gayidvebismenejeri">გაყიდვების მენეჯერი</div>
+                    <div class="gayidvebismenejeri">МЕНЕДЖЕР ПО ПРОДАЖАМ</div>
                     <table class="tableclass" style="border-collapse: collapse; margin-top: 10px; margin-left: 25px;">
                         <tr>
                             <td style="padding-right: 100px; vertical-align: top;">
@@ -578,7 +578,7 @@ img {
                     </table>
 
                     <div class="info-container-bg" style="<?php echo (isset($greenfoto) && $greenfoto) ? 'background-image: url(\'' . $greenfoto . '\'); background-size: 100%; width: 100%; background-repeat: no-repeat; margin-left: -20px; height: 90px;' : ''; ?>">
-                        <div class="footer2">ᲨᲔᲗᲐᲕᲐᲖᲔᲑᲘᲡ ᲗᲐᲠᲘᲦᲘ:</div>
+                        <div class="footer2">ДАТА ПРЕДЛОЖЕНИЯ:</div>
                         <table class="tableclass" style="border-collapse: collapse; margin-top: 25px; margin-left: 25px;">
                             <tr>
                                 <!-- Column 1 -->
@@ -586,14 +586,14 @@ img {
                                     <table style="border-collapse: collapse; margin-bottom: 10px;">
                                         <tr>
                                             <td style="vertical-align: middle;">
-                                                ჯამური ღირებულება (USD): $<?php echo $totalprice; ?>
+                                            ОБЩАЯ ЦЕНА (USD): $<?php echo $totalprice; ?>
                                             </td>
                                         </tr>
                                     </table>
                                     <table style="border-collapse: collapse;">
                                         <tr>
                                             <td style="vertical-align: middle;">
-                                                ღირებულება მ2 (USD): $<?php echo $kvmprice; ?>
+                                            Цена за м2 (USD): $<?php echo $kvmprice; ?>
                                             </td>
                                         </tr>
                                     </table>
@@ -604,14 +604,14 @@ img {
                                     <table style="border-collapse: collapse; margin-bottom: 10px;">
                                         <tr>
                                             <td style="vertical-align: middle;">
-                                                ჯამური ღირებულება (GEL): ₾<?php echo $totalpriceGEL; ?>
+                                            ОБЩАЯ ЦЕНА (GEL): ₾<?php echo $totalpriceGEL; ?>
                                             </td>
                                         </tr>
                                     </table>
                                     <table style="border-collapse: collapse;">
                                         <tr>
                                             <td style="vertical-align: middle;">
-                                                ღირებულება მ2 (GEL): ₾<?php echo $kvmpriceGEL; ?>
+                                            Цена за м2 (GEL): ₾<?php echo $kvmpriceGEL; ?>
                                             </td>
                                         </tr>
                                     </table>
