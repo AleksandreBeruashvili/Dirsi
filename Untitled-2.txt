@@ -10,6 +10,19 @@ function printArr($arr) {
     echo "<pre>"; print_r($arr); echo "</pre>";
 }
 
+function getDealsByFilter($arFilter, $project = '', $arSelect = array(), $arSort = array("ID"=>"DESC")) {
+    $result["deals_data"] = array();
+    $result["deals_IDs"] = array();
+
+    $res_deals = CCrmDeal::GetList($arSort, $arFilter, array("ID", "DATE_CREATE", "CONTACT_ID","COMPANY_ID", "TITLE","CONTACT_FULL_NAME","OPPORTUNITY","COMPANY_TITLE","UF_CRM_1761658532158","ASSIGNED_BY_ID","UF_CRM_1766560177934", "UF_CRM_1764317005", "UF_CRM_1761658516561", "UF_CRM_1766736693236", "UF_CRM_1761658577987", "UF_CRM_1770888201367", "UF_CRM_1770640981002"));
+    while($arDeal = $res_deals->Fetch()) {
+        $arDeal["payment"] = 0;
+        $result["deals_data"][$arDeal["ID"]] = $arDeal;
+        $result["deals_IDs"][] = $arDeal["ID"];
+    }
+    return (count($result["deals_IDs"]) > 0) ? $result : false;
+}
+
 function getDaricxvebi($deals_IDs) {
     if (empty($deals_IDs)) return array();
     
@@ -98,69 +111,49 @@ function getContactInfo($contactId) {
     return $arContact;
 }
 
-function getCountry($enumId) {
-    if (empty($enumId)) return '';
-    
-    $res = CUserFieldEnum::GetList([], ["ID" => $enumId]);
-    if ($row = $res->Fetch()) {
-        return $row["VALUE"];
-    }
-    return '';
-}
-
-function getDealsByFilter($arFilter, $project = '', $arSelect = array(), $arSort = array("ID"=>"DESC")) {
-    $result["deals_data"] = array();
-    $result["deals_IDs"] = array();
-
-    $res_deals = CCrmDeal::GetList($arSort, $arFilter, array("ID", "DATE_CREATE", "CONTACT_ID","COMPANY_ID", "TITLE","CONTACT_FULL_NAME","OPPORTUNITY","COMPANY_TITLE","UF_CRM_1761658532158","ASSIGNED_BY_ID","UF_CRM_1766560177934", "UF_CRM_1764317005", "UF_CRM_1761658516561", "UF_CRM_1766736693236", "UF_CRM_1761658577987", "UF_CRM_1770888201367", "UF_CRM_1770640981002", "UF_CRM_1767011536", "UF_CRM_1761658608306", "UF_CRM_1761658503260", "UF_CRM_1761658559005", "UF_CRM_1762416342444"));
-    while($arDeal = $res_deals->Fetch()) {
-        $arDeal["payment"] = 0;
-        $arDeal["responsible"] = getUserName($arDeal["ASSIGNED_BY_ID"]);
-
-        $contact = getContactInfo($arDeal["CONTACT_ID"]);
-        $arDeal["OWNER_CONTACT_PN"] = $contact["UF_CRM_1761651998145"];
-        $arDeal["OWNER_CONTACT_CITIZENSHIP"] = getCountry($contact["UF_CRM_1769506891465"]); 
-        $arDeal["OWNER_CONTACT_PHONE"] = $contact["PHONE"];
-
-        $result["deals_data"][$arDeal["ID"]] = $arDeal;
-        $result["deals_IDs"][] = $arDeal["ID"];
-    }
-    return (count($result["deals_IDs"]) > 0) ? $result : false;
-}
-
 function getProducts($dealIds) {
     if (empty($dealIds)) return array();
     
-    // Ensure $dealIds is an array for the filter
-    if (!is_array($dealIds)) $dealIds = array($dealIds);
-
     $arFilter = array(
-        "IBLOCK_ID" => 14,
-        "PROPERTY_DEAL" => $dealIds,
-        "ACTIVE" => "Y" // Good practice to only get active items
+            "IBLOCK_ID" => 14,
+            "PROPERTY_DEAL" => $dealIds
     );
 
-    // Note: Properties usually need the PROPERTY_ prefix in the select array
-    $arSelect = ["ID", "IBLOCK_ID", "PROPERTY_BEDROOMS", "PROPERTY_OWNER_DEAL"];
-    
-    $res = CIBlockElement::GetList(array(), $arFilter, false, array("nTopCount" => 99999), $arSelect);
-    
-    $arElements = array();
+    $arSelect = [];
+    $sort= array();
+    $count = 99999;
     $nbg = getNBG_inventory(date("Y-m-d"));
+    $arElements = array();
 
-    while ($ob = $res->GetNext()) {
-        $arPushs = [];
-        $dealKey = $ob["PROPERTY_OWNER_DEAL_VALUE"];
-        $arPushs["OWNER_DEAL"] = $ob["PROPERTY_OWNER_DEAL_VALUE_ID"];
-        $arPushs["Bedrooms"] = $ob["PROPERTY_BEDROOMS_VALUE"];
-        $arPushs["ID"] = $ob["ID"];
-        $arElements[$dealKey] = $arPushs;
+    $res = CIBlockElement::GetList($sort, $arFilter, false, array("nPageSize" => $count), $arSelect);
+    while ($ob = $res->GetNextElement()) {
+        $arFilds = $ob->GetFields();
+        $arProps = $ob->GetProperties();
+        $arPushs = array();
+        foreach ($arFilds as $key => $arFild) $arPushs[$key] = $arFild;
+        foreach ($arProps as $key => $arProp){
+            $fieldId = $arProp["CODE"];
+            $arPushs[$fieldId] = $arProp["VALUE"];
+        }
+
+        if ($arPushs["OWNER_CONTACT"]) {
+            $arPushs["OWNER_CONTACT_NAME"] = getContactInfo($arPushs["OWNER_CONTACT"])["FULL_NAME"];
+        }
+
+        if ($arPushs["DEAL_RESPONSIBLE"]) {
+            $arPushs["DEAL_RESPONSIBLE_NAME"] = getUserName($arPushs["DEAL_RESPONSIBLE"]);
+        }
+        
+        $price = CPrice::GetBasePrice($arPushs["ID"]);
+        $arPushs["PRICE"] = isset($price["PRICE"]) ? round($price["PRICE"], 2) : 0;
+        $arPushs['PRICE_GEL'] = round($arPushs["PRICE"] * $nbg,2);
+
+        $arElements[$arPushs["OWNER_DEAL"]] = $arPushs;
     }
-
     return $arElements;
 }
 
-// ======================================================================= MAIN CODE =======================================================================
+// =============================== MAIN CODE ===============================
 
 // Get filter values from request
 $filterProject     = isset($_GET['project'])      ? trim($_GET['project'])      : '';
@@ -217,16 +210,6 @@ if ($result === false) {
 
 $daricxvebi = getDaricxvebi($deals_IDs);
 $gadaxdebi  = getGadaxdebi($deals_IDs);
-
-$daricxvebiByDeals = [];
-foreach ($daricxvebi as $d) {
-    $dealID = trim($d["DEAL_ID"]);
-    $daricxvebiByDeals[$dealID][] = $d;
-}
-
-foreach($daricxvebiByDeals as $dealId => $dilisDaricxvebi) {
-    $daricxvebiByDeals[$dealId] = $daricxvebiByDeals[$dealId][count($dilisDaricxvebi) - 1]["daricxva_date"];
-}
 
 // Filter by payment date range if provided
 if (!empty($filterDateFrom) || !empty($filterDateTo)) {
@@ -329,8 +312,6 @@ foreach ($daricxvebi as $d) {
     $dealID = trim($d["DEAL_ID"]);
     if (!isset($deals[$dealID])) continue;
     $deals[$dealID]["jamuriDaricxvaUpToToday"] += (float) $d["daricxva_amount"];
-    $deals[$dealID]["boloDaricxvaDate"] = $daricxvebiByDeals[$dealID];
-    $deals[$dealID]["boloDaricxvaDateByFilter"] = $d["daricxva_date"];
 }
 
 foreach ($gadaxdebi as $g) {
@@ -342,25 +323,10 @@ foreach ($gadaxdebi as $g) {
 // Compute fullyPaid / paidBySchedule flags per deal
 foreach ($deals as $dealID => $deal) {
     $deals[$dealID]["fullyPaid"]      = ($deal["jamuriGadaxdaUpToToday"] >= $deal["OPPORTUNITY"]) ? 1 : 0;
-    $deals[$dealID]["paidBySchedule"] = (abs($deal["jamuriGadaxdaUpToToday"] - $deal["jamuriDaricxvaUpToToday"]) < 0.01) ? 1 : 0;
-
-    $deals[$dealID]["paidPercentage"] = $deal["OPPORTUNITY"] > 0 ? round($deal["jamuriGadaxdaUpToToday"] / $deal["OPPORTUNITY"] * 100, 2) . "%" : "0%";
-    $deals[$dealID]["remainedAmount"] = $deal["OPPORTUNITY"] - $deal["jamuriGadaxdaUpToToday"];
-    
-    $debt = $deal["jamuriDaricxvaUpToToday"] - $deal["jamuriGadaxdaUpToToday"];
-    $deals[$dealID]["debt"] = $debt < 0 ? 0 : $debt;
-
-    // Fixed Overdue Logic
-    if (!empty($deal["boloDaricxvaDateByFilter"])) {
-        $todayTs = time();
-        $targetTs = strtotime($deal["boloDaricxvaDateByFilter"]);
-        $diff = $todayTs - $targetTs;
-        $deals[$dealID]["overdueDays"] = ($diff > 0) ? floor($diff / (60 * 60 * 24)) : 0;
-    } else {
-        $deals[$dealID]["overdueDays"] = 0;
-    }
+    $deals[$dealID]["paidBySchedule"] = ($deal["jamuriGadaxdaUpToToday"] == $deal["jamuriDaricxvaUpToToday"]) ? 1 : 0;
 }
 
+// Build resArray grouped by product type
 $resArray = [];
 
 $emptyBucket = [
@@ -396,7 +362,6 @@ foreach ($deals as $deal) {
     } else {
         $key = $prodType;
     }
-    $deals[$deal["ID"]]["prodTypeNew"] = $key;
 
     if (!isset($resArray[$key])) {
         $resArray[$key] = $emptyBucket;
@@ -446,6 +411,7 @@ $generalTotals["debt"]  = $generalTotals["debet"]    - $generalTotals["paymentSc
 ob_end_clean();
 
 ?>
+
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
@@ -745,45 +711,32 @@ ob_end_clean();
 
 <script>
     const dealsData = <?= json_encode(array_values($deals)) ?>;
-    // const productsData = <?= json_encode($products) ?>;
+    const productsData = <?= json_encode($products) ?>;
 
     function exportToExcel() {
         const fields = [
-            { key: 'ID',            label: 'Deal#' },
-            { key: 'CONTACT_FULL_NAME',    label: 'Client' },
-            { key: 'responsible', label: 'Responsible' },
-            { key: 'UF_CRM_1762416342444',  label: 'Contract Signing Date' },
-            { key: 'UF_CRM_1767011536',     label: 'Schedual Start Date' },
-            { key: 'boloDaricxvaDate',      label: 'Schedual End Date' },
-            { key: '',                      label: 'Buyer Type' },
-            { key: 'OWNER_CONTACT_PN',      label: 'ID Number' },
-            { key: 'OWNER_CONTACT_CITIZENSHIP', label: 'Citizenship' },
-            { key: 'OWNER_CONTACT_PHONE',   label: 'Mobile Number' },
-            { key: 'prodTypeNew',          label: 'Real Estate Type' },
-            { key: 'UF_CRM_1761658608306',            label: 'Area (sqm)' },
-            { key: 'UF_CRM_1766736693236',              label: 'Building' },
-            { key: 'UF_CRM_1766560177934',label: 'Block' },
-            { key: 'UF_CRM_1761658577987',                 label: 'Floor' },
-            { key: 'UF_CRM_1761658559005',                label: 'Apartment #' },
-            { key: 'UF_CRM_1761658503260',             label: 'Price per sqm' },
-            { key: 'OPPORTUNITY',                 label: 'Total Price' },
-            { key: 'jamuriGadaxdaUpToToday',               label: 'Amount Paid' },
-            { key: 'paidPercentage',               label: 'Amount Paid (%)' },
-            { key: 'remainedAmount',               label: 'Remaining Amount' },
-            { key: 'debt',               label: 'Debt' },
-            { key: 'overdueDays',               label: 'Overdue Days' },
-            { key: '',               label: 'Status' }
+            { label: 'Project',             get: (d, p) => p?.PROJECT ?? '' },
+            { label: 'Block',               get: (d, p) => p?.KORPUSIS_NOMERI_XE3NX2 ?? '' },
+            { label: 'Building',            get: (d, p) => p?.BUILDING ?? '' },
+            { label: 'Floor',               get: (d, p) => p?.FLOOR ?? '' },
+            { label: 'Apt Number',          get: (d, p) => p?.NAME ?? '' },
+            { label: 'Total Area',          get: (d, p) => p?.TOTAL_AREA ?? '' },
+            { label: 'Living Area',         get: (d, p) => p?.LIVING_AREA ?? '' },
+            { label: 'Product Type',        get: (d, p) => p?.PRODUCT_TYPE ?? '' },
+            { label: 'Status',              get: (d, p) => p?.STATUS ?? '' },
+            { label: 'Price per KVM',       get: (d, p) => p?.KVM_PRICE ?? '' },
+            { label: 'Total Price',         get: (d, p) => p?.PRICE ?? '' },
+            { label: 'Total Sold (Deal)',   get: (d, p) => d?.OPPORTUNITY ?? '' },
+            { label: 'Total Plan',          get: (d, p) => d?.jamuriDaricxvaUpToToday ?? '' },
+            { label: 'Total Payment',       get: (d, p) => d?.jamuriGadaxdaUpToToday ?? '' },
+            { label: 'Current Debt',        get: (d, p) => (d?.jamuriDaricxvaUpToToday ?? 0) - (d?.jamuriGadaxdaUpToToday ?? 0) },
+            { label: 'Responsible',         get: (d, p) => p?.DEAL_RESPONSIBLE_NAME ?? '' },
         ];
 
-        const rows = dealsData.map(p => {
+        const rows = dealsData.map(deal => {
+            const product = productsData[deal.ID] ?? {};
             const row = {};
-            fields.forEach(f => { 
-                if (p[f.key] === "Flat") {
-                    row[f.label] = (p["Bedrooms"] || "") + " Rooms Studio";
-                } else {
-                    row[f.label] = p[f.key] ?? '';
-                }
-            });
+            fields.forEach(f => { row[f.label] = f.get(deal, product); });
             return row;
         });
 
@@ -791,9 +744,9 @@ ob_end_clean();
         ws['!cols'] = fields.map(f => ({ wch: Math.max(f.label.length, 14) }));
 
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Debt');
+        XLSX.utils.book_append_sheet(wb, ws, 'Cashflow');
 
         const today = new Date().toISOString().slice(0, 10);
-        XLSX.writeFile(wb, `debt_report_${today}.xlsx`);
+        XLSX.writeFile(wb, `cashflow_report_${today}.xlsx`);
     }
 </script>
