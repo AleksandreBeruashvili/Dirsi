@@ -171,8 +171,8 @@ function getDataForWonDeals($date, $userId = null)
     $arFilter = array(
         "STAGE_ID" => "WON",
         "SOURCE_ID" => $sources,
-        ">=UF_CRM_1693398443196" => $date['START'],
-        "<=UF_CRM_1693398443196" => $date["END"] . " 11:59:59 pm",
+        ">=DATE_CREATE" => $date['START'],
+        "<=DATE_CREATE" => $date["END"] . " 11:59:59 pm",
         "CATEGORY_ID" => 0,
     );
 
