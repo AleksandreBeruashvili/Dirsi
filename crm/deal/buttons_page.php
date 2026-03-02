@@ -614,9 +614,9 @@ else{
                 <div>
                     <label for="language" class="form-label fw-semibold">ენა</label>
                     <select id="language" required class="form-select" onchange="filterDocuments()">
-                        <option value="geo">GEO</option>
-                        <option value="eng">ENG</option>
-                        <option value="rus">RUS</option>
+                        <!-- <option value="geo">GEO</option> -->
+                        <option value="eng">Geo-Eng</option>
+                        <option value="rus">Geo-Rus</option>
                     </select>
                 </div>
 
