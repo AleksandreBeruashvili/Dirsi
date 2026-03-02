@@ -245,8 +245,8 @@ if (!empty($filterDateFrom) || !empty($filterDateTo)) {
             // YYYY-MM-DD (with or without time)
             $dateStr = $m[1] . '-' . $m[2] . '-' . $m[3];
         } elseif (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})/', $raw, $m)) {
-            // MM/DD/YYYY
-            $dateStr = $m[3] . '-' . $m[1] . '-' . $m[2];
+            // DD/MM/YYYY
+            $dateStr = $m[3] . '-' . $m[2] . '-' . $m[1];
         } else {
             // Last resort: let PHP parse it
             $ts = strtotime($raw);
@@ -270,7 +270,8 @@ if (!empty($filterDateFrom) || !empty($filterDateTo)) {
         } elseif (preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $raw, $m)) {
             $dateStr = $m[1] . '-' . $m[2] . '-' . $m[3];
         } elseif (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})/', $raw, $m)) {
-            $dateStr = $m[3] . '-' . $m[1] . '-' . $m[2];
+            // DD/MM/YYYY
+            $dateStr = $m[3] . '-' . $m[2] . '-' . $m[1];
         } else {
             $ts = strtotime($raw);
             if ($ts === false) return true;
@@ -628,6 +629,10 @@ ob_end_clean();
             </div>
         </div>
     </form>
+
+    <div style="margin-top: 15px;">
+        <button class="btn btn-primary" onclick="exportToExcel()">📥 Export to Excel</button>
+    </div>
 </div>
 
 <div class="table-title">Products</div>
@@ -635,10 +640,11 @@ ob_end_clean();
     <thead>
         <tr>
             <th>Product Type</th>
-            <th class="amount">Total Sold Prices (by Deal)</th>
-            <th class="amount">Total Plan</th>
-            <th class="amount">Total Payment</th>
-            <th class="amount">Current Debt</th>
+            <th class="amount">Amount of sold flats $</th>
+            <th class="amount">Paid amount $</th>
+            <th class="amount">Debet $</th>
+            <th class="amount">Payments by schedule $</th>
+            <th class="amount">Debt $</th>
         </tr>
     </thead>
     <tbody>
@@ -651,18 +657,62 @@ ob_end_clean();
             <tr>
                 <td><?php echo htmlspecialchars($prodType); ?></td>
                 <td class="amount"><?php echo number_format($data["jamuriGayidvebisAmount"], 2); ?></td>
-                <td class="amount"><?php echo number_format($data["jamuriDaricxvaUpToToday"], 2); ?></td>
                 <td class="amount"><?php echo number_format($data["jamuriGadaxdaUpToToday"], 2); ?></td>
+                <td class="amount"><?php echo number_format($data["jamuriGayidvebisAmount"]-$data["jamuriGadaxdaUpToToday"], 2); ?></td>
+                <td class="amount"><?php echo number_format($data["jamuriDaricxvaUpToToday"], 2); ?></td>
                 <td class="amount"><?php echo number_format($data["mimdinareDavalianeba"], 2); ?></td>
             </tr>
             <?php endforeach; ?>
             <tr class="total-row">
                 <td>ჯამი</td>
                 <td class="amount"><?php echo number_format($generalTotals["jamuriGayidvebisAmount"], 2); ?></td>
-                <td class="amount"><?php echo number_format($generalTotals["jamuriDaricxvaUpToToday"], 2); ?></td>
                 <td class="amount"><?php echo number_format($generalTotals["jamuriGadaxdaUpToToday"], 2); ?></td>
+                <td class="amount"><?php echo number_format($generalTotals["jamuriGayidvebisAmount"]-$generalTotals["jamuriGadaxdaUpToToday"], 2); ?></td>
+                <td class="amount"><?php echo number_format($generalTotals["jamuriDaricxvaUpToToday"], 2); ?></td>
                 <td class="amount"><?php echo number_format($generalTotals["mimdinareDavalianeba"], 2); ?></td>
             </tr>
         <?php endif; ?>
     </tbody>
 </table>
+
+<script>
+    const dealsData = <?= json_encode(array_values($deals)) ?>;
+    const productsData = <?= json_encode($products) ?>;
+
+    function exportToExcel() {
+        const fields = [
+            { label: 'Project',             get: (d, p) => p?.PROJECT ?? '' },
+            { label: 'Block',               get: (d, p) => p?.KORPUSIS_NOMERI_XE3NX2 ?? '' },
+            { label: 'Building',            get: (d, p) => p?.BUILDING ?? '' },
+            { label: 'Floor',               get: (d, p) => p?.FLOOR ?? '' },
+            { label: 'Apt Number',          get: (d, p) => p?.NAME ?? '' },
+            { label: 'Total Area',          get: (d, p) => p?.TOTAL_AREA ?? '' },
+            { label: 'Living Area',         get: (d, p) => p?.LIVING_AREA ?? '' },
+            { label: 'Product Type',        get: (d, p) => p?.PRODUCT_TYPE ?? '' },
+            { label: 'Status',              get: (d, p) => p?.STATUS ?? '' },
+            { label: 'Price per KVM',       get: (d, p) => p?.KVM_PRICE ?? '' },
+            { label: 'Total Price',         get: (d, p) => p?.PRICE ?? '' },
+            { label: 'Total Sold (Deal)',   get: (d, p) => d?.OPPORTUNITY ?? '' },
+            { label: 'Total Plan',          get: (d, p) => d?.jamuriDaricxvaUpToToday ?? '' },
+            { label: 'Total Payment',       get: (d, p) => d?.jamuriGadaxdaUpToToday ?? '' },
+            { label: 'Current Debt',        get: (d, p) => (d?.jamuriDaricxvaUpToToday ?? 0) - (d?.jamuriGadaxdaUpToToday ?? 0) },
+            { label: 'Responsible',         get: (d, p) => p?.DEAL_RESPONSIBLE_NAME ?? '' },
+        ];
+
+        const rows = dealsData.map(deal => {
+            const product = productsData[deal.ID] ?? {};
+            const row = {};
+            fields.forEach(f => { row[f.label] = f.get(deal, product); });
+            return row;
+        });
+
+        const ws = XLSX.utils.json_to_sheet(rows, { header: fields.map(f => f.label) });
+        ws['!cols'] = fields.map(f => ({ wch: Math.max(f.label.length, 14) }));
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Cashflow');
+
+        const today = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `cashflow_report_${today}.xlsx`);
+    }
+</script>

@@ -70,6 +70,18 @@ function getCIBlockElementsByFilter($arFilter = array())
     return $arElements;
 }
 
+function getCrmSources() {
+    $sources = [];
+    $res = CCrmStatus::GetList([], ['ENTITY_ID' => 'SOURCE']);
+    while ($item = $res->Fetch()) {
+        $sources[$item['STATUS_ID']] = $item['NAME'];
+    }
+    return $sources;
+}
+
+$sources = getCrmSources();
+printArr($sources);
+
 // ------------------------------MAIN CODE---------------------------------
 
 // Get filter values from GET parameters
@@ -95,10 +107,12 @@ if ($displayDateTo !== '') {
 }
 
 // Define sources map BEFORE using it
-$sourcesMap = ["Meta" => ["WEB", "REPEAT_SALE", "5|FACEBOOK"],
-               "Other" => ["CALL", "EMAIL", "6"],
-               "Bank" => ["UC_MTQVO0"],
-               "Old Base" => ["UC_NGXD08"]
+$sourcesMap = ["Meta" => ["UC_GWOB5R", "5|FACEBOOK", "REPEAT_SALE", "RECOMMENDATION", "WEB", "EMAIL"],
+               "Other" => ["UC_MF3UL1", "UC_I4GPI2", "UC_33R68T", "UC_BXC6ET", "6", "RC_GENERATOR", "PARTNER", "CALL"],
+               "Bank" => ["UC_MTQVO0", "UC_6XZU1C"],
+               "Old Base" => ["UC_NGXD08"],
+               "Broker" => ["UC_VXLB3C", "UC_8AFO20", "UC_M4NTDI", "UC_3KD0VI"],
+               "Ads" => ["UC_K8MG32", "UC_AIDAQM", "UC_P2OOT2", "UC_TNUYXL", "UC_CD0QF5", "UC_W5U32M", "UC_A261E5", "BOOKING", "STORE", "CALLBACK", "WEBFORM", "TRADE_SHOW"]
                 ];
 
 // Populate sourcesList for dropdown (use keys from sourcesMap)

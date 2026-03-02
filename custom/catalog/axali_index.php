@@ -618,7 +618,7 @@ ob_end_clean();
         }
 
         .popup-header h3 {
-            max-width: 126px;
+            max-width: 300px;
             margin: 0;
             color: #1f2a44;
             font-weight: 700;
@@ -881,6 +881,7 @@ ob_end_clean();
             display: flex;
             justify-content: center;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         /* #e1eefb; */ /* MOVUBRUNDE */
@@ -1318,10 +1319,8 @@ ob_end_clean();
         <!-- APARTMENT POPUP -->
         <div id="apartmentPopup">
             <div class="popup-header"> 
-                <h3 id="popupTitle">ბინის დეტალები</h3>
+                <h3 id="popupTitle">უძრავი ქონების დეტალები</h3>
                 <div class="header-buttons">
-                    <a id="popupOffer" target="_blank"><button class="sandrosBtns">შეთავაზება</button></a>
-                    <a id="popupCalc" target="_blank"><button class="sandrosBtns">კალკულატორი</button></a>
                     <button id="popupClose">&times;</button>
                 </div>
             </div>
@@ -1333,6 +1332,12 @@ ob_end_clean();
 
                 <div class="popup-buttons">
                     <button id="popupSelectBtn">დამატება</button>
+                    <div class="header-buttons" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                        <a id="popupOffer" target="_blank"><button class="sandrosBtns">შეთავაზება</button></a>
+                        <a id="popupOfferEng" target="_blank"><button class="sandrosBtns">შეთავაზება (Eng)</button></a>
+                        <a id="popupOfferRus" target="_blank"><button class="sandrosBtns">შეთავაზება (Rus)</button></a>
+                        <a id="popupCalc" target="_blank"><button class="sandrosBtns">კალკულატორი</button></a>
+                    </div>
                 </div>
 
                 <div class="popup-separator">დეტალები</div>
@@ -2181,7 +2186,7 @@ ob_end_clean();
             apartment = filteredProducts.find(p => p["ID"] == apartmentInfo.id);
         }
         // reset UI
-        document.getElementById("popupTitle").innerText = `${apartment["PRODUCT_TYPE"]} N${apartment["Number"] || "-"}`;
+        // document.getElementById("popupTitle").innerText = `${apartment["PRODUCT_TYPE"]} N${apartment["Number"] || "-"}`;
         document.getElementById("popupTitle").dataset.id = apartmentInfo.id;
         document.getElementById("popupTitle").dataset.status = apartment["STATUS"] || "active";
         document.getElementById("popupImg").style.display = "none";
@@ -2195,6 +2200,8 @@ ob_end_clean();
         }
             
         document.getElementById("popupOffer").href = `/crm/deal/offer-catalog.php?prod_ID=${apartmentInfo.id}`;
+        document.getElementById("popupOfferEng").href = `/crm/deal/offer-catalog-eng.php?prod_ID=${apartmentInfo.id}`;
+        document.getElementById("popupOfferRus").href = `/crm/deal/offer-catalog-rus.php?prod_ID=${apartmentInfo.id}`;
 
         // display image
         if (apartment["image"]) {
@@ -2209,6 +2216,7 @@ ob_end_clean();
 
         addLi("პროექტი", apartment["PROJECT"], detailsList);
         addLi("პროექტის დასრულების თარიღი: ", apartment["projEndDate"], detailsList);
+        addLi("უძრავი ქონების ნომერი", apartment["Number"], detailsList);
         addLi("ბლოკი", apartment["KORPUSIS_NOMERI_XE3NX2"] !== "P" ? apartment["KORPUSIS_NOMERI_XE3NX2"] : "", detailsList);
         addLi("სადარბაზო", apartment["_15MYD6"], detailsList);
         addLi("კორპუსი: ", apartment["BUILDING"], detailsList);
