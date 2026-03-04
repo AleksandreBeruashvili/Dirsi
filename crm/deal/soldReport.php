@@ -33,33 +33,6 @@ function getDaricxvebi($dealId) {
     return $daricxvebi;
 }
 
-function getGadaxdebi($dealId){
-    $amount = 0;
-    // gadaxdebi
-    $arSelect = Array("ID", "IBLOCK_SECTION_ID", "IBLOCK_ID", "NAME", "DATE_ACTIVE_FROM", "PROPERTY_*");
-    $arFilter = array(
-        "IBLOCK_ID"             => 21,
-        "PROPERTY_DEAL"         => $dealId
-    );
-
-    $res = CIBlockElement::GetList(Array("date" => "ASC"), $arFilter, false, Array("nPageSize" => 99999), $arSelect);
-    while ($ob = $res->GetNextElement()) {
-        $arFilds = $ob->GetFields();
-        $arProps = $ob->GetProperties();
-
-        // --- FIX: Normalize DEAL ID ---
-        $dealID = trim($arProps["DEAL"]["VALUE"]);
-
-        if ($dealID === "") {
-            continue;
-        }
-
-        $amount = (float) str_replace("|USD","",$arProps["TANXA"]["VALUE"]);
-    }
-    
-    return $amount;
-}
-
 function getDealsByFilter($arFilter, $arrSelect=array()) {
     if (empty($arrSelect)) {
         $arrSelect = false;
@@ -144,9 +117,6 @@ function getProducts($dealIds) {
         if ($arPushs["DEAL_RESPONSIBLE"]) {
             $arPushs["DEAL_RESPONSIBLE_NAME"] = getUserName($arPushs["DEAL_RESPONSIBLE"]);
         }
-        if ($arPushs["OWNER_DEAL"]) {
-            $arPushs["payment"] = getGadaxdebi($arPushs["OWNER_DEAL"]);
-        }
         $price = CPrice::GetBasePrice($arPushs["ID"]);
         $arPushs["PRICE"] = isset($price["PRICE"]) ? round($price["PRICE"], 2) : 0;
         $arPushs['PRICE_GEL'] = round($arPushs["PRICE"] * $nbg, 2);
@@ -172,12 +142,69 @@ function getUniqueValues($products, $field) {
 }
 
 function getDealByIDForPrice($id, $arSelect = array(), $arSort = array("ID"=>"DESC")) {
-    $res = CCrmDeal::GetList($arSort, array("ID"=>$id), ["UF_CRM_1761658503260"]);
+    $res = CCrmDeal::GetList($arSort, array("ID"=>$id), ["OPPORTUNITY"]);
     if($arDeal = $res->Fetch()){
         return $arDeal;
     } else {
         return array();
     }
+}
+
+function getGadaxdebi($deals_IDs){
+    if (empty($deals_IDs)) return array();
+
+    $gadaxdebi = array();
+
+    // gadaxdebi
+    $arSelect = Array("ID", "IBLOCK_SECTION_ID", "IBLOCK_ID", "NAME", "DATE_ACTIVE_FROM", "PROPERTY_*");
+    $arFilter = array(
+        "IBLOCK_ID"             => 21,
+        "PROPERTY_DEAL"         => $deals_IDs
+    );
+
+    $res = CIBlockElement::GetList(Array("date" => "ASC"), $arFilter, false, Array("nPageSize" => 99999), $arSelect);
+    while ($ob = $res->GetNextElement()) {
+        $arFilds = $ob->GetFields();
+        $arProps = $ob->GetProperties();
+
+        // --- FIX: Normalize DEAL ID ---
+        $dealID = trim($arProps["DEAL"]["VALUE"]);
+
+        if ($dealID === "") {
+            continue;
+        }
+
+        $amount = (float) str_replace("|USD","",$arProps["TANXA"]["VALUE"]);
+
+        $gadaxdebi[] = array(
+            "DEAL_ID" => $dealID,
+            "gadaxda_date" => $arProps["date"]["VALUE"],
+            "gadaxda_amount" => $amount
+        );
+    }
+    
+    return $gadaxdebi;
+}
+
+/**
+ * Sort BB keys numerically then alphabetically.
+ * e.g. "6A" < "6B" < "9A" < "11" < "12B"
+ */
+function sortBBKeys($keys) {
+    usort($keys, function($a, $b) {
+        // Extract leading number and trailing letter suffix
+        preg_match('/^(\d+)([A-Za-z]*)$/', $a, $mA);
+        preg_match('/^(\d+)([A-Za-z]*)$/', $b, $mB);
+
+        $numA = isset($mA[1]) ? (int)$mA[1] : 0;
+        $numB = isset($mB[1]) ? (int)$mB[1] : 0;
+        $sufA = isset($mA[2]) ? strtoupper($mA[2]) : '';
+        $sufB = isset($mB[2]) ? strtoupper($mB[2]) : '';
+
+        if ($numA !== $numB) return $numA - $numB;
+        return strcmp($sufA, $sufB);
+    });
+    return $keys;
 }
 
 // ------------------------------MAIN CODE---------------------------------
@@ -229,6 +256,12 @@ $deals    = getDealsByFilter($arFilter);
 $dealIds  = array_keys($deals);
 $products = getProducts($dealIds);
 
+$gadaxdebi = getGadaxdebi($dealIds);
+$gadaxdebiByDeal = [];
+foreach ($gadaxdebi as $g) {
+    $gadaxdebiByDeal[$g["DEAL_ID"]] = ($gadaxdebiByDeal[$g["DEAL_ID"]] ?? 0) + $g["gadaxda_amount"];
+}
+
 // Dropdown options
 $projects     = getUniqueValues($products, 'PROJECT');
 $blocks       = array_diff(getUniqueValues($products, 'KORPUSIS_NOMERI_XE3NX2'), ['P']);
@@ -254,7 +287,7 @@ foreach ($products as $product) {
     if ($match) $filteredProducts[$product["ID"]] = $product;
 }
 
-// ---- Build $resArray — File 5 logic, preserved exactly ----
+// ---- Build $resArray ----
 $resArray = [];
 
 foreach ($filteredProducts as $product) {
@@ -273,6 +306,9 @@ foreach ($filteredProducts as $product) {
             "sqmTotal"           => 0,
             "sqlSold"            => 0,
             "soldPricesSum"      => 0,
+            "soldPricesDeal"     => 0,
+            "soldPricesProduct"  => 0,
+            "receivedPayments"   => 0,
             "averagePricePerSqm" => 0
         ];
     }
@@ -287,26 +323,38 @@ foreach ($filteredProducts as $product) {
             "sqmTotal"           => 0,
             "sqlSold"            => 0,
             "soldPricesSum"      => 0,
+            "soldPricesDeal"     => 0,
+            "soldPricesProduct"  => 0,
+            "receivedPayments"   => 0,
             "averagePricePerSqm" => 0
         ];
     }
     $resArray[$BB][$prodType]["unitsTotal"]++;
     $resArray[$BB][$prodType]["sqmTotal"] += $prodTotalArea;
 
+    $price = $product["PRICE"];
+    $resArray[$BB][$prodType]["soldPricesSum"] += $price;
+    $resArray["TOTAL"][$prodType]["soldPricesSum"] += $price;
     if ($status === "გაყიდული") {
         $resArray[$BB][$prodType]["unitSold"]++;
         $resArray[$BB][$prodType]["sqlSold"] += $prodTotalArea;
-        $price = floatVal(getDealByIDForPrice($product["OWNER_DEAL"])["UF_CRM_1761658503260"]);
-        $resArray[$BB][$prodType]["soldPricesSum"] += $price;
-        $resArray[$BB][$prodType]["averagePricePerSqm"] = $resArray[$BB][$prodType]["soldPricesSum"] / $resArray[$BB][$prodType]["unitSold"];
+        $priceDeal = floatVal(getDealByIDForPrice($product["OWNER_DEAL"])["OPPORTUNITY"]);
+        $resArray[$BB][$prodType]["soldPricesDeal"] += $priceDeal;
+        $resArray["TOTAL"][$prodType]["soldPricesDeal"] += $priceDeal;
+        $resArray[$BB][$prodType]["soldPricesProduct"] += $price;
+        $resArray["TOTAL"][$prodType]["soldPricesProduct"] += $price;
+        $resArray[$BB][$prodType]["averagePricePerSqm"] = $resArray[$BB][$prodType]["soldPricesDeal"] / $resArray[$BB][$prodType]["sqlSold"];
 
         $resArray["TOTAL"][$prodType]["unitSold"]++;
         $resArray["TOTAL"][$prodType]["sqlSold"] += $prodTotalArea;
-        $resArray["TOTAL"][$prodType]["soldPricesSum"] += $price;
-        $resArray["TOTAL"][$prodType]["averagePricePerSqm"] = $resArray["TOTAL"][$prodType]["soldPricesSum"] / $resArray["TOTAL"][$prodType]["unitSold"];
+        $resArray["TOTAL"][$prodType]["averagePricePerSqm"] = $resArray["TOTAL"][$prodType]["soldPricesDeal"] / $resArray["TOTAL"][$prodType]["sqlSold"];
 
         $filteredProducts[$product["ID"]]["firstDaricxvaDate"] = $deals[$product["OWNER_DEAL"]]["firstDaricxvaDate"];
         $filteredProducts[$product["ID"]]["lastDaricxvaDate"] = $deals[$product["OWNER_DEAL"]]["lastDaricxvaDate"];
+
+        $payment = $gadaxdebiByDeal[$product["OWNER_DEAL"]] ?? 0;
+        $resArray[$BB][$prodType]["receivedPayments"]    += $payment;
+        $resArray["TOTAL"][$prodType]["receivedPayments"] += $payment;
     }
 
     // --- Flat bedroom breakdown ---
@@ -324,6 +372,9 @@ foreach ($filteredProducts as $product) {
                 "sqmTotal"           => 0,
                 "sqlSold"            => 0,
                 "soldPricesSum"      => 0,
+                "soldPricesDeal"     => 0,
+                "soldPricesProduct"  => 0,
+                "receivedPayments"   => 0,
                 "averagePricePerSqm" => 0
             ];
         }
@@ -337,24 +388,35 @@ foreach ($filteredProducts as $product) {
                 "sqmTotal"           => 0,
                 "sqlSold"            => 0,
                 "soldPricesSum"      => 0,
+                "soldPricesDeal"     => 0,
+                "soldPricesProduct"  => 0,
+                "receivedPayments"   => 0,
                 "averagePricePerSqm" => 0
             ];
         }
         $resArray["TOTAL"][$prodTypeAnothaOne]["unitsTotal"]++;
         $resArray["TOTAL"][$prodTypeAnothaOne]["sqmTotal"] += $prodTotalArea;
 
+        $price = $product["PRICE"];
+        $resArray["TOTAL"][$prodTypeAnothaOne]["soldPricesSum"] += $price;
+        $resArray[$BB][$prodTypeAnothaOne]["soldPricesSum"] += $price;
         if ($status === "გაყიდული") {
-            $price = floatVal(getDealByIDForPrice($product["OWNER_DEAL"])["UF_CRM_1761658503260"]);
-
+            $priceDeal = floatVal(getDealByIDForPrice($product["OWNER_DEAL"])["OPPORTUNITY"]);
+            
             $resArray[$BB][$prodTypeAnothaOne]["unitSold"]++;
             $resArray[$BB][$prodTypeAnothaOne]["sqlSold"] += $prodTotalArea;
-            $resArray[$BB][$prodTypeAnothaOne]["soldPricesSum"] += $price;
-            $resArray[$BB][$prodTypeAnothaOne]["averagePricePerSqm"] = $resArray[$BB][$prodTypeAnothaOne]["soldPricesSum"] / $resArray[$BB][$prodTypeAnothaOne]["unitSold"];
+            $resArray[$BB][$prodTypeAnothaOne]["soldPricesDeal"] += $priceDeal;
+            $resArray[$BB][$prodTypeAnothaOne]["soldPricesProduct"] += $price;
+            $resArray[$BB][$prodTypeAnothaOne]["averagePricePerSqm"] = $resArray[$BB][$prodTypeAnothaOne]["soldPricesDeal"] / $resArray[$BB][$prodTypeAnothaOne]["sqlSold"];
 
             $resArray["TOTAL"][$prodTypeAnothaOne]["unitSold"]++;
             $resArray["TOTAL"][$prodTypeAnothaOne]["sqlSold"] += $prodTotalArea;
-            $resArray["TOTAL"][$prodTypeAnothaOne]["soldPricesSum"] += $price;
-            $resArray["TOTAL"][$prodTypeAnothaOne]["averagePricePerSqm"] = $resArray["TOTAL"][$prodTypeAnothaOne]["soldPricesSum"] / $resArray["TOTAL"][$prodTypeAnothaOne]["unitSold"];
+            $resArray["TOTAL"][$prodTypeAnothaOne]["soldPricesDeal"] += $priceDeal;
+            $resArray["TOTAL"][$prodTypeAnothaOne]["soldPricesProduct"] += $price;
+            $resArray["TOTAL"][$prodTypeAnothaOne]["averagePricePerSqm"] = $resArray["TOTAL"][$prodTypeAnothaOne]["soldPricesDeal"] / $resArray["TOTAL"][$prodTypeAnothaOne]["sqlSold"];
+
+            $resArray[$BB][$prodTypeAnothaOne]["receivedPayments"]    += $payment;
+            $resArray["TOTAL"][$prodTypeAnothaOne]["receivedPayments"] += $payment;
         }
     }
 }
@@ -564,7 +626,7 @@ ob_end_clean();
 
 $apartmentTypes = ["Flat (1 Bed.)", "Flat (2 Bed.)", "Flat (3 Bed.)"];
 
-// Collect ordered product types: main types first, bedroom breakdowns last
+// Collect ordered product types: main types first (sorted), bedroom breakdowns last (sorted ascending)
 $allProdTypes = [];
 foreach ($resArray as $groupData) {
     foreach (array_keys($groupData) as $pt) {
@@ -573,7 +635,18 @@ foreach ($resArray as $groupData) {
 }
 $mainTypes      = array_values(array_filter($allProdTypes, fn($pt) => !in_array($pt, $apartmentTypes)));
 $breakdownTypes = array_values(array_filter($allProdTypes, fn($pt) =>  in_array($pt, $apartmentTypes)));
-$allProdTypes   = array_merge($mainTypes, $breakdownTypes);
+
+// Sort main types alphabetically
+sort($mainTypes);
+
+// Sort bedroom breakdowns ascending: Flat (1 Bed.) → Flat (2 Bed.) → Flat (3 Bed.)
+usort($breakdownTypes, function($a, $b) {
+    preg_match('/(\d+)/', $a, $mA);
+    preg_match('/(\d+)/', $b, $mB);
+    return (int)($mA[1] ?? 0) - (int)($mB[1] ?? 0);
+});
+
+$allProdTypes = array_merge($mainTypes, $breakdownTypes);
 
 // ---- Render function ----
 function renderBBTable($groupKey, $groupData, $allProdTypes, $apartmentTypes) {
@@ -589,14 +662,15 @@ function renderBBTable($groupKey, $groupData, $allProdTypes, $apartmentTypes) {
                 <th>Sq.m</th>
                 <th>Sq.m Sold</th>
                 <th>Total Price</th>
-                <th>Price by sold sq.m</th>
+                <th>Price by sold sq.m (Deals)</th>
+                <th>Price by sold sq.m (Products)</th>
                 <th>Received payments</th>
                 <th>Avg Price per sq.m / Sold Unit ($)</th>
             </tr>
         </thead>
         <tbody>
             <?php
-            $t_unitsTotal = $t_unitSold = $t_sqmTotal = $t_sqlSold = $t_soldPricesSum = 0;
+            $t_unitsTotal = $t_unitSold = $t_sqmTotal = $t_sqlSold = $t_soldPricesSum = $t_soldPricesDeal = $t_soldPricesProduct= $t_receivedPayments = 0;
 
             foreach ($allProdTypes as $pt):
                 if (!isset($groupData[$pt])) continue;
@@ -604,13 +678,15 @@ function renderBBTable($groupKey, $groupData, $allProdTypes, $apartmentTypes) {
                 $isBreakdown = in_array($pt, $apartmentTypes);
                 $rowClass    = $isBreakdown ? 'class="breakdown-row"' : '';
 
-                // Accumulate totals only from non-breakdown rows
                 if (!$isBreakdown) {
-                    $t_unitsTotal    += $info['unitsTotal']    ?? 0;
-                    $t_unitSold      += $info['unitSold']      ?? 0;
-                    $t_sqmTotal      += $info['sqmTotal']      ?? 0;
-                    $t_sqlSold       += $info['sqlSold']       ?? 0;
-                    $t_soldPricesSum += $info['soldPricesSum'] ?? 0;
+                    $t_unitsTotal        += $info['unitsTotal']        ?? 0;
+                    $t_unitSold          += $info['unitSold']          ?? 0;
+                    $t_sqmTotal          += $info['sqmTotal']          ?? 0;
+                    $t_sqlSold           += $info['sqlSold']           ?? 0;
+                    $t_soldPricesSum     += $info['soldPricesSum']     ?? 0;
+                    $t_soldPricesDeal    += $info['soldPricesDeal']    ?? 0;
+                    $t_soldPricesProduct += $info['soldPricesProduct'] ?? 0;
+                    $t_receivedPayments  += $info['receivedPayments']  ?? 0;
                 }
             ?>
             <tr <?= $rowClass ?>>
@@ -620,8 +696,9 @@ function renderBBTable($groupKey, $groupData, $allProdTypes, $apartmentTypes) {
                 <td><?= number_format($info['sqmTotal']      ?? 0, 2) ?></td>
                 <td><?= number_format($info['sqlSold']        ?? 0, 2) ?></td>
                 <td>$<?= number_format($info['soldPricesSum'] ?? 0, 2) ?></td>
-                <td>$<?= number_format($info['sqlSold'] > 0 ? ($info['soldPricesSum'] / $info['sqlSold']) : 0, 2) ?></td>
-                <td>—</td><!-- Received payments: no data source yet, placeholder -->
+                <td>$<?= number_format($info['soldPricesDeal'] ?? 0, 2) ?></td>
+                <td>$<?= number_format($info['soldPricesProduct'] ?? 0, 2) ?></td>
+                <td>$<?= number_format($info['receivedPayments'] ?? 0, 2) ?></td>
                 <td>$<?= number_format($info['averagePricePerSqm'] ?? 0, 2) ?></td>
             </tr>
             <?php endforeach; ?>
@@ -637,8 +714,9 @@ function renderBBTable($groupKey, $groupData, $allProdTypes, $apartmentTypes) {
                 <td><?= number_format($t_sqmTotal,      2) ?></td>
                 <td><?= number_format($t_sqlSold,       2) ?></td>
                 <td>$<?= number_format($t_soldPricesSum, 2) ?></td>
-                <td>$<?= number_format($t_pricePerSqm,  2) ?></td>
-                <td>—</td><!-- Received payments placeholder -->
+                <td>$<?= number_format($t_soldPricesDeal,  2) ?></td>
+                <td>$<?= number_format($t_soldPricesProduct,  2) ?></td>
+                <td>$<?= number_format($t_receivedPayments, 2) ?></td>
                 <td>$<?= number_format($t_avg,          2) ?></td>
             </tr>
         </tbody>
@@ -646,13 +724,15 @@ function renderBBTable($groupKey, $groupData, $allProdTypes, $apartmentTypes) {
     <?php
 }
 
-// ---- Render TOTAL first, then each BB ----
+// ---- Render TOTAL first, then each BB sorted numerically+alphabetically ----
 if (isset($resArray["TOTAL"])) {
     echo '<h2>Sales Summary</h2>';
     renderBBTable("TOTAL", $resArray["TOTAL"], $allProdTypes, $apartmentTypes);
 }
 
 $bbKeys = array_filter(array_keys($resArray), fn($k) => $k !== "TOTAL");
+$bbKeys = sortBBKeys(array_values($bbKeys));
+
 if (!empty($bbKeys)) {
     echo '<h2>Sales by Building / Block</h2>';
     foreach ($bbKeys as $bbKey) {
