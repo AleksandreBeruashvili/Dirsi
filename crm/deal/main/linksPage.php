@@ -1,6 +1,9 @@
 <?php
-// ob_start();
+ob_start();
 require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/header.php");
+CJSCore::Init(array("jquery"));
+
+$APPLICATION->SetTitle("MainPageLinks");
 
 function printArr($arr) {
     echo "<pre>"; print_r($arr); echo "</pre>";
@@ -279,3 +282,4 @@ unset($items);
 </body>
 
 </html>
+<?php require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/footer.php"); ?>
