@@ -382,5 +382,7 @@ else{
     }
 }
 
+$logText = str_ireplace("flat", "ბინა", $logText);
+
 $this->SetVariable("log", $logText, JSON_UNESCAPED_UNICODE);
 $this->SetVariable("allocation", $allocation);

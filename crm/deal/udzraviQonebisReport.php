@@ -168,7 +168,16 @@ foreach ($products as $product) {
     
     if ($match) {
         $filteredProducts[$product["ID"]] = $product;
+
+        if ($product["OWNER_DEAL"]) {
+            $registraciaReestrshi = $deals[$product["OWNER_DEAL"]]["UF_CRM_1771499394"];
+            $filteredProducts[$product["ID"]]["registeredOrNo"] = $registraciaReestrshi === "1" ? "Yes" : "No";
+        }
+
+        $filteredProducts[$product["ID"]]["available"] = $product["STATUS"] === "გაყიდული" ? "NO" : "Yes";
+        $filteredProducts[$product["ID"]]["statusEng"] = $product["STATUS"] === "გაყიდული" ? "Sold" : "Available";
     }
+
 }
 
 $resArray = [];
@@ -203,6 +212,8 @@ foreach ($filteredProducts as $product) {
         }
     }
 }
+
+
 ob_end_clean();
 ?>
 
@@ -313,6 +324,10 @@ ob_end_clean();
         color: #333;
         margin-top: 20px;
     }
+
+    .sub-type-row td {
+        color: #999;
+    }
 </style>
 
 <div class="filter-container">
@@ -396,6 +411,10 @@ ob_end_clean();
             </div>
         </div>
     </form>
+
+    <div style="margin-top: 15px;">
+        <button class="btn btn-primary" onclick="exportToExcel()">📥 Export to Excel</button>
+    </div>
 </div>
 
 <?php
@@ -445,7 +464,7 @@ foreach ($apartmentTypes as $aptType) {
 }
 ?>
 
-<h2>Amounts By Statuses of Product Types</h2>
+<h2>By Unit</h2>
 <table class="sales-table">
     <thead>
         <tr>
@@ -465,7 +484,7 @@ foreach ($apartmentTypes as $aptType) {
                 $row_total += $infos[$status]['num'] ?? 0;
             }
         ?>
-        <tr>
+        <tr <?= in_array($prodType, $apartmentTypes) ? 'class="sub-type-row"' : '' ?>>
             <td><?= $prodType ?></td>
             <td><?= $infos['თავისუფალი']['num'] + $infos['დაჯავშნილი']['num'] ?? 0 ?></td>
             <td><?= $infos['დაჯავშნილი']['num'] ?? 0 ?></td>
@@ -485,7 +504,7 @@ foreach ($apartmentTypes as $aptType) {
     </tbody>
 </table>
 
-<h2>Areas By Statuses of Product Types</h2>
+<h2>By Sq. Meters</h2>
 <table class="sales-table">
     <thead>
         <tr>
@@ -505,7 +524,7 @@ foreach ($apartmentTypes as $aptType) {
                     $apt_row_total += $resArray[$prodType][$status]['total_area'] ?? 0;
                 }
             ?>
-            <tr>
+            <tr <?= in_array($prodType, $apartmentTypes) ? 'class="sub-type-row"' : '' ?>>
                 <td><?= $prodType ?></td>
                 <td><?= number_format($resArray[$prodType]['თავისუფალი']['total_area'] + $resArray[$prodType]['დაჯავშნილი']['total_area'] ?? 0, 2) ?></td>
                 <td><?= number_format($resArray[$prodType]['დაჯავშნილი']['total_area'] ?? 0, 2) ?></td>
@@ -526,7 +545,7 @@ foreach ($apartmentTypes as $aptType) {
     </tbody>
 </table>
 
-<h2>Prices By Statuses of Product Types</h2>
+<h2>By $</h2>
 <table class="sales-table">
     <thead>
         <tr>
@@ -546,7 +565,7 @@ foreach ($apartmentTypes as $aptType) {
                 $row_total_price += $infos[$status]['price'] ?? 0;
             }
         ?>
-        <tr>
+        <tr <?= in_array($prodType, $apartmentTypes) ? 'class="sub-type-row"' : '' ?>>
             <td><?= $prodType ?></td>
             <td><?= number_format($infos['თავისუფალი']['price'] + $infos['დაჯავშნილი']['price'] ?? 0, 2) ?></td>
             <td><?= number_format($infos['დაჯავშნილი']['price'] ?? 0, 2) ?></td>
@@ -557,3 +576,73 @@ foreach ($apartmentTypes as $aptType) {
         <?php endforeach; ?>
     </tbody>
 </table>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+    const productsData = <?= json_encode(array_values($filteredProducts)) ?>;
+
+    function exportToExcel() {
+        const fields = [
+            { key: '',               label: '#' },
+            { key: 'BB',             label: 'Building/Block' },
+            { key: 'FLOOR',          label: 'Floor' },
+            { key: 'NAME',           label: '№ Flat' },
+            { key: 'PTO_2ID0NS',     label: 'PTD' },
+            { key: 'statusEng',      label: 'Status' },
+            { key: 'PRODUCT_TYPE',   label: 'Rooms' },
+            { key: 'TOTAL_AREA',     label: 'Area (sq meters)' },
+            { key: 'LIVING_SPACE',   label: 'Living Area (sq meters)' },
+            { key: 'BALCONY_AREA',   label: 'Balcony (sq meters)' },
+            { key: 'OWNER_DEAL',     label: '№ Deal' },
+            { key: '',               label: 'Year' },
+            { key: '',               label: 'Month' },
+            { key: 'projEndDate',    label: 'Date' },
+            { key: '',               label: 'Settlement' },
+            { key: 'registeredOrNo', label: 'Registration in the Public Registry' },
+            { key: 'available',      label: 'Available for sale' },
+            { key: 'KVM_PRICE',      label: 'Price Incl. VAT (Sq meters/$)' },
+            { key: 'PRICE',          label: 'Full Price ($)' }
+        ];
+
+        let counter = 1;
+        const rows = productsData.map(p => {
+            const row = {};
+            const projEndDateArr = (p["projEndDate"] || "").split("/");
+            const year  = projEndDateArr[2] || '';
+            const month = projEndDateArr[1] || '';
+
+            fields.forEach(f => {
+                if (f.label === "Building/Block") {
+                    row[f.label] = (p["BUILDING"] || "") + (p["KORPUSIS_NOMERI_XE3NX2"] || "");
+                } else if (f.label === "#") {
+                    row[f.label] = counter;
+                } else if (f.label === "Rooms") {
+                    if (p[f.key] === "Flat") {
+                        row[f.label] = (p["Bedrooms"] || "") + " Rooms Studio";
+                    } else {
+                        row[f.label] = p[f.key] ?? '';
+                    }
+                } else if (f.label === "Year") {
+                    row[f.label] = year;
+                } else if (f.label === "Month") {
+                    row[f.label] = month;
+                } else {
+                    row[f.label] = p[f.key] ?? '';
+                }
+            });
+            counter++;
+            return row;
+        });
+
+        const ws = XLSX.utils.json_to_sheet(rows, { header: fields.map(f => f.label) });
+        const colWidths = fields.map(f => ({ wch: Math.max(f.label.length, 14) }));
+        ws['!cols'] = colWidths;
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Products');
+
+        const today = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `status_report_${today}.xlsx`);
+    }
+</script>
