@@ -572,7 +572,7 @@ if($dealId){
             const widgetAddBtn = this.getElement('.crm-entity-card-widget-add-btn-container');
             Utils.setElementDisplay(widgetAddBtn, false);
         },
-        
+
         hideTerminationAcceptButton() {
             const popup = this.getElementById('popup-window-content-entity_progress_TERMINATION');
             if (popup && window.getComputedStyle(popup).display === 'block') {
@@ -853,7 +853,7 @@ if($dealId){
                 this.addButton({
                     id: 'sellBtn',
                     icon: ButtonFactory.icons.sale,
-                    label: 'Sale',
+                    label: 'გაყიდვა',
                     onClick: () => this.handleSellClick()
                 });
             }
@@ -863,7 +863,7 @@ if($dealId){
                 this.addButton({
                     id: 'agreementBtn',
                     icon: ButtonFactory.icons.documents,
-                    label: 'Contract validation',
+                    label: 'ხელშეკრულების გადამოწმება',
                     onClick: () => PopupManager.openAgreement(dealIdForToolbar)
                 });
             }
@@ -873,7 +873,7 @@ if($dealId){
                 this.addButton({
                     id: 'nonStandardAgreementBtn',
                     icon: ButtonFactory.icons.documents,
-                    label: 'Non-standard agreement',
+                    label: 'არასტანდარტული ხელშეკრულება',
                     onClick: () => PopupManager.openNonStandardAgreement(dealIdForToolbar)
                 });
             }
@@ -892,7 +892,7 @@ if($dealId){
                     this.addButton({
                         id: 'reservationBtn',
                         icon: ButtonFactory.icons.calendar,
-                        label: 'Reservation',
+                        label: 'რეზერვაცია',
                         onClick: () => PopupManager.openReservation(dealIdForToolbar)
                     });
                 }
@@ -904,7 +904,7 @@ if($dealId){
                     this.addButton({
                         id: 'resChangeBut',
                         icon: ButtonFactory.icons.calendar,
-                        label: 'Reservation Change',
+                        label: 'რეზერვაციის ცვლილება',
                         onClick: () => PopupManager.openReservation(dealIdForToolbar, true)
                     });
                 }
@@ -917,7 +917,7 @@ if($dealId){
                     this.addButton({
                         id: 'javshnisRigiBut',
                         icon: ButtonFactory.icons.calendar,
-                        label: 'Reservation Queue',
+                        label: 'რეზერვაციის რიგი',
                         extraClass: 'custom-action-btn--queue',
                         onClick: () => this.handleQueueClick()
                     });
@@ -930,7 +930,7 @@ if($dealId){
                 this.addButton({
                     id: 'documentsBtn',
                     icon: ButtonFactory.icons.documents,
-                    label: 'Documents',
+                    label: 'დოკუმენტები',
                     onClick: () => PopupManager.openDocuments(dealIdForToolbar)
                 });
             }
@@ -947,7 +947,7 @@ if($dealId){
                     this.addButton({
                         id: 'kalkButton',
                         icon: ButtonFactory.icons.calculator,
-                        label: 'Calculator',
+                        label: 'კალკულატორი',
                         onClick: () => PopupManager.openCalculator(dealIdForToolbar)
                     });
                 }
@@ -961,7 +961,7 @@ if($dealId){
                 this.addButton({
                     id: 'finansRep',
                     icon: ButtonFactory.icons.chart,
-                    label: 'Financial Report',
+                    label: 'ფინანსური რეპორტი',
                     onClick: () => PopupManager.openFinancialReport(dealIdForToolbar)
                 });
             }
@@ -971,7 +971,7 @@ if($dealId){
                 this.addButton({
                     id: 'registryRegistrationBtn',
                     icon: ButtonFactory.icons.registry,
-                    label: 'Registration',
+                    label: 'რეესტრში რეგისტრაცია',
                     onClick: () => PopupManager.openRegistryRegistration(dealIdForToolbar)
                 });
             }
@@ -980,7 +980,7 @@ if($dealId){
                 this.addButton({
                     id: 'handingKeyBtn',
                     icon: ButtonFactory.icons.key,
-                    label: 'Handing key',
+                    label: 'გასაღების გადაცემა',
                     onClick: () => PopupManager.openHandingKey(dealIdForToolbar)
                 });
             }
