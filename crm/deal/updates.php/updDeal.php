@@ -23,10 +23,12 @@ function getDealsByFilter($arFilter, $arSelect = array(), $arSort = array("ID"=>
 
 $arFilter = [
     "STAGE_ID" => "WON",
-    "ID"       => 2315
+    // "ID"       => 1663
 ];
 
 $deals = getDealsByFilter($arFilter);
+
+// printArr(count($deals));
 
 if(empty($deals)){
     echo "Deals not found";
@@ -48,37 +50,37 @@ foreach($deals as $deal){
     if ($ob = $res->GetNextElement()) {
         $arProps = $ob->GetProperties();
         if (!empty($arProps["TARIGI"]["VALUE"])) {
-            $contractSigningDate = $arProps["TARIGI"]["VALUE"];
+            $contractSigningDate = $arProps["TARIGI"]["VALUE"]; 
         }
     }
-
-    printArr($contractSigningDate);
+    // printArr($dealId);
+    // printArr($contractSigningDate);
 
     // ---------- UF UPDATE ----------
     $updateArr = array();
 
-    // if (!empty($contractSigningDate)) {
-    //     $updateArr["UF_CRM_1762416342444"] = $contractSigningDate;
-    // }
+    if (!empty($contractSigningDate)) {
+        $updateArr["UF_CRM_1762416342444"] = $contractSigningDate;
+    }
 
-    // if (!empty($updateArr)) {
-    //     $dealObj = new CCrmDeal(false);
+    if (!empty($updateArr)) {
+        $dealObj = new CCrmDeal(false);
 
-    //     $result = $dealObj->Update(
-    //         $dealId,
-    //         $updateArr,
-    //         false,
-    //         false,
-    //         ["CHECK_PERMISSIONS" => false]
-    //     );
+        $result = $dealObj->Update(
+            $dealId,
+            $updateArr,
+            false,
+            false,
+            ["CHECK_PERMISSIONS" => false]
+        );
 
-    //     if(!$result){
-    //         echo "Update Error: ".$dealObj->LAST_ERROR."<br>";
-    //     }else{
-    //         echo "Deal ".$dealId." updated<br>";
-    //     }
-    // } else {
-    //     echo "Deal ".$dealId." - no contract signing date found<br>";
-    // }
+        if(!$result){
+            echo "Update Error: ".$dealObj->LAST_ERROR."<br>";
+        }else{
+            echo "Deal ".$dealId." updated<br>";
+        }
+    } else {
+        echo "Deal ".$dealId." - no contract signing date found<br>";
+    }
 }
 ?>
