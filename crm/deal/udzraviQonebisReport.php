@@ -213,6 +213,15 @@ foreach ($filteredProducts as $product) {
     }
 }
 
+uksort($resArray, function($a, $b) {
+    $order = function($s) {
+        if (preg_match('/Flat \((\d+) Bed\.\)/', $s, $m)) {
+            return 'Flat_' . str_pad($m[1], 3, '0', STR_PAD_LEFT);
+        }
+        return $s;
+    };
+    return strcmp($order($a), $order($b));
+});
 
 ob_end_clean();
 ?>
@@ -418,28 +427,23 @@ ob_end_clean();
 </div>
 
 <?php
-// Calculate totals for first table (excluding apartment breakdowns)
+// Apartment sub-type breakdowns to exclude from totals
 $apartmentTypes = ["Flat (1 Bed.)", "Flat (2 Bed.)", "Flat (3 Bed.)"];
 $statuses = ['თავისუფალი', 'დაჯავშნილი', 'გაყიდული', 'გადაცემული', 'NFS'];
 
-// Initialize totals for each status
-$status_totals_num = [];
-$status_totals_area = [];
-$status_totals_price = [];
-foreach ($statuses as $status) {
-    $status_totals_num[$status] = 0;
-    $status_totals_area[$status] = 0;
-    $status_totals_price[$status] = 0;
-}
+// Initialize totals
+$status_totals_num   = array_fill_keys($statuses, 0);
+$status_totals_area  = array_fill_keys($statuses, 0);
+$status_totals_price = array_fill_keys($statuses, 0);
 
-// Calculate status totals (excluding apartment breakdowns)
+// Sum all rows EXCEPT the Flat (N Bed.) sub-rows to avoid double counting
 foreach ($resArray as $prodType => $infos) {
     if (in_array($prodType, $apartmentTypes)) continue;
-    
+
     foreach ($statuses as $status) {
-        $status_totals_num[$status] += $infos[$status]['num'] ?? 0;
-        $status_totals_area[$status] += $infos[$status]['total_area'] ?? 0;
-        $status_totals_price[$status] += $infos[$status]['price'] ?? 0;
+        $status_totals_num[$status]   += $infos[$status]['num']        ?? 0;
+        $status_totals_area[$status]  += $infos[$status]['total_area'] ?? 0;
+        $status_totals_price[$status] += $infos[$status]['price']      ?? 0;
     }
 }
 
@@ -495,7 +499,7 @@ foreach ($apartmentTypes as $aptType) {
         <?php endforeach; ?>
         <tr class="total-row">
             <td>TOTAL</td>
-            <td><?= $status_totals_num['თავისუფალი'] ?></td>
+            <td><?= ($status_totals_num['თავისუფალი'] + $status_totals_num['დაჯავშნილი']) ?></td>
             <td><?= $status_totals_num['დაჯავშნილი'] ?></td>
             <td><?= $status_totals_num['გაყიდული'] ?></td>
             <td><?= $status_totals_num['NFS'] ?></td>
@@ -536,11 +540,11 @@ foreach ($apartmentTypes as $aptType) {
         <?php endforeach; ?>
         <tr class="total-row">
             <td>TOTAL</td>
-            <td><?= number_format($apt_status_totals_area['თავისუფალი'], 2) ?></td>
-            <td><?= number_format($apt_status_totals_area['დაჯავშნილი'], 2) ?></td>
-            <td><?= number_format($apt_status_totals_area['გაყიდული'], 2) ?></td>
-            <td><?= number_format($apt_status_totals_area['NFS'], 2) ?></td>
-            <td><?= number_format(array_sum($apt_status_totals_area), 2) ?></td>
+            <td><?= number_format($status_totals_area['თავისუფალი'] + $status_totals_area['დაჯავშნილი'], 2) ?></td>
+            <td><?= number_format($status_totals_area['დაჯავშნილი'], 2) ?></td>
+            <td><?= number_format($status_totals_area['გაყიდული'], 2) ?></td>
+            <td><?= number_format($status_totals_area['NFS'], 2) ?></td>
+            <td><?= number_format(array_sum($status_totals_area), 2) ?></td>
         </tr>
     </tbody>
 </table>

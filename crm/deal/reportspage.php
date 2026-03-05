@@ -63,12 +63,15 @@ function printArr($arr)
         function updateIframe() {
             const iframe = document.getElementById('reportIframe');
             const selectedValue = document.getElementById('reportSelector').value;
+            const lang = document.querySelector('.flag-button.selected').id === 'georgiaBtn' ? 'ge' : 'eng';
 
             if (selectedValue) {
-                iframe.src = selectedValue;
-                iframe.style.display = 'block'; // Show the iframe
+                localStorage.setItem('reportLang', lang);           // save lang
+                localStorage.setItem('reportSelected', selectedValue); // save selected report
+                iframe.src = selectedValue + '?lang=' + lang;
+                iframe.style.display = 'block';
             } else {
-                iframe.style.display = 'none'; // Hide the iframe if no selection is made
+                iframe.style.display = 'none';
             }
         }
     </script>
@@ -78,13 +81,13 @@ function printArr($arr)
     <select id="reportSelector" onchange="updateIframe()">
   
         <option value="" id="choose">Choose</option>
-        <option value="https://crmasgroup.ge/crm/deal/udzraviQonebisReport.php" id="product">Product Report</option>
         <option value="https://crmasgroup.ge/crm/deal/soldReport.php" id="sold">Sales Reports</option>
         <option value="https://crmasgroup.ge/crm/deal/davalianebisReport.php" id="debitors">Debt Report</option>
-        <option value="https://crmasgroup.ge/crm/deal/leadsReport.php" id="leads">Leads Report</option>
-        <option value="https://crmasgroup.ge/crm/deal/qualitiesBySourcesReport.php" id="sources">Sources Report</option>
-        <option value="https://crmasgroup.ge/crm/deal/marketingReport.php" id="marketing">Marketing Report</option>
+        <option value="https://crmasgroup.ge/crm/deal/udzraviQonebisReport.php" id="product">Product Report</option>
         <option value="https://crmasgroup.ge/crm/deal/cashFlow.php" id="cashflow">Cashflow</option>
+        <option value="https://crmasgroup.ge/crm/deal/leadsReport.php" id="leads">Leads Report</option>
+        <option value="https://crmasgroup.ge/crm/deal/marketingReport.php" id="marketing">Marketing Report</option>
+        <option value="https://crmasgroup.ge/crm/deal/qualitiesBySourcesReport.php" id="sources">Sources Report</option>
 
         <!-- <option value="https://crm.homer.ge/crm/deal/statistic-inprogress.php" id="callcenter">Call center report</option> -->
 
@@ -108,9 +111,9 @@ function printArr($arr)
     function selectLanguage(language, button) {
         document.querySelectorAll('.flag-button').forEach(btn => btn.classList.remove('selected'));
         button.classList.add('selected');
+        localStorage.setItem('reportLang', language);
 
-        console.log(language);
-        if(language =="ge"){
+        if(language == "ge") {
             document.getElementById("report").innerText="რეპორტის ტიპი:";
             document.getElementById("choose").innerText="არჩევა";
             document.getElementById("product").innerText="უძრავი ქონების რეპორტი";
@@ -120,8 +123,7 @@ function printArr($arr)
             document.getElementById("sources").innerText="წყაროების რეპორტი";
             document.getElementById("marketing").innerText="მარკეტინგის რეპორტი";
             document.getElementById("cashflow").innerText="ქეშფლოუ რეპორტი";
-            
-        }else  if(language =="eng"){
+        } else if(language == "eng") {
             document.getElementById("report").innerText="Report type:";
             document.getElementById("choose").innerText="Choose";
             document.getElementById("product").innerText="Product Report";
@@ -131,8 +133,23 @@ function printArr($arr)
             document.getElementById("sources").innerText="Sources Report";
             document.getElementById("marketing").innerText="Marketing Report";
             document.getElementById("cashflow").innerText="Cashflow";
-
         }
-        
-    }    
+
+        const selectedValue = document.getElementById('reportSelector').value;
+        if (selectedValue) updateIframe();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedLang = localStorage.getItem('reportLang');
+        const savedReport = localStorage.getItem('reportSelected');
+
+        if (savedLang === 'ge') {
+            selectLanguage('ge', document.getElementById('georgiaBtn'));
+        }
+
+        if (savedReport) {
+            document.getElementById('reportSelector').value = savedReport;
+            updateIframe();
+        }
+    });
 </script>

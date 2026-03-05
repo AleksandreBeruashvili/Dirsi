@@ -170,8 +170,128 @@ $filterFloor       = isset($_GET['floor'])        ? trim($_GET['floor'])        
 $filterProductType = isset($_GET['prodType'])     ? trim($_GET['prodType'])     : '';
 $filterResponsible = isset($_GET['responsible'])  ? trim($_GET['responsible'])  : '';
 $filterDateFrom    = isset($_GET['date_from'])    ? trim($_GET['date_from'])    : '';
-$filterDateTo      = isset($_GET['date_to'])      ? trim($_GET['date_to'])      : '';
+$filterDateTo      = isset($_GET['date_to'])      ? trim($_GET['date_to'])      : date('Y-m-d');
 $filterCustomField = isset($_GET['custom_field']) ? trim($_GET['custom_field']) : '';
+
+$lang = isset($_GET['lang']) ? $_GET['lang'] : 'eng';
+$labels = [
+    'eng' => [
+        'project'        => 'Project',
+        'block'          => 'Block',
+        'building'       => 'Building',
+        'floor'          => 'Floor',
+        'prodType'       => 'Product Type',
+        'responsible'    => 'Responsible',
+        'contract_no'    => 'Contract №',
+        'all_projects'   => 'All Projects',
+        'all_blocks'     => 'All Blocks',
+        'all_buildings'  => 'All Buildings',
+        'all_floors'     => 'All Floors',
+        'all_types'      => 'All Product Types',
+        'all_resp'       => 'All Responsible',
+        'apply'          => 'Apply Filters',
+        'clear'          => 'Clear',
+        'export'         => '📥 Export to Excel',
+        'title_dollars'  => 'By $',
+        'title_units'    => 'By Unit',
+        'col_prod_type'  => 'Product Type',
+        'col_sold_amt'   => 'Amount of Sold ($)',
+        'col_paid_amt'   => 'Paid Amount ($)',
+        'col_debet'      => 'Debet ($)',
+        'col_by_sched'   => 'Payments by Schedule ($)',
+        'col_debt'       => 'Debt ($)',
+        'col_sold_count' => 'Sold flat count',
+        'col_paid_full'  => 'Paid fully count',
+        'col_debet_cnt'  => 'Debet Count',
+        'col_sched_cnt'  => 'Payments by Schedule Count',
+        'col_debt_cnt'   => 'Debt count',
+        'total'          => 'Total',
+        'no_data'        => 'No data available',
+        'xls_deal'       => 'Deal#',
+        'xls_client'     => 'Client',
+        'xls_resp'       => 'Responsible',
+        'xls_contract'   => 'Contract Signing Date',
+        'xls_sched_start'=> 'Schedule Start Date',
+        'xls_sched_end'  => 'Schedule End Date',
+        'xls_buyer_type' => 'Buyer Type',
+        'xls_id_num'     => 'ID Number',
+        'xls_citizen'    => 'Citizenship',
+        'xls_phone'      => 'Mobile Number',
+        'xls_re_type'    => 'Real Estate Type',
+        'xls_area'       => 'Area (sqm)',
+        'xls_building'   => 'Building',
+        'xls_block'      => 'Block',
+        'xls_floor'      => 'Floor',
+        'xls_apt'        => 'Apartment #',
+        'xls_price_sqm'  => 'Price per sqm',
+        'xls_total_price'=> 'Total Price',
+        'xls_paid'       => 'Amount Paid',
+        'xls_paid_pct'   => 'Amount Paid (%)',
+        'xls_remaining'  => 'Remaining Amount',
+        'xls_debt'       => 'Debt',
+        'xls_overdue'    => 'Overdue Days',
+        'xls_status'     => 'Status',
+    ],
+    'ge' => [
+        'project'        => 'პროექტი',
+        'block'          => 'ბლოკი',
+        'building'       => 'კორპუსი',
+        'floor'          => 'სართული',
+        'prodType'       => 'პროდუქტის ტიპი',
+        'responsible'    => 'პასუხისმგებელი',
+        'contract_no'    => 'კონტრაქტი №',
+        'all_projects'   => 'ყველა პროექტი',
+        'all_blocks'     => 'ყველა ბლოკი',
+        'all_buildings'  => 'ყველა კორპუსი',
+        'all_floors'     => 'ყველა სართული',
+        'all_types'      => 'ყველა ტიპი',
+        'all_resp'       => 'ყველა პასუხისმგებელი',
+        'apply'          => 'ფილტრის გამოყენება',
+        'clear'          => 'გასუფთავება',
+        'export'         => '📥 Excel-ში ექსპორტი',
+        'title_dollars'  => '$ - ით',
+        'title_units'    => 'ერთეულით',
+        'col_prod_type'  => 'პროდუქტის ტიპი',
+        'col_sold_amt'   => 'გაყიდვების თანხა ($)',
+        'col_paid_amt'   => 'გადახდილი თანხა ($)',
+        'col_debet'      => 'დებეტი ($)',
+        'col_by_sched'   => 'გადახდა გრაფიკით ($)',
+        'col_debt'       => 'დავალიანება ($)',
+        'col_sold_count' => 'გაყიდული ბინების რაოდენობა',
+        'col_paid_full'  => 'სრულად გადახდილი',
+        'col_debet_cnt'  => 'დებეტის რაოდენობა',
+        'col_sched_cnt'  => 'გრაფიკით გადამხდელები',
+        'col_debt_cnt'   => 'მოვალეების რაოდენობა',
+        'total'          => 'სულ',
+        'no_data'        => 'მონაცემი არ მოიძებნა',
+        'xls_deal'       => 'გარიგება#',
+        'xls_client'     => 'კლიენტი',
+        'xls_resp'       => 'პასუხისმგებელი',
+        'xls_contract'   => 'ხელშეკრულების თარიღი',
+        'xls_sched_start'=> 'გრაფიკის დაწყება',
+        'xls_sched_end'  => 'გრაფიკის დასრულება',
+        'xls_buyer_type' => 'მყიდველის ტიპი',
+        'xls_id_num'     => 'პირადი ნომერი',
+        'xls_citizen'    => 'მოქალაქეობა',
+        'xls_phone'      => 'მობილური',
+        'xls_re_type'    => 'უძრავი ქონების ტიპი',
+        'xls_area'       => 'ფართობი (კვ.მ)',
+        'xls_building'   => 'კორპუსი',
+        'xls_block'      => 'ბლოკი',
+        'xls_floor'      => 'სართული',
+        'xls_apt'        => 'ბინის №',
+        'xls_price_sqm'  => 'ფასი კვ.მ-ზე',
+        'xls_total_price'=> 'სრული ფასი',
+        'xls_paid'       => 'გადახდილი თანხა',
+        'xls_paid_pct'   => 'გადახდილი (%)',
+        'xls_remaining'  => 'დარჩენილი თანხა',
+        'xls_debt'       => 'დავალიანება',
+        'xls_overdue'    => 'ვადაგადაცილების დღეები',
+        'xls_status'     => 'სტატუსი',
+    ],
+];
+
+$t = $labels[$lang] ?? $labels['eng'];
 
 // Build the filter array with applied filters
 $arFilter = ["STAGE_ID" => "WON"];
@@ -225,7 +345,7 @@ foreach ($daricxvebi as $d) {
 }
 
 foreach($daricxvebiByDeals as $dealId => $dilisDaricxvebi) {
-    $daricxvebiByDeals[$dealId] = $daricxvebiByDeals[$dealId][count($dilisDaricxvebi) - 1]["daricxva_date"];
+    $daricxvebiByDeals[$dealId] = $daricxvebiByDeals[$dealId][count($dilisDaricxvebi) - 1]["daricxva_date"]; //dilis bolo daricxvis tarigi ever
 }
 
 // Filter by payment date range if provided
@@ -317,22 +437,46 @@ usort($floors, function($a, $b) {
     return (int)$a - (int)$b;
 });
 asort($responsibles);
+// end filter population
 
-// Process deals data — zero out accumulators
+// Process deals data
 foreach ($deals as &$deal) {
     $deal["jamuriDaricxvaUpToToday"] = 0;
     $deal["jamuriGadaxdaUpToToday"]  = 0;
 }
 unset($deal);
 
+$today = date('Y-m-d');
+
+// count dilis daricxvebi dgevandlamde
 foreach ($daricxvebi as $d) {
     $dealID = trim($d["DEAL_ID"]);
     if (!isset($deals[$dealID])) continue;
-    $deals[$dealID]["jamuriDaricxvaUpToToday"] += (float) $d["daricxva_amount"];
+
+    // Normalize date for comparison
+    $raw = trim($d["daricxva_date"]);
+    if (preg_match('/^(\d{2})\.(\d{2})\.(\d{4})/', $raw, $m)) {
+        $normalized = $m[3] . '-' . $m[2] . '-' . $m[1];
+    } elseif (preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $raw, $m)) {
+        $normalized = $m[1] . '-' . $m[2] . '-' . $m[3];
+    } elseif (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})/', $raw, $m)) {
+        $normalized = $m[3] . '-' . $m[2] . '-' . $m[1];
+    } else {
+        $ts = strtotime($raw);
+        $normalized = $ts !== false ? date('Y-m-d', $ts) : '';
+    }
+
+    // Only accumulate schedule amounts up to today
+    if (!empty($normalized) && $normalized <= $today) {
+        $deals[$dealID]["jamuriDaricxvaUpToToday"] += (float) $d["daricxva_amount"];
+        $deals[$dealID]["boloDaricxvaDateByFilter"] = $d["daricxva_date"];
+    }
+
+    // boloDaricxvaDate always gets the last entry (no date restriction)
     $deals[$dealID]["boloDaricxvaDate"] = $daricxvebiByDeals[$dealID];
-    $deals[$dealID]["boloDaricxvaDateByFilter"] = $d["daricxva_date"];
 }
 
+// count dilis gadaxdebi dgevandlamde
 foreach ($gadaxdebi as $g) {
     $dealID = trim($g["DEAL_ID"]);
     if (!isset($deals[$dealID])) continue;
@@ -341,21 +485,40 @@ foreach ($gadaxdebi as $g) {
 
 // Compute fullyPaid / paidBySchedule flags per deal
 foreach ($deals as $dealID => $deal) {
-    $deals[$dealID]["fullyPaid"]      = ($deal["jamuriGadaxdaUpToToday"] >= $deal["OPPORTUNITY"]) ? 1 : 0;
-    $deals[$dealID]["paidBySchedule"] = (abs($deal["jamuriGadaxdaUpToToday"] - $deal["jamuriDaricxvaUpToToday"]) < 0.01) ? 1 : 0;
+    $deals[$dealID]["paidBySchedule"] = (
+        $deal["jamuriGadaxdaUpToToday"] >= $deal["jamuriDaricxvaUpToToday"]
+    ) ? 1 : 0;
 
-    $deals[$dealID]["paidPercentage"] = $deal["OPPORTUNITY"] > 0 ? round($deal["jamuriGadaxdaUpToToday"] / $deal["OPPORTUNITY"] * 100, 2) . "%" : "0%";
-    $deals[$dealID]["remainedAmount"] = $deal["OPPORTUNITY"] - $deal["jamuriGadaxdaUpToToday"];
+    if (floatval($deal["jamuriGadaxdaUpToToday"]) >= floatval($deal["OPPORTUNITY"])) {
+        $deals[$dealID]["paidPercentage"] = '100%';
+    } else {
+        $pct = $deal["OPPORTUNITY"] > 0 ? $deal["jamuriGadaxdaUpToToday"] / $deal["OPPORTUNITY"] * 100 : 0;
+        $pct = min($pct, 99.99);
+        $deals[$dealID]["paidPercentage"] = round($pct, 2) . "%";
+    }
+    $deals[$dealID]["remainedAmount"] = floatval($deal["OPPORTUNITY"]) - floatval($deal["jamuriGadaxdaUpToToday"]);
+    if ($deals[$dealID]["remainedAmount"] < 0) {
+        $deals[$dealID]["remainedAmount"] = 0;
+    }
+    $deals[$dealID]["fullyPaid"]      = $deals[$dealID]["remainedAmount"] <= 0 ? 1 : 0;
     
-    $debt = $deal["jamuriDaricxvaUpToToday"] - $deal["jamuriGadaxdaUpToToday"];
+    $debt = floatval($deal["jamuriDaricxvaUpToToday"]) - floatval($deal["jamuriGadaxdaUpToToday"]);
     $deals[$dealID]["debt"] = $debt < 0 ? 0 : $debt;
 
-    // Fixed Overdue Logic
-    if (!empty($deal["boloDaricxvaDateByFilter"])) {
-        $todayTs = time();
-        $targetTs = strtotime($deal["boloDaricxvaDateByFilter"]);
-        $diff = $todayTs - $targetTs;
-        $deals[$dealID]["overdueDays"] = ($diff > 0) ? floor($diff / (60 * 60 * 24)) : 0;
+    if (!empty($deal["boloDaricxvaDateByFilter"]) && $deals[$dealID]["debt"] > 0) {
+        $raw = trim($deal["boloDaricxvaDateByFilter"]);
+        if (preg_match('/^(\d{2})\.(\d{2})\.(\d{4})/', $raw, $m)) {
+            $normalized = $m[3] . '-' . $m[2] . '-' . $m[1];
+        } elseif (preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $raw, $m)) {
+            $normalized = $m[1] . '-' . $m[2] . '-' . $m[3];
+        } elseif (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})/', $raw, $m)) {
+            $normalized = $m[3] . '-' . $m[2] . '-' . $m[1];
+        } else {
+            $normalized = $raw;
+        }
+        $targetTs = strtotime($normalized);
+        $diff = time() - $targetTs;
+        $deals[$dealID]["overdueDays"] = ($targetTs !== false && $diff > 0) ? floor($diff / 86400) : 0;
     } else {
         $deals[$dealID]["overdueDays"] = 0;
     }
@@ -403,18 +566,32 @@ foreach ($deals as $deal) {
     }
 
     $resArray[$key]["count"]++;
-    if ($deal["fullyPaid"] === 1)      $resArray[$key]["fullyPaidCount"]++;
-    if ($deal["paidBySchedule"] === 1) $resArray[$key]["paidByScheduleCount"]++;
-
-    $resArray[$key]["notFullyPaidCount"] = $resArray[$key]["count"] - $resArray[$key]["fullyPaidCount"];
-    $resArray[$key]["debtCount"]         = $resArray[$key]["notFullyPaidCount"] - $resArray[$key]["paidByScheduleCount"];
+    // if ($deal["fullyPaid"] === 1)                                   $resArray[$key]["fullyPaidCount"]++;
+    $resArray[$key]["fullyPaidCount"] += $deal["fullyPaid"];
+    // if ($deal["paidBySchedule"] === 1)  $resArray[$key]["paidByScheduleCount"]++;
+    $resArray[$key]["paidByScheduleCount"] += $deal["paidBySchedule"];
+    if ($deal["debt"] > 0) $resArray[$key]["debtCount"]++;
 
     $resArray[$key]["amountOfSoldFlatsDollars"] += (float) ($deal["OPPORTUNITY"] ?? 0);
     $resArray[$key]["paidAmount"]               += (float) ($deal["jamuriGadaxdaUpToToday"] ?? 0);
     $resArray[$key]["debet"]                     = $resArray[$key]["amountOfSoldFlatsDollars"] - $resArray[$key]["paidAmount"];
     $resArray[$key]["paymentScheduleDollar"]    += (float) ($deal["jamuriDaricxvaUpToToday"] ?? 0);
-    $resArray[$key]["debt"]                      = $resArray[$key]["debet"] - $resArray[$key]["paymentScheduleDollar"];
+    $resArray[$key]["debt"]                     += (float) ($deal["debt"] ?? 0);
 }
+
+foreach ($resArray as $key => &$bucket) {
+    $bucket["notFullyPaidCount"] = $bucket["count"] - $bucket["fullyPaidCount"];
+}
+unset($bucket);
+
+// Sort resArray by bedroom number for Flat types, then other types after
+uksort($resArray, function($a, $b) {
+    $order = ['Flat (1 Bed.)' => 1, 'Flat (2 Bed.)' => 2, 'Flat (3 Bed.)' => 3];
+    $aOrder = $order[$a] ?? 99;
+    $bOrder = $order[$b] ?? 99;
+    if ($aOrder !== $bOrder) return $aOrder - $bOrder;
+    return strcmp($a, $b);
+});
 
 // General totals
 $generalTotals = [
@@ -436,13 +613,14 @@ foreach ($resArray as $data) {
     $generalTotals["paymentScheduleDollar"]    += $data["paymentScheduleDollar"];
     $generalTotals["count"]                    += $data["count"];
     $generalTotals["fullyPaidCount"]           += $data["fullyPaidCount"];
-    $generalTotals["notFullyPaidCount"]        += $data["notFullyPaidCount"];
     $generalTotals["paidByScheduleCount"]      += $data["paidByScheduleCount"];
-    $generalTotals["debtCount"]                += $data["debtCount"];
+    $generalTotals["debtCount"]         += $data["debtCount"];
+    $generalTotals["notFullyPaidCount"]  = $generalTotals["count"] - $generalTotals["fullyPaidCount"];
+    $generalTotals["debt"]                     += $data["debt"];
 }
 $generalTotals["debet"] = $generalTotals["amountOfSoldFlatsDollars"] - $generalTotals["paidAmount"];
-$generalTotals["debt"]  = $generalTotals["debet"]    - $generalTotals["paymentScheduleDollar"];
-
+// $generalTotals["debt"]  = $generalTotals["debet"]    - $generalTotals["paymentScheduleDollar"];
+// printArr($deals[1357]);
 ob_end_clean();
 
 ?>
@@ -557,11 +735,12 @@ ob_end_clean();
 
 <div class="filter-container">
     <form method="GET" action="">
+        <input type="hidden" name="lang" value="<?= htmlspecialchars($lang) ?>">
         <div class="filter-row">
             <div class="filter-group">
-                <label for="project">Project:</label>
+                <label for="project"><?= $t['project'] ?>:</label>
                 <select name="project" id="project">
-                    <option value="">All Projects</option>
+                    <option value=""><?= $t['all_projects'] ?></option>
                     <?php foreach ($projects as $project): ?>
                         <option value="<?= htmlspecialchars($project) ?>" <?= $filterProject == $project ? 'selected' : '' ?>>
                             <?= htmlspecialchars($project) ?>
@@ -571,9 +750,9 @@ ob_end_clean();
             </div>
             
             <div class="filter-group">
-                <label for="block">Block:</label>
+                <label for="block"><?= $t['block'] ?>:</label>
                 <select name="block" id="block">
-                    <option value="">All Blocks</option>
+                    <option value=""><?= $t['all_blocks'] ?></option>
                     <?php foreach ($blocks as $block): ?>
                         <option value="<?= htmlspecialchars($block) ?>" <?= $filterBlock == $block ? 'selected' : '' ?>>
                             <?= htmlspecialchars($block) ?>
@@ -583,9 +762,9 @@ ob_end_clean();
             </div>
 
             <div class="filter-group">
-                <label for="building">Building:</label>
+                <label for="building"><?= $t['building'] ?>:</label>
                 <select name="building" id="building">
-                    <option value="">All Buildings</option>
+                    <option value=""><?= $t['all_buildings'] ?></option>
                     <?php foreach ($buildings as $building): ?>
                         <option value="<?= htmlspecialchars($building) ?>" <?= $filterBuilding == $building ? 'selected' : '' ?>>
                             <?= htmlspecialchars($building) ?>
@@ -595,9 +774,9 @@ ob_end_clean();
             </div>
 
             <div class="filter-group">
-                <label for="floor">Floor:</label>
+                <label for="floor"><?= $t['floor'] ?>:</label>
                 <select name="floor" id="floor">
-                    <option value="">All Floors</option>
+                    <option value=""><?= $t['all_floors'] ?></option>
                     <?php foreach ($floors as $floor): ?>
                         <option value="<?= htmlspecialchars($floor) ?>" <?= $filterFloor == $floor ? 'selected' : '' ?>>
                             <?= htmlspecialchars($floor) ?>
@@ -607,9 +786,9 @@ ob_end_clean();
             </div>
 
             <div class="filter-group">
-                <label for="prodType">Product Type:</label>
+                <label for="prodType"><?= $t['prodType'] ?>:</label>
                 <select name="prodType" id="prodType">
-                    <option value="">All Product Types</option>
+                    <option value=""><?= $t['all_types'] ?></option>
                     <?php foreach ($prodTypes as $prodType): ?>
                         <option value="<?= htmlspecialchars($prodType) ?>" <?= $filterProductType == $prodType ? 'selected' : '' ?>>
                             <?= htmlspecialchars($prodType) ?>
@@ -619,9 +798,9 @@ ob_end_clean();
             </div>
             
             <div class="filter-group">
-                <label for="responsible">Responsible:</label>
+                <label for="responsible"><?= $t['responsible'] ?>:</label>
                 <select name="responsible" id="responsible">
-                    <option value="">All Responsible</option>
+                    <option value=""><?= $t['all_resp'] ?></option>
                     <?php foreach ($responsibles as $id => $name): ?>
                         <option value="<?= htmlspecialchars($id) ?>" <?= $filterResponsible == $id ? 'selected' : '' ?>>
                             <?= htmlspecialchars($name) ?>
@@ -630,7 +809,7 @@ ob_end_clean();
                 </select>
             </div>
 
-            <div class="filter-group">
+            <!-- <div class="filter-group">
                 <label for="date_from">Payment Date From:</label>
                 <input type="date" name="date_from" id="date_from"
                        value="<?= htmlspecialchars($filterDateFrom) ?>">
@@ -640,30 +819,38 @@ ob_end_clean();
                 <label for="date_to">Payment Date To:</label>
                 <input type="date" name="date_to" id="date_to"
                        value="<?= htmlspecialchars($filterDateTo) ?>">
-            </div>
+            </div> -->
 
             <div class="filter-group">
-                <label for="custom_field">Contract №:</label>
+                <label for="custom_field"><?= $t['contract_no'] ?>:</label>
                 <input type="text" name="custom_field" id="custom_field"
                        value="<?= htmlspecialchars($filterCustomField) ?>"
                        placeholder="Search...">
             </div>
             
             <div class="filter-buttons">
-                <button type="submit" class="btn btn-primary">Apply Filters</button>
-                <button type="button" class="btn btn-secondary" onclick="window.location.href='<?= $_SERVER['PHP_SELF'] ?>'">Clear</button>
+                <button type="submit" class="btn btn-primary"><?= $t['apply'] ?></button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='<?= $_SERVER['PHP_SELF'] ?>'"><?= $t['clear'] ?></button>
             </div>
         </div>
     </form>
 
     <div style="margin-top: 15px;">
-        <button class="btn btn-primary" onclick="exportToExcel()">📥 Export to Excel</button>
+        <button class="btn btn-primary" onclick="exportToExcel()"><?= $t['export'] ?></button>
     </div>
 </div>
 
 <!-- ===== TABLE 1: DOLLAR AMOUNTS ===== -->
-<div class="table-title">Products — Amounts ($)</div>
-<table class="cashflow-table">
+<div class="table-title">By $</div>
+<table class="cashflow-table" style="table-layout: fixed;">
+    <colgroup>
+        <col style="width: 20%;">
+        <col style="width: 16%;">
+        <col style="width: 16%;">
+        <col style="width: 16%;">
+        <col style="width: 16%;">
+        <col style="width: 16%;">
+    </colgroup>
     <thead>
         <tr>
             <th>Product Type</th>
@@ -691,7 +878,7 @@ ob_end_clean();
             </tr>
             <?php endforeach; ?>
             <tr class="total-row">
-                <td>ჯამი</td>
+                <td>Total</td>
                 <td class="amount"><?= number_format($generalTotals["amountOfSoldFlatsDollars"], 2) ?></td>
                 <td class="amount"><?= number_format($generalTotals["paidAmount"], 2) ?></td>
                 <td class="amount"><?= number_format($generalTotals["debet"], 2) ?></td>
@@ -703,16 +890,24 @@ ob_end_clean();
 </table>
 
 <!-- ===== TABLE 2: COUNTS ===== -->
-<div class="table-title">Products — Counts</div>
-<table class="cashflow-table">
+<div class="table-title">By Unit</div>
+<table class="cashflow-table" style="table-layout: fixed;">
+    <colgroup>
+        <col style="width: 20%;">
+        <col style="width: 16%;">
+        <col style="width: 16%;">
+        <col style="width: 16%;">
+        <col style="width: 16%;">
+        <col style="width: 16%;">
+    </colgroup>
     <thead>
         <tr>
             <th>Product Type</th>
-            <th class="count-col">Total Count</th>
-            <th class="count-col">Fully Paid</th>
-            <th class="count-col">Not Fully Paid</th>
-            <th class="count-col">Paid by Schedule</th>
-            <th class="count-col">Debt Count</th>
+            <th class="count-col">Sold flat count</th>
+            <th class="count-col">Paid fully count</th>
+            <th class="count-col">Debet Count</th>
+            <th class="count-col">Payments by Schedule Count</th>
+            <th class="count-col">Debt count</th>
         </tr>
     </thead>
     <tbody>
@@ -732,7 +927,7 @@ ob_end_clean();
             </tr>
             <?php endforeach; ?>
             <tr class="total-row">
-                <td>ჯამი</td>
+                <td>Total</td>
                 <td class="count-col"><?= (int) $generalTotals["count"] ?></td>
                 <td class="count-col"><?= (int) $generalTotals["fullyPaidCount"] ?></td>
                 <td class="count-col"><?= (int) $generalTotals["notFullyPaidCount"] ?></td>
@@ -745,37 +940,37 @@ ob_end_clean();
 
 <script>
     const dealsData = <?= json_encode(array_values($deals)) ?>;
-    // const productsData = <?= json_encode($products) ?>;
+    const t = <?= json_encode($t) ?>;
 
     function exportToExcel() {
         const fields = [
-            { key: 'ID',            label: 'Deal#' },
-            { key: 'CONTACT_FULL_NAME',    label: 'Client' },
-            { key: 'responsible', label: 'Responsible' },
-            { key: 'UF_CRM_1762416342444',  label: 'Contract Signing Date' },
-            { key: 'UF_CRM_1767011536',     label: 'Schedual Start Date' },
-            { key: 'boloDaricxvaDate',      label: 'Schedual End Date' },
-            { key: '',                      label: 'Buyer Type' },
-            { key: 'OWNER_CONTACT_PN',      label: 'ID Number' },
-            { key: 'OWNER_CONTACT_CITIZENSHIP', label: 'Citizenship' },
-            { key: 'OWNER_CONTACT_PHONE',   label: 'Mobile Number' },
-            { key: 'prodTypeNew',          label: 'Real Estate Type' },
-            { key: 'UF_CRM_1761658608306',            label: 'Area (sqm)' },
-            { key: 'UF_CRM_1766736693236',              label: 'Building' },
-            { key: 'UF_CRM_1766560177934',label: 'Block' },
-            { key: 'UF_CRM_1761658577987',                 label: 'Floor' },
-            { key: 'UF_CRM_1761658559005',                label: 'Apartment #' },
-            { key: 'UF_CRM_1761658503260',             label: 'Price per sqm' },
-            { key: 'OPPORTUNITY',                 label: 'Total Price' },
-            { key: 'jamuriGadaxdaUpToToday',               label: 'Amount Paid' },
-            { key: 'paidPercentage',               label: 'Amount Paid (%)' },
-            { key: 'remainedAmount',               label: 'Remaining Amount' },
-            { key: 'debt',               label: 'Debt' },
-            { key: 'overdueDays',               label: 'Overdue Days' },
-            { key: '',               label: 'Status' }
+            { key: 'ID',                        label: t.xls_deal },
+            { key: 'CONTACT_FULL_NAME',         label: t.xls_client },
+            { key: 'responsible',               label: t.xls_resp },
+            { key: 'UF_CRM_1762416342444',      label: t.xls_contract },
+            { key: 'UF_CRM_1767011536',         label: t.xls_sched_start },
+            { key: 'boloDaricxvaDate',          label: t.xls_sched_end },
+            { key: '',                          label: t.xls_buyer_type },
+            { key: 'OWNER_CONTACT_PN',          label: t.xls_id_num },
+            { key: 'OWNER_CONTACT_CITIZENSHIP', label: t.xls_citizen },
+            { key: 'OWNER_CONTACT_PHONE',       label: t.xls_phone },
+            { key: 'prodTypeNew',               label: t.xls_re_type },
+            { key: 'UF_CRM_1761658608306',      label: t.xls_area },
+            { key: 'UF_CRM_1766736693236',      label: t.xls_building },
+            { key: 'UF_CRM_1766560177934',      label: t.xls_block },
+            { key: 'UF_CRM_1761658577987',      label: t.xls_floor },
+            { key: 'UF_CRM_1761658559005',      label: t.xls_apt },
+            { key: 'UF_CRM_1761658503260',      label: t.xls_price_sqm },
+            { key: 'OPPORTUNITY',               label: t.xls_total_price },
+            { key: 'jamuriGadaxdaUpToToday',    label: t.xls_paid },
+            { key: 'paidPercentage',            label: t.xls_paid_pct },
+            { key: 'remainedAmount',            label: t.xls_remaining },
+            { key: 'debt',                      label: t.xls_debt },
+            { key: 'overdueDays',               label: t.xls_overdue },
+            { key: '',                          label: t.xls_status },
         ];
 
-        const rows = dealsData.map(p => {
+        const rows = dealsData.filter(p => p.prodTypeNew).map(p => {
             const row = {};
             fields.forEach(f => { 
                 if (p[f.key] === "Flat") {

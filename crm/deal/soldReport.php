@@ -33,16 +33,36 @@ function getDaricxvebi($dealId) {
     return $daricxvebi;
 }
 
+function getUserName ($id) {
+    $res = CUser::GetByID($id)->Fetch();
+    return $res["NAME"]." ".$res["LAST_NAME"];
+}
+
 function getDealsByFilter($arFilter, $arrSelect=array()) {
-    if (empty($arrSelect)) {
-        $arrSelect = false;
-    }
-    $res = CCrmDeal::GetListEx(array("ID" => "ASC"), $arFilter, false, false, $arrSelect);
+    // if (empty($arrSelect)) {
+    //     $arrSelect = false;
+    // }
+    $res = CCrmDeal::GetListEx(array("ID" => "ASC"), $arFilter, false, false, array("ID", "DATE_CREATE", "CONTACT_ID","COMPANY_ID", "TITLE","CONTACT_FULL_NAME","OPPORTUNITY","COMPANY_TITLE","UF_CRM_1761658532158","ASSIGNED_BY_ID","UF_CRM_1766560177934", "UF_CRM_1764317005", "UF_CRM_1761658516561", "UF_CRM_1766736693236", "UF_CRM_1761658577987", "UF_CRM_1770888201367", "UF_CRM_1770640981002", "UF_CRM_1767011536", "UF_CRM_1761658608306", "UF_CRM_1761658503260", "UF_CRM_1761658559005", "UF_CRM_1762416342444"));
     $resArr = array();
     while($arDeal = $res->Fetch()){
         $daricxvebi = getDaricxvebi($arDeal["ID"]);
         $arDeal["firstDaricxvaDate"] = $daricxvebi[array_key_first($daricxvebi)]["DATE"];
         $arDeal["lastDaricxvaDate"]  = $daricxvebi[array_key_last($daricxvebi)]["DATE"];
+
+        $gadaxdebi = getGadaxdebi($arDeal["ID"]);
+        $arDeal["payment"] = 0;
+        foreach ($gadaxdebi as $g) {
+            $arDeal["payment"] += $g["gadaxda_amount"];
+        }
+
+        $arDeal["responsible"] = getUserName($arDeal["ASSIGNED_BY_ID"]);
+
+        $contact = getContactInfo($arDeal["CONTACT_ID"]);
+        $arDeal["CONTACT_FULL_NAME"]         = ($contact["NAME"] ?? '') . ' ' . ($contact["LAST_NAME"] ?? '');
+        $arDeal["OWNER_CONTACT_PN"]          = $contact["UF_CRM_1761651998145"];
+        $arDeal["OWNER_CONTACT_CITIZENSHIP"] = getCountry($contact["UF_CRM_1769506891465"]); 
+        $arDeal["OWNER_CONTACT_PHONE"]       = $contact["PHONE"];
+
         $resArr[$arDeal["ID"]] = $arDeal;
     }
     return $resArr;
@@ -54,11 +74,6 @@ function getNBG_inventory($date){
     $seb = json_decode($seb);
     $seb_currency=$seb[0]->currencies[0]->rate;
     return $seb_currency;
-}
-
-function getUserName ($id) {
-    $res = CUser::GetByID($id)->Fetch();
-    return $res["NAME"]." ".$res["LAST_NAME"];
 }
 
 function getContactInfo($contactId) {
@@ -253,6 +268,7 @@ if ($filterProductType !== '') {
 }
 
 $deals    = getDealsByFilter($arFilter);
+$lang = isset($_GET['lang']) ? $_GET['lang'] : 'eng';
 $dealIds  = array_keys($deals);
 $products = getProducts($dealIds);
 
@@ -261,6 +277,131 @@ $gadaxdebiByDeal = [];
 foreach ($gadaxdebi as $g) {
     $gadaxdebiByDeal[$g["DEAL_ID"]] = ($gadaxdebiByDeal[$g["DEAL_ID"]] ?? 0) + $g["gadaxda_amount"];
 }
+
+$labels = [
+    'eng' => [
+        // Filter labels
+        'project'        => 'Project',
+        'block'          => 'Block',
+        'building'       => 'Building',
+        'floor'          => 'Floor',
+        'prodType'       => 'Product Type',
+        'responsible'    => 'Responsible',
+        'source'         => 'Source',
+        'date_from'      => 'Date From',
+        'date_to'        => 'Date To',
+        'all_projects'   => 'All Projects',
+        'all_blocks'     => 'All Blocks',
+        'all_buildings'  => 'All Buildings',
+        'all_floors'     => 'All Floors',
+        'all_types'      => 'All Product Types',
+        'all_resp'       => 'All Responsible',
+        'all_sources'    => 'All Sources',
+        'apply'          => 'Apply Filters',
+        'clear'          => 'Clear',
+        'export'         => '📥 Export to Excel',
+
+        // Table headings
+        'sales_summary'  => 'Sales Summary',
+        'sales_by_bb'    => 'Sales by Building / Block',
+        'total_all'      => 'TOTAL — All Buildings / Blocks',
+        'bb_label'       => 'Building / Block: ',
+        'col_type'       => 'Product Type',
+        'col_unit'       => 'Unit',
+        'col_unit_sold'  => 'Unit Sold',
+        'col_sqm'        => 'Sq.m',
+        'col_sqm_sold'   => 'Sq.m Sold',
+        'col_total_price'=> 'Total Price',
+        'col_deals'      => 'Price by sold sq.m (Deals)',
+        'col_products'   => 'Price by sold sq.m (Products)',
+        'col_received'   => 'Received payments',
+        'col_avg'        => 'Avg Price per sq.m / Sold Unit ($)',
+        'col_total'      => 'TOTAL',
+
+        // Excel column headers
+        'xls_deal'       => 'Deal#',
+        'xls_client'     => 'Client',
+        'xls_resp'       => 'Responsible',
+        'xls_contract'   => 'Contract Signing Date',
+        'xls_sched_start'=> 'Schedual Start Date',
+        'xls_sched_end'  => 'Schedual End Date',
+        'xls_buyer_type' => 'Buyer Type',
+        'xls_id_num'     => 'ID Number',
+        'xls_citizen'    => 'Citizenship',
+        'xls_phone'      => 'Mobile Number',
+        'xls_re_type'    => 'Real Estate Type',
+        'xls_area'       => 'Area (sqm)',
+        'xls_building'   => 'Building',
+        'xls_block'      => 'Block',
+        'xls_floor'      => 'Floor',
+        'xls_apt'        => 'Apartment #',
+        'xls_price_sqm'  => 'Price per sqm',
+        'xls_total_price'=> 'Total Price',
+        'xls_paid'       => 'Amount Paid',
+    ],
+    'ge' => [
+        // Filter labels
+        'project'        => 'პროექტი',
+        'block'          => 'ბლოკი',
+        'building'       => 'კორპუსი',
+        'floor'          => 'სართული',
+        'prodType'       => 'პროდუქტის ტიპი',
+        'responsible'    => 'პასუხისმგებელი',
+        'source'         => 'წყარო',
+        'date_from'      => 'თარიღიდან',
+        'date_to'        => 'თარიღამდე',
+        'all_projects'   => 'ყველა პროექტი',
+        'all_blocks'     => 'ყველა ბლოკი',
+        'all_buildings'  => 'ყველა კორპუსი',
+        'all_floors'     => 'ყველა სართული',
+        'all_types'      => 'ყველა ტიპი',
+        'all_resp'       => 'ყველა პასუხისმგებელი',
+        'all_sources'    => 'ყველა წყარო',
+        'apply'          => 'ფილტრის გამოყენება',
+        'clear'          => 'გასუფთავება',
+        'export'         => '📥 Excel-ში ექსპორტი',
+
+        // Table headings
+        'sales_summary'  => 'გაყიდვების შეჯამება',
+        'sales_by_bb'    => 'გაყიდვები კორპუს/ბლოკის მიხედვით',
+        'total_all'      => 'სულ — ყველა კორპუსი / ბლოკი',
+        'bb_label'       => 'კორპუსი / ბლოკი: ',
+        'col_type'       => 'პროდუქტის ტიპი',
+        'col_unit'       => 'ერთეული',
+        'col_unit_sold'  => 'გაყიდული',
+        'col_sqm'        => 'კვ.მ',
+        'col_sqm_sold'   => 'გაყიდული კვ.მ',
+        'col_total_price'=> 'სრული ფასი',
+        'col_deals'      => 'ფასი გაყიდულ კვ.მ-ზე (გარიგებები)',
+        'col_products'   => 'ფასი გაყიდულ კვ.მ-ზე (პროდუქტები)',
+        'col_received'   => 'მიღებული გადახდები',
+        'col_avg'        => 'საშ. ფასი კვ.მ-ზე / გაყიდულ ერთეულზე ($)',
+        'col_total'      => 'სულ',
+
+        // Excel column headers
+        'xls_deal'       => 'გარიგება#',
+        'xls_client'     => 'კლიენტი',
+        'xls_resp'       => 'პასუხისმგებელი',
+        'xls_contract'   => 'ხელშეკრულების თარიღი',
+        'xls_sched_start'=> 'გრაფიკის დაწყების თარიღი',
+        'xls_sched_end'  => 'გრაფიკის დასრულების თარიღი',
+        'xls_buyer_type' => 'მყიდველის ტიპი',
+        'xls_id_num'     => 'პირადი ნომერი',
+        'xls_citizen'    => 'მოქალაქეობა',
+        'xls_phone'      => 'მობილური',
+        'xls_re_type'    => 'უძრავი ქონების ტიპი',
+        'xls_area'       => 'ფართობი (კვ.მ)',
+        'xls_building'   => 'კორპუსი',
+        'xls_block'      => 'ბლოკი',
+        'xls_floor'      => 'სართული',
+        'xls_apt'        => 'ბინის №',
+        'xls_price_sqm'  => 'ფასი კვ.მ-ზე',
+        'xls_total_price'=> 'სრული ფასი',
+        'xls_paid'       => 'გადახდილი თანხა',
+    ],
+];
+
+$t = $labels[$lang];
 
 // Dropdown options
 $projects     = getUniqueValues($products, 'PROJECT');
@@ -514,12 +655,13 @@ ob_end_clean();
 <!-- FILTER FORM -->
 <div class="filter-container">
     <form method="GET" action="">
+        <input type="hidden" name="lang" value="<?= htmlspecialchars($lang) ?>">
         <div class="filter-row">
 
             <div class="filter-group">
-                <label for="project">Project:</label>
+                <label for="project"><?= $t['project'] ?>:</label>
                 <select name="project" id="project">
-                    <option value="">All Projects</option>
+                    <option value=""><?= $t['all_projects'] ?></option>
                     <?php foreach ($projects as $project): ?>
                         <option value="<?= htmlspecialchars($project) ?>" <?= $filterProject == $project ? 'selected' : '' ?>>
                             <?= htmlspecialchars($project) ?>
@@ -529,9 +671,9 @@ ob_end_clean();
             </div>
 
             <div class="filter-group">
-                <label for="block">Block:</label>
+                <label for="block"><?= $t['block'] ?>:</label>
                 <select name="block" id="block">
-                    <option value="">All Blocks</option>
+                    <option value=""><?= $t['all_blocks'] ?></option>
                     <?php foreach ($blocks as $block): ?>
                         <option value="<?= htmlspecialchars($block) ?>" <?= $filterBlock == $block ? 'selected' : '' ?>>
                             <?= htmlspecialchars($block) ?>
@@ -541,9 +683,9 @@ ob_end_clean();
             </div>
 
             <div class="filter-group">
-                <label for="building">Building:</label>
+                <label for="building"><?= $t['building'] ?>:</label>
                 <select name="building" id="building">
-                    <option value="">All Buildings</option>
+                    <option value=""><?= $t['all_buildings'] ?></option>
                     <?php foreach ($buildings as $building): ?>
                         <option value="<?= htmlspecialchars($building) ?>" <?= $filterBuilding == $building ? 'selected' : '' ?>>
                             <?= htmlspecialchars($building) ?>
@@ -553,9 +695,9 @@ ob_end_clean();
             </div>
 
             <div class="filter-group">
-                <label for="floor">Floor:</label>
+                <label for="floor"><?= $t['floor'] ?>:</label>
                 <select name="floor" id="floor">
-                    <option value="">All Floors</option>
+                    <option value=""><?= $t['all_floors'] ?></option>
                     <?php foreach ($floors as $floor): ?>
                         <option value="<?= htmlspecialchars($floor) ?>" <?= $filterFloor == $floor ? 'selected' : '' ?>>
                             <?= htmlspecialchars($floor) ?>
@@ -565,9 +707,9 @@ ob_end_clean();
             </div>
 
             <div class="filter-group">
-                <label for="prodType">Product Type:</label>
+                <label for="prodType"><?= $t['prodType'] ?>:</label>
                 <select name="prodType" id="prodType">
-                    <option value="">All Product Types</option>
+                    <option value=""><?= $t['all_types'] ?></option>
                     <?php foreach ($prodTypes as $pt): ?>
                         <option value="<?= htmlspecialchars($pt) ?>" <?= $filterProductType == $pt ? 'selected' : '' ?>>
                             <?= htmlspecialchars($pt) ?>
@@ -577,9 +719,9 @@ ob_end_clean();
             </div>
 
             <div class="filter-group">
-                <label for="responsible">Responsible:</label>
+                <label for="responsible"><?= $t['responsible'] ?>:</label>
                 <select name="responsible" id="responsible">
-                    <option value="">All Responsible</option>
+                    <option value=""><?= $t['all_resp'] ?></option>
                     <?php foreach ($responsibles as $name): ?>
                         <option value="<?= htmlspecialchars($name) ?>" <?= $filterResponsible == $name ? 'selected' : '' ?>>
                             <?= htmlspecialchars($name) ?>
@@ -589,9 +731,9 @@ ob_end_clean();
             </div>
 
             <div class="filter-group">
-                <label for="source">Source:</label>
+                <label for="source"><?= $t['source'] ?>:</label>
                 <select name="source" id="source">
-                    <option value="">All Sources</option>
+                    <option value=""><?= $t['all_sources'] ?></option>
                     <?php foreach ($sources as $id => $source): ?>
                         <option value="<?= htmlspecialchars($id) ?>" <?= $filterSource == $id ? 'selected' : '' ?>>
                             <?= htmlspecialchars($source) ?>
@@ -601,24 +743,26 @@ ob_end_clean();
             </div>
 
             <div class="filter-group">
-                <label for="date_from">Date From:</label>
+                <label for="date_from"><?= $t['date_from'] ?>:</label>
                 <input type="date" name="date_from" id="date_from" value="<?= htmlspecialchars($displayDateFrom) ?>">
             </div>
 
             <div class="filter-group">
-                <label for="date_to">Date To:</label>
+                <label for="date_to"><?= $t['date_to'] ?>:</label>
                 <input type="date" name="date_to" id="date_to" value="<?= htmlspecialchars($displayDateTo) ?>">
             </div>
 
             <div class="filter-buttons">
-                <button type="submit" class="btn btn-primary">Apply Filters</button>
-                <button type="button" class="btn btn-secondary" onclick="window.location.href='<?= $_SERVER['PHP_SELF'] ?>'">Clear</button>
+                <button type="submit" class="btn btn-primary"><?= $t['apply'] ?></button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='<?= $_SERVER['PHP_SELF'] ?>'">
+                    <?= $t['clear'] ?>
+                </button>
             </div>
         </div>
     </form>
 
     <div style="margin-top: 15px;">
-        <button class="btn btn-primary" onclick="exportToExcel()">📥 Export to Excel</button>
+        <button class="btn btn-primary" onclick="exportToExcel()"><?= $t['export'] ?></button>
     </div>
 </div>
 
@@ -649,23 +793,23 @@ usort($breakdownTypes, function($a, $b) {
 $allProdTypes = array_merge($mainTypes, $breakdownTypes);
 
 // ---- Render function ----
-function renderBBTable($groupKey, $groupData, $allProdTypes, $apartmentTypes) {
-    $label = ($groupKey === "TOTAL") ? "TOTAL — All Buildings / Blocks" : "Building / Block: " . $groupKey;
+function renderBBTable($groupKey, $groupData, $allProdTypes, $apartmentTypes, $t) {
+    $label = ($groupKey === "TOTAL") ? $t['total_all'] : $t['bb_label'] . $groupKey;
     ?>
     <h3 class="bb-title"><?= htmlspecialchars($label) ?></h3>
     <table class="sales-table">
         <thead>
             <tr>
-                <th>Product Type</th>
-                <th>Unit</th>
-                <th>Unit Sold</th>
-                <th>Sq.m</th>
-                <th>Sq.m Sold</th>
-                <th>Total Price</th>
-                <th>Price by sold sq.m (Deals)</th>
-                <th>Price by sold sq.m (Products)</th>
-                <th>Received payments</th>
-                <th>Avg Price per sq.m / Sold Unit ($)</th>
+                <th><?= $t['col_type'] ?></th>
+                <th><?= $t['col_unit'] ?></th>
+                <th><?= $t['col_unit_sold'] ?></th>
+                <th><?= $t['col_sqm'] ?></th>
+                <th><?= $t['col_sqm_sold'] ?></th>
+                <th><?= $t['col_total_price'] ?></th>
+                <th><?= $t['col_deals'] ?></th>
+                <th><?= $t['col_products'] ?></th>
+                <th><?= $t['col_received'] ?></th>
+                <th><?= $t['col_avg'] ?></th>
             </tr>
         </thead>
         <tbody>
@@ -708,7 +852,7 @@ function renderBBTable($groupKey, $groupData, $allProdTypes, $apartmentTypes) {
                 $t_pricePerSqm = $t_sqlSold  > 0 ? $t_soldPricesSum / $t_sqlSold   : 0;
             ?>
             <tr class="total-row">
-                <td>TOTAL</td>
+                <td><?= $t['col_total'] ?></td>
                 <td><?= $t_unitsTotal ?></td>
                 <td><?= $t_unitSold ?></td>
                 <td><?= number_format($t_sqmTotal,      2) ?></td>
@@ -726,17 +870,17 @@ function renderBBTable($groupKey, $groupData, $allProdTypes, $apartmentTypes) {
 
 // ---- Render TOTAL first, then each BB sorted numerically+alphabetically ----
 if (isset($resArray["TOTAL"])) {
-    echo '<h2>Sales Summary</h2>';
-    renderBBTable("TOTAL", $resArray["TOTAL"], $allProdTypes, $apartmentTypes);
+    echo '<h2>' . $t['sales_summary'] . '</h2>';
+    renderBBTable("TOTAL", $resArray["TOTAL"], $allProdTypes, $apartmentTypes, $t);
 }
 
 $bbKeys = array_filter(array_keys($resArray), fn($k) => $k !== "TOTAL");
 $bbKeys = sortBBKeys(array_values($bbKeys));
 
 if (!empty($bbKeys)) {
-    echo '<h2>Sales by Building / Block</h2>';
+    echo '<h2>' . $t['sales_by_bb'] . '</h2>';
     foreach ($bbKeys as $bbKey) {
-        renderBBTable($bbKey, $resArray[$bbKey], $allProdTypes, $apartmentTypes);
+        renderBBTable($bbKey, $resArray[$bbKey], $allProdTypes, $apartmentTypes, $t);
     }
 }
 ?>
@@ -744,38 +888,55 @@ if (!empty($bbKeys)) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
     const productsData = <?= json_encode(array_values($filteredProducts)) ?>;
+    const dealsData = <?= json_encode(array_values($deals)) ?>;
+    const t = <?= json_encode($t) ?>;
 
     function exportToExcel() {
         const fields = [
-            { key: 'OWNER_DEAL',            label: 'Deal#' },
-            { key: 'OWNER_CONTACT_NAME',    label: 'Client' },
-            { key: 'DEAL_RESPONSIBLE_NAME', label: 'Responsible' },
-            { key: 'projEndDate',           label: 'Contract Signing Date' },
-            { key: 'firstDaricxvaDate',     label: 'Schedual Start Date' },
-            { key: 'lastDaricxvaDate',      label: 'Schedual End Date' },
-            { key: '',                      label: 'Buyer Type' },
-            { key: 'OWNER_CONTACT_PN',      label: 'ID Number' },
-            { key: 'OWNER_CONTACT_CITIZENSHIP', label: 'Citizenship' },
-            { key: 'OWNER_CONTACT_PHONE',   label: 'Mobile Number' },
-            { key: 'PRODUCT_TYPE',          label: 'Real Estate Type' },
-            { key: 'TOTAL_AREA',            label: 'Area (sqm)' },
-            { key: 'BUILDING',              label: 'Building' },
-            { key: 'KORPUSIS_NOMERI_XE3NX2',label: 'Block' },
-            { key: 'FLOOR',                 label: 'Floor' },
-            { key: 'Number',                label: 'Apartment #' },
-            { key: 'KVM_PRICE',             label: 'Price per sqm' },
-            { key: 'PRICE',                 label: 'Total Price' },
-            { key: 'payment',               label: 'Amount Paid' },
+            { key: 'ID',                        label: t.xls_deal },
+            { key: 'CONTACT_FULL_NAME',         label: t.xls_client },
+            { key: 'responsible',               label: t.xls_resp },
+            { key: 'UF_CRM_1762416342444',      label: t.xls_contract },
+            { key: 'firstDaricxvaDate',         label: t.xls_sched_start },
+            { key: 'lastDaricxvaDate',          label: t.xls_sched_end },
+            { key: '',                          label: t.xls_buyer_type },
+            { key: 'OWNER_CONTACT_PN',          label: t.xls_id_num },
+            { key: 'OWNER_CONTACT_CITIZENSHIP', label: t.xls_citizen },
+            { key: 'OWNER_CONTACT_PHONE',       label: t.xls_phone },
+            { key: 'prodTypeNew',               label: t.xls_re_type },
+            { key: 'UF_CRM_1761658608306',      label: t.xls_area },
+            { key: 'UF_CRM_1766736693236',      label: t.xls_building },
+            { key: 'UF_CRM_1766560177934',      label: t.xls_block },
+            { key: 'UF_CRM_1761658577987',      label: t.xls_floor },
+            { key: 'UF_CRM_1761658559005',      label: t.xls_apt },
+            { key: 'UF_CRM_1761658503260',      label: t.xls_price_sqm },
+            { key: 'OPPORTUNITY',               label: t.xls_total_price },
+            { key: 'payment',                   label: t.xls_paid },
         ];
 
-        const rows = productsData.map(p => {
+        // Build a lookup: deal ID → product
+        const productByDeal = {};
+        productsData.forEach(p => {
+            if (p['OWNER_DEAL']) productByDeal[p['OWNER_DEAL']] = p;
+        });
+
+        const rows = dealsData.map(deal => {
+            const product = productByDeal[deal['ID']] || {};
+
+            // Merge: deal fields take priority, product fills in the rest
+            const merged = Object.assign({}, product, deal);
+            if (merged['OPPORTUNITY']) merged['OPPORTUNITY'] = parseFloat(merged['OPPORTUNITY']);
+
+            // Build bedroom label for Real Estate Type
+            if (product['PRODUCT_TYPE'] === 'Flat') {
+                merged['prodTypeNew'] = (product['Bedrooms'] || '') + ' Rooms Studio';
+            } else {
+                merged['prodTypeNew'] = product['PRODUCT_TYPE'] || '';
+            }
+
             const row = {};
-            fields.forEach(f => { 
-                if (p[f.key] === "Flat") {
-                    row[f.label] = (p["Bedrooms"] || "") + " Rooms Studio";
-                } else {
-                    row[f.label] = p[f.key] ?? '';
-                }
+            fields.forEach(f => {
+                row[f.label] = f.key ? (merged[f.key] ?? '') : '';
             });
             return row;
         });
