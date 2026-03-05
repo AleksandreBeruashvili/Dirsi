@@ -224,7 +224,7 @@ if(is_numeric($json["dealId"])) {
     $arrForAdd ["UF_CRM_1625580191451"] = $prodPriceUSD;      // დარჩენილი თანხა
     $arrForAdd ["UF_CRM_1735030244"] = putCommasInNum($prodPriceUSD);      //დილის ფასი მძიმეებით
     $arrForAdd ["UF_CRM_1709821902793"] = $prodPriceGEL;      //ფასი ლარი
-    $arrForAdd ["UF_CRM_1693385814530"] = round($prodPriceUSD/$DealData["UF_CRM_1761658503260"],2);      //კვ/მ ფასი $
+    $arrForAdd ["UF_CRM_1761658662573"] = round($prodPriceUSD/$DealData["UF_CRM_1761658608306"],2);      //კვ/მ ფასი $
 
 
     if($DealData["UF_CRM_1733492965560"]>$prodPriceUSD){

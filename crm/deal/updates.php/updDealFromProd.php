@@ -20,10 +20,28 @@ function getDealsByFilter($arFilter, $arSelect = array(), $arSort = array("ID"=>
     return (count($arDeals) > 0) ? $arDeals : false;
 }
 
+function getDealProducts($dealId) {
+    $products = CCrmDeal::LoadProductRows($dealId);
+    return $products;
+}
+
+function getProductDataByID($prodId) {
+    $bedrooms = null;
+    $res = CIBlockElement::GetList(array("ID" => "ASC"), array("ID" => $prodId), false, array("nPageSize" => 1), array("ID", "IBLOCK_ID", "NAME", "PROPERTY_Bedrooms"));
+    while($ob = $res->GetNextElement()){
+        $arProps = $ob->GetProperties(); 
+        // printArr($arProps);
+        if (!empty($arProps["Bedrooms"]["VALUE"])) {
+            $bedrooms = $arProps["Bedrooms"]["VALUE"];
+        }
+    }
+    return $bedrooms;
+}
+
 
 $arFilter = [
-    "STAGE_ID" => "WON",
-    // "ID"       => 1663
+    "STAGE_ID" => "WON"
+    // "ID"       => 1560
 ];
 
 $deals = getDealsByFilter($arFilter);
@@ -35,33 +53,29 @@ if(empty($deals)){
     return;
 }
 
+$updateArr = array();
+
 foreach($deals as $deal){
 
     $dealId = (int)$deal["ID"];
 
-    // ---------- Get first element from list 20 (TARIGI) ----------
-    $contractSigningDate = "";
-    $arFilter_list20 = array(
-        "IBLOCK_ID" => 20,
-        "PROPERTY_DEAL" => $dealId,
-    );
-    $arSelect = array("ID", "IBLOCK_ID", "NAME", "DATE_ACTIVE_FROM", "PROPERTY_*");
-    $res = CIBlockElement::GetList(array("PROPERTY_TARIGI" => "ASC"), $arFilter_list20, false, Array("nPageSize" => 1), $arSelect);
-    if ($ob = $res->GetNextElement()) {
-        $arProps = $ob->GetProperties();
-        if (!empty($arProps["TARIGI"]["VALUE"])) {
-            $contractSigningDate = $arProps["TARIGI"]["VALUE"]; 
+
+    $products = getDealProducts($dealId);
+
+    foreach($products as $product){
+
+        $prodId=$product["PRODUCT_ID"];
+        $bedrooms = getProductDataByID($prodId);
+        if(!empty($bedrooms)){
+            $updateArr["UF_CRM_1770888201367"] = $bedrooms;
         }
+
     }
-    // printArr($dealId);
-    // printArr($contractSigningDate);
+
+
+    // printArr($updateArr);
 
     // ---------- UF UPDATE ----------
-    $updateArr = array();
-
-    if (!empty($contractSigningDate)) {
-        $updateArr["UF_CRM_1762416342444"] = $contractSigningDate;
-    }
 
     if (!empty($updateArr)) {
         $dealObj = new CCrmDeal(false);
