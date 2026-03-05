@@ -116,8 +116,9 @@ function dealUpdate_163($dealId,$productData)
     $arrForAdd ["UF_CRM_1761658765237"]  = $productData["LIVING_SPACE"];    //საცხოვრებელი ფართი მ²   
     $arrForAdd ["UF_CRM_1761658642424"] = $productData["PRICE"];     //სადარბაზო   
     $arrForAdd ["UF_CRM_1761658662573"]  = $productData["KVM_PRICE"];    //საცხოვრებელი ფართი მ²   
-
-
+   
+    $arrForAdd ["UF_CRM_1769684988594"] = $productData["_ZDR30Z"];     //სადარბაზო   
+    $arrForAdd ["UF_CRM_1769684969172"]  = $productData["SIDE"];    //მხარე   
 
     $Deal = new CCrmDeal();
     $result = $Deal->Update($dealId, $arrForAdd);
