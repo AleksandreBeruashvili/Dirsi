@@ -592,63 +592,73 @@ ob_end_clean();
         <?php
             $allDates = array_unique(array_merge(array_keys($grouped_daricxvebi), array_keys($grouped_gadaxdebi)));
             usort($allDates, function($a, $b) use ($period) {
-                if ($period === "year") return (int)$a <=> (int)$b;
-                elseif ($period === "month") return strtotime($a . "-01") <=> strtotime($b . "-01");
-                else return strtotime($a) <=> strtotime($b);
+                if ($period === "year") {
+                    return (int)$a <=> (int)$b;
+                } elseif ($period === "month") {
+                    return strtotime($a . "-01") <=> strtotime($b . "-01");
+                } else {
+                    // Handle dd/mm/YYYY format
+                    $parseDate = function($d) {
+                        if (preg_match('#^(\d{2})/(\d{2})/(\d{4})$#', $d, $m)) {
+                            return $m[3] . '-' . $m[2] . '-' . $m[1]; // convert to YYYY-MM-DD
+                        }
+                        return $d;
+                    };
+                    return strtotime($parseDate($a)) <=> strtotime($parseDate($b));
+                }
             });
+
+            $geoMonths = [
+                '01' => 'January', '02' => 'February', '03' => 'March',
+                '04' => 'April',   '05' => 'May',       '06' => 'June',
+                '07' => 'July',    '08' => 'August',    '09' => 'September',
+                '10' => 'October', '11' => 'November',  '12' => 'December'
+            ];
         ?>
-        <h2>FInancial Rotation</h2>
+        <h2>Financial Rotation</h2>
         <table id="table">
             <thead>
                 <tr>
-                    <?php
-                    // Georgian month names
-                    $geoMonths = [
-                        '01' => 'January', '02' => 'February', '03' => 'March',
-                        '04' => 'April', '05' => 'May', '06' => 'June',
-                        '07' => 'July', '08' => 'August', '09' => 'September',
-                        '10' => 'October', '11' => 'November', '12' => 'December'
-                    ];
-
-                    foreach ($allDates as $date):
-                        $displayDate = $date; // fallback
-                        if ($period === "year") {
-                            $displayDate = $date;
-                        } elseif ($period === "month") {
-                            // format: YYYY-MM → ოქტომბერი 2025
-                            [$y, $m] = explode("-", $date);
-                            $displayDate = $geoMonths[$m] . " " . $y;
-                        } elseif ($period === "day") {
-                            // format: dd/mm/YYYY or YYYY-MM-DD
-                            $d = $m = $y = null;
-                            if (strpos($date, "/") !== false) {
-                                [$d, $m, $y] = explode("/", $date);
-                            } elseif (strpos($date, "-") !== false) {
-                                [$y, $m, $d] = explode("-", $date);
-                            }
-                            if ($d && $m && $y) {
-                                $displayDate = ltrim($d, "0") . " " . $geoMonths[$m] . " " . $y;
-                            }
-                        }
-                    ?>
-                        <th colspan="2"><?= htmlspecialchars($displayDate) ?></th>
-                    <?php endforeach; ?>
-                </tr>
-                <tr>
-                    <?php foreach ($allDates as $date): ?>
-                        <th>Plan ($)</th>
-                        <th>Payment ($)</th>
-                    <?php endforeach; ?>
+                    <th>Date</th>
+                    <th>Plan ($)</th>
+                    <th>Payment ($)</th>
+                    <th>Balance ($)</th>
+                    <th>Payment / Plan (%)</th>
                 </tr>
             </thead>
-
             <tbody>
+                <?php foreach ($allDates as $date):
+                    $plan    = $grouped_daricxvebi[$date] ?? 0;
+                    $payment = $grouped_gadaxdebi[$date]  ?? 0;
+                    $diff    = $plan - $payment;
+                    $pct     = $plan > 0 ? round($payment / $plan * 100, 2) : 0;
+
+                    $displayDate = $date;
+                    if ($period === "year") {
+                        $displayDate = $date;
+                    } elseif ($period === "month") {
+                        [$y, $m] = explode("-", $date);
+                        $displayDate = $geoMonths[$m] . " " . $y;
+                    } elseif ($period === "day") {
+                        $d = $mo = $y = null;
+                        if (strpos($date, "/") !== false) {
+                            [$d, $mo, $y] = explode("/", $date);
+                        } elseif (strpos($date, "-") !== false) {
+                            [$y, $mo, $d] = explode("-", $date);
+                        }
+                        if ($d && $mo && $y) {
+                            $displayDate = ltrim($d, "0") . " " . $geoMonths[$mo] . " " . $y;
+                        }
+                    }
+                ?>
                 <tr>
-                    <?php foreach ($allDates as $date): ?>
-                        <td><?= number_format($grouped_daricxvebi[$date] ?? 0, 2, '.', ',') ?></td>
-                        <td><?= number_format($grouped_gadaxdebi[$date] ?? 0, 2, '.', ',') ?></td>
-                    <?php endforeach; ?>
+                    <td><?= htmlspecialchars($displayDate) ?></td>
+                    <td><?= number_format($plan,    2, '.', ',') ?></td>
+                    <td><?= number_format($payment, 2, '.', ',') ?></td>
+                    <td><?= number_format($diff,    2, '.', ',') ?></td>
+                    <td><?= $pct ?>%</td>
                 </tr>
+                <?php endforeach; ?>
             </tbody>
         </table>
     <?php endif; ?>
@@ -684,28 +694,27 @@ ob_end_clean();
 
         Object.values(statistika).forEach(deal => {
             const row = {
-                "კლიენტი": deal.CONTACT_FULL_NAME || "",
-                "ხელშეკრულება": deal.TITLE || "",
-                "გაფორმების თარიღი": deal.UF_CRM_1667309488937 || "",
-                "კონტრ. ღირებულება": deal.OPPORTUNITY || 0,
-                "გადაიხადა": deal.payment || 0,
-                // "მიმდინარე დარიცხვა": deal.payment || 0,
-                "დარჩენილი": (deal.OPPORTUNITY || 0) - (deal.payment || 0),
+                "Client": deal.CONTACT_FULL_NAME || "",
+                "Deal#": deal.TITLE || "",
+                "Contract Sign Date": deal.UF_CRM_1667309488937 || "",
+                "Price": deal.OPPORTUNITY || 0,
+                "Payment": deal.payment || 0,
+                "Left to pay": (deal.OPPORTUNITY || 0) - (deal.payment || 0),
             };
 
             allDates.forEach(date => {
                 const daricxva = deal.gadaxdebi_and_daricxvebi_by_dates?.[date]?.daricxva || 0;
                 const gadaxda = deal.gadaxdebi_and_daricxvebi_by_dates?.[date]?.gadaxda || 0;
 
-                row[`დარიცხვა ${date}`] = daricxva;
-                row[`გადახდა ${date}`] = gadaxda;
+                row[`Plan ${date}`] = daricxva;
+                row[`Payment ${date}`] = gadaxda;
             });
 
             const totalDaricxva = Object.values(deal.gadaxdebi_and_daricxvebi_by_dates || {}).reduce((sum, v) => sum + (v.daricxva || 0), 0);
             const totalGadaxda = Object.values(deal.gadaxdebi_and_daricxvebi_by_dates || {}).reduce((sum, v) => sum + (v.gadaxda || 0), 0);
 
-            row["ჯამური დარიცხვა"] = totalDaricxva;
-            row["ჯამური გადახდა"] = totalGadaxda;
+            row["Total Plan"] = totalDaricxva;
+            row["Total Payment"] = totalGadaxda;
 
             data.push(row);
         });
@@ -713,7 +722,7 @@ ob_end_clean();
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-        XLSX.writeFile(wb, 'Report.xlsx');
+        XLSX.writeFile(wb, 'cashflow_report.xlsx');
     }
 
 

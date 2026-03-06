@@ -943,6 +943,54 @@ ob_end_clean();
     const t = <?= json_encode($t) ?>;
 
     function exportToExcel() {
+        const wb = XLSX.utils.book_new();
+
+        // =============================================
+        // SHEET 1: Summary Tables (from rendered HTML)
+        // =============================================
+        const summaryRows = [];
+
+        const titles = document.querySelectorAll('.table-title');
+        titles.forEach(function(titleEl) {
+            summaryRows.push([titleEl.innerText.trim()]);
+
+            let table = titleEl.nextElementSibling;
+            while (table && table.tagName !== 'TABLE') {
+                table = table.nextElementSibling;
+            }
+            if (!table) return;
+
+            // Header row
+            const headerRow = [];
+            table.querySelectorAll('thead tr th').forEach(function(th) {
+                headerRow.push(th.innerText.trim());
+            });
+            summaryRows.push(headerRow);
+
+            // Data rows
+            table.querySelectorAll('tbody tr').forEach(function(tr) {
+                const row = [];
+                tr.querySelectorAll('td').forEach(function(td) {
+                    let val = td.innerText.trim();
+                    const num = parseFloat(val.replace(/,/g, ''));
+                    if (!isNaN(num) && val !== '') val = num;
+                    row.push(val);
+                });
+                summaryRows.push(row);
+            });
+
+            summaryRows.push([]);
+        });
+
+        const ws1 = XLSX.utils.aoa_to_sheet(summaryRows);
+        ws1['!cols'] = [
+            { wch: 22 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 26 }, { wch: 16 },
+        ];
+        XLSX.utils.book_append_sheet(wb, ws1, 'Cashflow Summary');
+
+        // =============================================
+        // SHEET 2: Deal Details (existing logic)
+        // =============================================
         const fields = [
             { key: 'ID',                        label: t.xls_deal },
             { key: 'CONTACT_FULL_NAME',         label: t.xls_client },
@@ -970,9 +1018,9 @@ ob_end_clean();
             { key: '',                          label: t.xls_status },
         ];
 
-        const rows = dealsData.filter(p => p.prodTypeNew).map(p => {
+        const rows = dealsData.filter(function(p) { return p.prodTypeNew; }).map(function(p) {
             const row = {};
-            fields.forEach(f => { 
+            fields.forEach(function(f) {
                 if (p[f.key] === "Flat") {
                     row[f.label] = (p["Bedrooms"] || "") + " Rooms Studio";
                 } else {
@@ -982,13 +1030,11 @@ ob_end_clean();
             return row;
         });
 
-        const ws = XLSX.utils.json_to_sheet(rows, { header: fields.map(f => f.label) });
-        ws['!cols'] = fields.map(f => ({ wch: Math.max(f.label.length, 14) }));
-
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Debt');
+        const ws2 = XLSX.utils.json_to_sheet(rows, { header: fields.map(function(f) { return f.label; }) });
+        ws2['!cols'] = fields.map(function(f) { return { wch: Math.max(f.label.length, 14) }; });
+        XLSX.utils.book_append_sheet(wb, ws2, 'Debt');
 
         const today = new Date().toISOString().slice(0, 10);
-        XLSX.writeFile(wb, `debt_report_${today}.xlsx`);
+        XLSX.writeFile(wb, 'debt_report_' + today + '.xlsx');
     }
 </script>

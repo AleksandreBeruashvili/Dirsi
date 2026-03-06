@@ -315,6 +315,7 @@ $labels = [
         'col_deals'      => 'Price by sold sq.m (Deals)',
         'col_products'   => 'Price by sold sq.m (Products)',
         'col_received'   => 'Received payments',
+        'col_difference'   => 'Balance',
         'col_avg'        => 'Avg Price per sq.m / Sold Unit ($)',
         'col_total'      => 'TOTAL',
 
@@ -375,6 +376,7 @@ $labels = [
         'col_deals'      => 'ფასი გაყიდულ კვ.მ-ზე (გარიგებები)',
         'col_products'   => 'ფასი გაყიდულ კვ.მ-ზე (პროდუქტები)',
         'col_received'   => 'მიღებული გადახდები',
+        'col_difference'   => 'სხვაობა',
         'col_avg'        => 'საშ. ფასი კვ.მ-ზე / გაყიდულ ერთეულზე ($)',
         'col_total'      => 'სულ',
 
@@ -496,6 +498,8 @@ foreach ($filteredProducts as $product) {
         $payment = $gadaxdebiByDeal[$product["OWNER_DEAL"]] ?? 0;
         $resArray[$BB][$prodType]["receivedPayments"]    += $payment;
         $resArray["TOTAL"][$prodType]["receivedPayments"] += $payment;
+        $resArray[$BB][$prodType]["differences"]          = $resArray[$BB][$prodType]["soldPricesDeal"] - $resArray[$BB][$prodType]["receivedPayments"];
+        $resArray["TOTAL"][$prodType]["differences"]      = $resArray["TOTAL"][$prodType]["soldPricesDeal"] - $resArray["TOTAL"][$prodType]["receivedPayments"];
     }
 
     // --- Flat bedroom breakdown ---
@@ -558,6 +562,8 @@ foreach ($filteredProducts as $product) {
 
             $resArray[$BB][$prodTypeAnothaOne]["receivedPayments"]    += $payment;
             $resArray["TOTAL"][$prodTypeAnothaOne]["receivedPayments"] += $payment;
+            $resArray[$BB][$prodTypeAnothaOne]["differences"]          = $resArray[$BB][$prodTypeAnothaOne]["soldPricesDeal"] - $resArray[$BB][$prodTypeAnothaOne]["receivedPayments"];
+            $resArray["TOTAL"][$prodTypeAnothaOne]["differences"]      = $resArray["TOTAL"][$prodTypeAnothaOne]["soldPricesDeal"] - $resArray["TOTAL"][$prodTypeAnothaOne]["receivedPayments"];
         }
     }
 }
@@ -809,12 +815,13 @@ function renderBBTable($groupKey, $groupData, $allProdTypes, $apartmentTypes, $t
                 <th><?= $t['col_deals'] ?></th>
                 <th><?= $t['col_products'] ?></th>
                 <th><?= $t['col_received'] ?></th>
+                <th><?= $t['col_difference'] ?></th>
                 <th><?= $t['col_avg'] ?></th>
             </tr>
         </thead>
         <tbody>
             <?php
-            $t_unitsTotal = $t_unitSold = $t_sqmTotal = $t_sqlSold = $t_soldPricesSum = $t_soldPricesDeal = $t_soldPricesProduct= $t_receivedPayments = 0;
+            $t_unitsTotal = $t_unitSold = $t_sqmTotal = $t_sqlSold = $t_soldPricesSum = $t_soldPricesDeal = $t_soldPricesProduct= $t_receivedPayments = $t_soldDifferences = 0;
 
             foreach ($allProdTypes as $pt):
                 if (!isset($groupData[$pt])) continue;
@@ -831,6 +838,7 @@ function renderBBTable($groupKey, $groupData, $allProdTypes, $apartmentTypes, $t
                     $t_soldPricesDeal    += $info['soldPricesDeal']    ?? 0;
                     $t_soldPricesProduct += $info['soldPricesProduct'] ?? 0;
                     $t_receivedPayments  += $info['receivedPayments']  ?? 0;
+                    $t_soldDifferences   += $info['differences']       ?? 0;
                 }
             ?>
             <tr <?= $rowClass ?>>
@@ -843,6 +851,7 @@ function renderBBTable($groupKey, $groupData, $allProdTypes, $apartmentTypes, $t
                 <td>$<?= number_format($info['soldPricesDeal'] ?? 0, 2) ?></td>
                 <td>$<?= number_format($info['soldPricesProduct'] ?? 0, 2) ?></td>
                 <td>$<?= number_format($info['receivedPayments'] ?? 0, 2) ?></td>
+                <td>$<?= number_format($info['differences'] ?? 0, 2) ?></td>
                 <td>$<?= number_format($info['averagePricePerSqm'] ?? 0, 2) ?></td>
             </tr>
             <?php endforeach; ?>
@@ -861,6 +870,7 @@ function renderBBTable($groupKey, $groupData, $allProdTypes, $apartmentTypes, $t
                 <td>$<?= number_format($t_soldPricesDeal,  2) ?></td>
                 <td>$<?= number_format($t_soldPricesProduct,  2) ?></td>
                 <td>$<?= number_format($t_receivedPayments, 2) ?></td>
+                <td>$<?= number_format($t_soldDifferences, 2) ?></td>
                 <td>$<?= number_format($t_avg,          2) ?></td>
             </tr>
         </tbody>
@@ -892,6 +902,58 @@ if (!empty($bbKeys)) {
     const t = <?= json_encode($t) ?>;
 
     function exportToExcel() {
+        const wb = XLSX.utils.book_new();
+
+        // =============================================
+        // SHEET 1: Summary Tables (from rendered HTML)
+        // =============================================
+        const summaryRows = [];
+
+        const sections = document.querySelectorAll('h3.bb-title');
+        sections.forEach(function(titleEl) {
+            summaryRows.push([titleEl.innerText.trim()]);
+
+            let table = titleEl.nextElementSibling;
+            while (table && table.tagName !== 'TABLE') {
+                table = table.nextElementSibling;
+            }
+            if (!table) return;
+
+            const headerCells = table.querySelectorAll('thead tr th');
+            const headerRow = [];
+            headerCells.forEach(function(th) { headerRow.push(th.innerText.trim()); });
+            summaryRows.push(headerRow);
+
+            const bodyRows = table.querySelectorAll('tbody tr');
+            bodyRows.forEach(function(tr) {
+                const row = [];
+                tr.querySelectorAll('td').forEach(function(td) {
+                    let val = td.innerText.trim();
+                    if (val.startsWith('$')) {
+                        const num = parseFloat(val.replace('$', '').replace(/,/g, ''));
+                        val = isNaN(num) ? val : num;
+                    } else {
+                        const num = parseFloat(val.replace(/,/g, ''));
+                        if (!isNaN(num) && val !== '') val = num;
+                    }
+                    row.push(val);
+                });
+                summaryRows.push(row);
+            });
+
+            summaryRows.push([]);
+        });
+
+        const ws1 = XLSX.utils.aoa_to_sheet(summaryRows);
+        ws1['!cols'] = [
+            { wch: 22 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 14 },
+            { wch: 16 }, { wch: 24 }, { wch: 26 }, { wch: 20 }, { wch: 28 },
+        ];
+        XLSX.utils.book_append_sheet(wb, ws1, 'Sales Summary');
+
+        // =============================================
+        // SHEET 2: Deal Details (existing logic)
+        // =============================================
         const fields = [
             { key: 'ID',                        label: t.xls_deal },
             { key: 'CONTACT_FULL_NAME',         label: t.xls_client },
@@ -914,20 +976,16 @@ if (!empty($bbKeys)) {
             { key: 'payment',                   label: t.xls_paid },
         ];
 
-        // Build a lookup: deal ID → product
         const productByDeal = {};
-        productsData.forEach(p => {
+        productsData.forEach(function(p) {
             if (p['OWNER_DEAL']) productByDeal[p['OWNER_DEAL']] = p;
         });
 
-        const rows = dealsData.map(deal => {
+        const rows = dealsData.map(function(deal) {
             const product = productByDeal[deal['ID']] || {};
-
-            // Merge: deal fields take priority, product fills in the rest
             const merged = Object.assign({}, product, deal);
             if (merged['OPPORTUNITY']) merged['OPPORTUNITY'] = parseFloat(merged['OPPORTUNITY']);
 
-            // Build bedroom label for Real Estate Type
             if (product['PRODUCT_TYPE'] === 'Flat') {
                 merged['prodTypeNew'] = (product['Bedrooms'] || '') + ' Rooms Studio';
             } else {
@@ -935,19 +993,17 @@ if (!empty($bbKeys)) {
             }
 
             const row = {};
-            fields.forEach(f => {
+            fields.forEach(function(f) {
                 row[f.label] = f.key ? (merged[f.key] ?? '') : '';
             });
             return row;
         });
 
-        const ws = XLSX.utils.json_to_sheet(rows, { header: fields.map(f => f.label) });
-        ws['!cols'] = fields.map(f => ({ wch: Math.max(f.label.length, 14) }));
-
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Sold Products');
+        const ws2 = XLSX.utils.json_to_sheet(rows, { header: fields.map(function(f) { return f.label; }) });
+        ws2['!cols'] = fields.map(function(f) { return { wch: Math.max(f.label.length, 14) }; });
+        XLSX.utils.book_append_sheet(wb, ws2, 'Deal Details');
 
         const today = new Date().toISOString().slice(0, 10);
-        XLSX.writeFile(wb, `sold_report_${today}.xlsx`);
+        XLSX.writeFile(wb, 'sold_report_' + today + '.xlsx');
     }
 </script>

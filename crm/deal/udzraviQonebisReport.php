@@ -175,7 +175,13 @@ foreach ($products as $product) {
         }
 
         $filteredProducts[$product["ID"]]["available"] = $product["STATUS"] === "გაყიდული" ? "NO" : "Yes";
-        $filteredProducts[$product["ID"]]["statusEng"] = $product["STATUS"] === "გაყიდული" ? "Sold" : "Available";
+        if ($product["STATUS"] === "გაყიდული") {
+            $filteredProducts[$product["ID"]]["statusEng"] = "Sold";
+        } else if ($product["STATUS"] === "დაჯავშნილი") {
+            $filteredProducts[$product["ID"]]["statusEng"] = "Reserved";
+        } else {
+            $filteredProducts[$product["ID"]]["statusEng"] = "Available";
+        }
     }
 
 }
@@ -587,6 +593,54 @@ foreach ($apartmentTypes as $aptType) {
     const productsData = <?= json_encode(array_values($filteredProducts)) ?>;
 
     function exportToExcel() {
+        const wb = XLSX.utils.book_new();
+
+        // =============================================
+        // SHEET 1: Summary Tables (from rendered HTML)
+        // =============================================
+        const summaryRows = [];
+
+        const titles = document.querySelectorAll('h2');
+        titles.forEach(function(titleEl) {
+            summaryRows.push([titleEl.innerText.trim()]);
+
+            let table = titleEl.nextElementSibling;
+            while (table && table.tagName !== 'TABLE') {
+                table = table.nextElementSibling;
+            }
+            if (!table) return;
+
+            // Header row
+            const headerRow = [];
+            table.querySelectorAll('thead tr th').forEach(function(th) {
+                headerRow.push(th.innerText.trim());
+            });
+            summaryRows.push(headerRow);
+
+            // Data rows
+            table.querySelectorAll('tbody tr').forEach(function(tr) {
+                const row = [];
+                tr.querySelectorAll('td').forEach(function(td) {
+                    let val = td.innerText.trim();
+                    const num = parseFloat(val.replace(/,/g, ''));
+                    if (!isNaN(num) && val !== '') val = num;
+                    row.push(val);
+                });
+                summaryRows.push(row);
+            });
+
+            summaryRows.push([]);
+        });
+
+        const ws1 = XLSX.utils.aoa_to_sheet(summaryRows);
+        ws1['!cols'] = [
+            { wch: 22 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 },
+        ];
+        XLSX.utils.book_append_sheet(wb, ws1, 'Status Summary');
+
+        // =============================================
+        // SHEET 2: Product Details (existing logic)
+        // =============================================
         const fields = [
             { key: '',               label: '#' },
             { key: 'BB',             label: 'Building/Block' },
@@ -610,13 +664,13 @@ foreach ($apartmentTypes as $aptType) {
         ];
 
         let counter = 1;
-        const rows = productsData.map(p => {
+        const rows = productsData.map(function(p) {
             const row = {};
             const projEndDateArr = (p["projEndDate"] || "").split("/");
             const year  = projEndDateArr[2] || '';
             const month = projEndDateArr[1] || '';
 
-            fields.forEach(f => {
+            fields.forEach(function(f) {
                 if (f.label === "Building/Block") {
                     row[f.label] = (p["BUILDING"] || "") + (p["KORPUSIS_NOMERI_XE3NX2"] || "");
                 } else if (f.label === "#") {
@@ -639,14 +693,11 @@ foreach ($apartmentTypes as $aptType) {
             return row;
         });
 
-        const ws = XLSX.utils.json_to_sheet(rows, { header: fields.map(f => f.label) });
-        const colWidths = fields.map(f => ({ wch: Math.max(f.label.length, 14) }));
-        ws['!cols'] = colWidths;
-
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Products');
+        const ws2 = XLSX.utils.json_to_sheet(rows, { header: fields.map(function(f) { return f.label; }) });
+        ws2['!cols'] = fields.map(function(f) { return { wch: Math.max(f.label.length, 14) }; });
+        XLSX.utils.book_append_sheet(wb, ws2, 'Products');
 
         const today = new Date().toISOString().slice(0, 10);
-        XLSX.writeFile(wb, `status_report_${today}.xlsx`);
+        XLSX.writeFile(wb, 'product_report_' + today + '.xlsx');
     }
 </script>
