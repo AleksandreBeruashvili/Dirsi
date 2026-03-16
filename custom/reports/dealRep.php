@@ -6,7 +6,6 @@ error_reporting(E_ALL);
 
 ob_start();
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
-// ob_end_clean();
 $APPLICATION->SetTitle("Marketing Statistics");
 CJSCore::Init(array("jquery"));
 CJSCore::Init(array("jquery", "calendar"));
@@ -53,27 +52,20 @@ function divideIntoMonths($start_date, $end_date) {
     $months = [];
     $start = DateTime::createFromFormat('d/m/Y', $start_date);
     $end = DateTime::createFromFormat('d/m/Y', $end_date);
-
-    // Move the start date to the first day of the month
     $start->modify('first day of this month');
-
     while ($start <= $end) {
         $month_start = clone $start;
         $month_end = clone $start;
         $month_end->modify('last day of this month')->setTime(23, 59, 59);
-
         if ($month_end > $end) {
             $month_end = clone $end;
         }
-
         $months[] = [
-            'start' => $month_start->format('d/m/Y'),
-            'end' => $month_end->format('d/m/Y')
+                'start' => $month_start->format('d/m/Y'),
+                'end' => $month_end->format('d/m/Y')
         ];
-
         $start->modify('first day of next month');
     }
-
     return $months;
 }
 
@@ -81,8 +73,7 @@ function divideIntoMonths($start_date, $end_date) {
 function getDealsByFilter($arFilter, $arSelect = array(), $arSort = array("ID"=>"DESC")) {
     $arDeals = array();
     $arSelect = array("ID","OPPORTUNITY", "STAGE_ID", "DATE_CREATE", "SOURCE_ID", "ASSIGNED_BY_ID", "UF_CRM_1761575156657");
-    
-    // Validate filter dates before querying
+
     if (isset($arFilter[">=DATE_CREATE"]) && empty($arFilter[">=DATE_CREATE"])) {
         error_log("ERROR: Empty start date in filter");
         return false;
@@ -91,7 +82,7 @@ function getDealsByFilter($arFilter, $arSelect = array(), $arSort = array("ID"=>
         error_log("ERROR: Empty end date in filter");
         return false;
     }
-    
+
     try {
         $res = CCrmDeal::GetListEx($arSort, $arFilter, false, false, $arSelect);
         while ($arDeal = $res->Fetch()) {
@@ -102,9 +93,10 @@ function getDealsByFilter($arFilter, $arSelect = array(), $arSort = array("ID"=>
         error_log("Filter was: " . print_r($arFilter, true));
         return false;
     }
-    
+
     return (count($arDeals) > 0) ? $arDeals : false;
 }
+
 function getUserName($id)
 {
     $res = CUser::GetByID($id)->Fetch();
@@ -114,89 +106,70 @@ function getUserName($id)
 $currentDate = new DateTime();
 $firstDayOfMonth = new DateTime('first day of this month');
 
-// Get dates from URL parameters or use defaults
-$endDateParam = isset($_GET['endDate']) ? trim($_GET['endDate']) : '';
-$startDateParam = isset($_GET['startDate']) ? trim($_GET['startDate']) : '';
-
-// Process end date
-if (!empty($endDateParam)) {
-    try {
-        $endDate = new DateTime($endDateParam);
-        $dateineed = $endDate->format('d.m.Y');
-    } catch (Exception $e) {
-        $dateineed = $currentDate->format('d.m.Y');
-    }
+// ✅ FIX: date() მეთოდი d/m/Y ფორმატით (Bitrix-ის სტანდარტი)
+if (!empty($_GET['endDate'])) {
+    $dateineed = date('d/m/Y', strtotime($_GET['endDate']));
 } else {
-    $dateineed = $currentDate->format('d.m.Y');
+    $dateineed = $currentDate->format('d/m/Y');
 }
 
-// Process start date
-if (!empty($startDateParam)) {
-    try {
-        $startDate = new DateTime($startDateParam);
-        $startdateineed = $startDate->format('d.m.Y');
-    } catch (Exception $e) {
-        $startdateineed = $firstDayOfMonth->format('d.m.Y');
-    }
+if (!empty($_GET['startDate'])) {
+    $startdateineed = date('d/m/Y', strtotime($_GET['startDate']));
 } else {
-    $startdateineed = $firstDayOfMonth->format('d.m.Y');
+    $startdateineed = $firstDayOfMonth->format('d/m/Y');
 }
 
-// DEBUG: Log the dates being used
 error_log("Start date for query: " . $startdateineed);
 error_log("End date for query: " . $dateineed);
 
-// Create filter with verified dates
 $arfilter = array(
-    ">=DATE_CREATE" => $startdateineed . " 00:00:00",
-    "<=DATE_CREATE" => $dateineed . " 23:59:59",
-    "CATEGORY_ID" => 0,
+        ">=DATE_CREATE" => $startdateineed,
+        "<=DATE_CREATE" => $dateineed . " 23:59:59",
+        "CATEGORY_ID" => 0,
 );
 
-// DEBUG: Check what the filter looks like
 error_log("Filter being used: " . print_r($arfilter, true));
 
 $deals = getDealsByFilter($arfilter);
 
-// DEBUG: Check results
 error_log("Deals returned: " . (is_array($deals) ? count($deals) : 'false/null'));
 
 if ($deals === false || empty($deals)) {
     error_log("WARNING: No deals found!");
-    // Try a simpler query to test
     $testFilter = array("CATEGORY_ID" => 0);
     $testDeals = getDealsByFilter($testFilter);
     error_log("Test query (all deals in category 0): " . (is_array($testDeals) ? count($testDeals) : 'none'));
 }
 
-    $fbData = array(
+// ✅ FIX: ცვლადების ინიციალიზაცია if($deals)-ის გარეთ
+$dealsdata = [];
+$managers = [];
+$sources = [];
+$managerNames = [];
+$sourceNames = [];
+$managerNamesList = [];
+$sourceNamesList = [];
+
+$fbData = array(
         "Leads" => 0,
         "QL" => 0,
         "NonQualified" => 0,
         "Meetings Scheduled" => 0,
         "Meetings Completed" => 0,
-        
         "Unsuccessful" => 0,
         "WON" => 0,
         "start" => $startdateineed,
         "end" => $dateineed,
         "total_revenue" => 0
-    );
-$sources = [];
-
-
+);
 
 $reasonMap = [];
-
 $rsEnum = \CUserFieldEnum::GetList([], ['USER_FIELD_NAME' => 'UF_CRM_1761575156657']);
 while ($arEnum = $rsEnum->GetNext()) {
     $reasonMap[$arEnum['ID']] = $arEnum['VALUE'];
 }
 
-
-
 if ($deals) {
-    $dealsdata = [];
     foreach ($deals as $deal) {
 
         $fbData["Leads"]++;
@@ -207,71 +180,63 @@ if ($deals) {
             $reasonNames = array_map(function($id) use ($reasonMap) {
                 return $reasonMap[$id] ?? 'UR';
             }, $reasonId);
-            $reasonName = implode(', ', $reasonNames); // ყველა მიზეზი ვადუღებთ ერთ სტრინგად
+            $reasonName = implode(', ', $reasonNames);
         } else {
             $reasonName = $reasonMap[$reasonId] ?? 'UR';
         }
 
-
         $stageId = $deal["STAGE_ID"];
         $stageName = \Bitrix\Crm\StatusTable::getList([
-            'filter' => ['ENTITY_ID' => 'DEAL_STAGE', 'STATUS_ID' => $stageId],
-            'select' => ['NAME']
+                'filter' => ['ENTITY_ID' => 'DEAL_STAGE', 'STATUS_ID' => $stageId],
+                'select' => ['NAME']
         ])->fetch()['NAME'];
 
         $dealInfo = [
-            "dateCreate" => $deal["DATE_CREATE"],
-            "id" => $deal["ID"],
-            "manager" => getUserName($deal['ASSIGNED_BY_ID']),
-            "source" => \Bitrix\Crm\StatusTable::getList([
-                'filter' => ['ENTITY_ID' => 'SOURCE', 'STATUS_ID' => $deal['SOURCE_ID']],
-                'select' => ['NAME']
-            ])->fetch()['NAME'],
-            "stage" => $stageName,
-            "stageId" => $stageId,
-            "opportunity" => floatval($deal["OPPORTUNITY"]),
-            "reason" => $reasonName // ✅ ეს დაემატოს
+                "dateCreate" => $deal["DATE_CREATE"],
+                "id" => $deal["ID"],
+                "manager" => getUserName($deal['ASSIGNED_BY_ID']),
+                "source" => \Bitrix\Crm\StatusTable::getList([
+                        'filter' => ['ENTITY_ID' => 'SOURCE', 'STATUS_ID' => $deal['SOURCE_ID']],
+                        'select' => ['NAME']
+                ])->fetch()['NAME'],
+                "stage" => $stageName,
+                "stageId" => $stageId,
+                "opportunity" => floatval($deal["OPPORTUNITY"]),
+                "reason" => $reasonName
         ];
 
-        $dealsdata[]=$dealInfo;
+        $dealsdata[] = $dealInfo;
         $managers[] = $deal['ASSIGNED_BY_ID'];
         $sources[] = $deal['SOURCE_ID'];
-
 
         if (in_array($deal["STAGE_ID"], array("UC_2OKWI1", "UC_NOUE6K", "UC_2IVED4", "UC_XG2GSV", "UC_ZODBLJ", "UC_7XY1I6", "6", "8", "WON"))) {
             $fbData["QL"]++;
         }
         if (in_array($deal["STAGE_ID"], array("UC_NOUE6K", "UC_2IVED4", "UC_XG2GSV", "UC_ZODBLJ", "UC_7XY1I6", "6", "8", "WON"))) {
             $fbData["Meetings Scheduled"]++;
-        }  
+        }
         if (in_array($deal["STAGE_ID"], array("UC_NOUE6K", "UC_2IVED4", "UC_XG2GSV", "UC_ZODBLJ", "UC_7XY1I6", "6", "8", "WON"))) {
             $fbData["Meetings Completed"]++;
         }
         if (in_array($deal["STAGE_ID"], array("LOSE"))) {
             $fbData["Unsuccessful"]++;
-        } 
+        }
         if (in_array($deal["STAGE_ID"], array("WON"))) {
             $fbData["WON"]++;
             $fbData["total_revenue"] += floatval($deal["OPPORTUNITY"]);
         }
     }
 
-    // უნიკალური მენეჯერები
     $managers = array_unique($managers);
-    $managerNames = [];
     foreach ($managers as $managerId) {
         $managerNames[$managerId] = getUserName($managerId);
     }
 
-    // უნიკალური წყაროები
     $sources = array_unique($sources);
-
-    // სურვილის შემთხვევაში, შეგიძლია გამოიტანო ტექსტური დასახელებები წყაროებისათვის:
-    $sourceNames = [];
     foreach ($sources as $sourceId) {
         $sourceNames[$sourceId] = \Bitrix\Crm\StatusTable::getList([
-            'filter' => ['ENTITY_ID' => 'SOURCE', 'STATUS_ID' => $sourceId],
-            'select' => ['NAME']
+                'filter' => ['ENTITY_ID' => 'SOURCE', 'STATUS_ID' => $sourceId],
+                'select' => ['NAME']
         ])->fetch()['NAME'];
     }
 }
@@ -283,11 +248,6 @@ if($sourceNames){
     $sourceNamesList = array_values($sourceNames);
 }
 
-
-
-// printArr($fbData);
-
- 
 if ($authorizedUser) {
     $USER->Logout();
 }
@@ -474,9 +434,6 @@ $user_id = $USER->GetID();
             font-weight: 500;
         }
 
-
-        
-
         .conversion-bar {
             display: inline-block;
             width: 60px;
@@ -498,35 +455,6 @@ $user_id = $USER->GetID();
             height: 200px;
         }
 
-        .status-breakdown {
-            display: flex;
-            flex-direction: column;
-            margin-top: 15px;
-        }
-
-        .status-item {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .status-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9em;
-        }
-
-        .status-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 2px;
-        }
-
-        .status-percentage {
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
         .refresh-btn {
             padding: 8px 16px;
             background: #007bff;
@@ -543,39 +471,15 @@ $user_id = $USER->GetID();
         }
 
         @media (max-width: 1024px) {
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .bottom-section {
-                grid-template-columns: 1fr;
-            }
+            .charts-grid { grid-template-columns: 1fr; }
+            .bottom-section { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .date-filter {
-                flex-wrap: wrap;
-            }
+            .header { flex-direction: column; gap: 15px; }
+            .date-filter { flex-wrap: wrap; }
         }
-        .reason-chart-container {
-            width: 100%;
-            max-width: 600px;
-            height: 400px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        #reasonChart {
-            width: 100% !important;
-            height: 100% !important;
-        }
+
         .redirect-btn {
             margin-left: 10px;
             background-color: #4caf50;
@@ -588,12 +492,10 @@ $user_id = $USER->GetID();
             transition: background-color 0.2s ease-in-out;
         }
 
-        .redirect-btn:hover {
-            background-color: #45a049;
-        }
-        .hidden-row {
-            display: none;
-        }
+        .redirect-btn:hover { background-color: #45a049; }
+
+        .hidden-row { display: none; }
+
         .toggle-btn {
             margin-top: 8px;
             background-color: #e0e0e0;
@@ -603,144 +505,137 @@ $user_id = $USER->GetID();
             cursor: pointer;
             font-size: 13px;
         }
-        .toggle-btn:hover {
-            background-color: #ccc;
-        }
+
+        .toggle-btn:hover { background-color: #ccc; }
     </style>
 </head>
 <body>
-    <div class="container">
+<div class="container">
     <div class="header">
         <h1>DEALS REPORT</h1>
-
-     <div class="date-filter">
-        <form method="get" class="filter-form">
-            <label for="startDate">From:</label>
-            <input type="date" id="startDate" name="startDate">
-            <label for="endDate">To:</label>
-            <input type="date" id="endDate" name="endDate">
-            <button type="submit" class="refresh-btn" onclick="updateReport()">Refresh</button>
-            <button style="display:none;" type="button" class="redirect-btn" onclick="redirectToLifeCycle()">Go to Lifecycle Report</button>
-        </form>
+        <div class="date-filter">
+            <form method="get" class="filter-form">
+                <label for="startDate">From:</label>
+                <input type="date" id="startDate" name="startDate">
+                <label for="endDate">To:</label>
+                <input type="date" id="endDate" name="endDate">
+                <button type="submit" class="refresh-btn">Refresh</button>
+                <button style="display:none;" type="button" class="redirect-btn" onclick="redirectToLifeCycle()">Go to Lifecycle Report</button>
+            </form>
+        </div>
     </div>
+
+    <div class="stats-overview">
+        <div class="stat-card">
+            <div class="stat-number" id="totalLeads">0</div>
+            <div class="stat-label">Leads.</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="confirmedLeads">0</div>
+            <div class="stat-label">QL.</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="nonQualified">0</div>
+            <div class="stat-label">NonQL.</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="Scheduled">0</div>
+            <div class="stat-label">Meetings Scheduled.</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="Completed">0</div>
+            <div class="stat-label">Meetings Completed.</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="inDealLeads">0</div>
+            <div class="stat-label">Won.</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="unsuccessfulLeads">0</div>
+            <div class="stat-label">Junk.</div>
+        </div>
+        <div class="stat-card conversion-card">
+            <div class="stat-number" id="conversionRate">0%</div>
+            <div class="stat-label">Conversion</div>
+        </div>
     </div>
-        <div class="stats-overview">
-            <div class="stat-card">
-                <div class="stat-number" id="totalLeads">4,218</div>
-                <div class="stat-label">Leads.</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="confirmedLeads">2,719</div>
-                <div class="stat-label">QL.</div>
-            </div>
 
-            <div class="stat-card">
-                <div class="stat-number" id="nonQualified">2,719</div>
-                <div class="stat-label">NonQL.</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="Scheduled">265</div>
-                <div class="stat-label">Meetings Scheduled.</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="Completed">265</div>
-                <div class="stat-label">Meetings Completed.</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-number" id="inDealLeads">388</div>
-                <div class="stat-label">Won.</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-number" id="unsuccessfulLeads">3,565</div>
-                <div class="stat-label">Junk.</div>
-            </div>
-            <div class="stat-card conversion-card">
-                <div class="stat-number" id="conversionRate">9.20%</div>
-                <div class="stat-label">Conversion</div>
-            </div>
+    <div class="charts-grid">
+        <div class="chart-container">
+            <div class="chart-title">DEALS DYNAMICS BY MONTH.</div>
+            <canvas id="leadsChart"></canvas>
         </div>
-
-        <div class="charts-grid">
-            <div class="chart-container">
-                <div class="chart-title">DEALS DYNAMICS BY MONTH.</div>
-                <canvas id="leadsChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <div class="chart-title">DEALS BY STATUS TYPE, %</div>
-                <div class="status-chart-container">
-                    <canvas id="statusChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="bottom-section">
-            <div class="table-container">
-                <div class="chart-title">DEALS AND CONVERSION BY MANAGERS</div>
-                <table class="performance-table">
-                    <thead>
-                        <tr>
-                            <th>Manager</th>
-                            <th>Leads.</th>
-                            <th>In Work</th>
-                            <th>Won.</th>
-                            <th>Junk</th>
-                            <th>Conversion</th>
-                        </tr>
-                    </thead>
-                    <tbody id="managersTable">
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="table-container">
-                <div class="chart-title">DEALS AND CONVERSION BY SOURCES</div>
-                <table class="performance-table">
-                    <thead>
-                        <tr>
-                            <th>Source</th>
-                            <th>Leads.</th>
-                            <th>Won.</th>
-                            <th>Conversion</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sourcesTable">
-                    </tbody>
-                </table>
-            </div>
-
-                    <div class="table-container">
-                <div class="chart-title">DEALS AND CONVERSION BY JUNK REASONS</div>
-                <table class="performance-table">
-                    <thead>
-                        <tr>
-                            <th>Junk Reason</th>
-                            <th>Leads.</th>
-                            <th>Conversion</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reasonChart">
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="table-wrapper1">
-            <div class="table-container1" id="dealTableContainer1" >
+        <div class="chart-container">
+            <div class="chart-title">DEALS BY STATUS TYPE, %</div>
+            <div class="status-chart-container">
+                <canvas id="statusChart"></canvas>
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <div class="bottom-section">
+        <div class="table-container">
+            <div class="chart-title">DEALS AND CONVERSION BY MANAGERS</div>
+            <table class="performance-table">
+                <thead>
+                <tr>
+                    <th>Manager</th>
+                    <th>Leads.</th>
+                    <th>In Work</th>
+                    <th>Won.</th>
+                    <th>Junk</th>
+                    <th>Conversion</th>
+                </tr>
+                </thead>
+                <tbody id="managersTable"></tbody>
+            </table>
+        </div>
+
+        <div class="table-container">
+            <div class="chart-title">DEALS AND CONVERSION BY SOURCES</div>
+            <table class="performance-table">
+                <thead>
+                <tr>
+                    <th>Source</th>
+                    <th>Leads.</th>
+                    <th>Won.</th>
+                    <th>Conversion</th>
+                </tr>
+                </thead>
+                <tbody id="sourcesTable"></tbody>
+            </table>
+        </div>
+
+        <div class="table-container">
+            <div class="chart-title">DEALS AND CONVERSION BY JUNK REASONS</div>
+            <table class="performance-table">
+                <thead>
+                <tr>
+                    <th>Junk Reason</th>
+                    <th>Leads.</th>
+                    <th>Conversion</th>
+                </tr>
+                </thead>
+                <tbody id="reasonChart"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="table-wrapper1">
+        <div class="table-container1" id="dealTableContainer1"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    let dateandfilter1 = <?php echo json_encode($dateineed); ?>;
+    let dateandfilter1   = <?php echo json_encode($dateineed); ?>;
     let datestartfilter1 = <?php echo json_encode($startdateineed); ?>;
-    let fbData = <?php echo json_encode($fbData); ?>;
-    let managerNamesList = <?php echo json_encode($managerNamesList); ?>;
-    let sourceNamesList = <?php echo json_encode($sourceNamesList); ?>;
-    let dealsdata = <?php echo json_encode($dealsdata); ?>;
-    let reasonMap = <?php echo json_encode($reasonMap); ?>;
+    let fbData           = <?php echo json_encode($fbData); ?>;
+    let managerNamesList = <?php echo json_encode($managerNamesList ?? []); ?>;
+    let sourceNamesList  = <?php echo json_encode($sourceNamesList ?? []); ?>;
+    let dealsdata        = <?php echo json_encode($dealsdata ?? []); ?>;
+    let reasonMap        = <?php echo json_encode($reasonMap); ?>;
     let dataProcessor;
     let leadsChart, statusChart, reasonChart;
     let datestartfilter = '';
@@ -758,7 +653,6 @@ $user_id = $USER->GetID();
                 Qualified: 0,
                 Scheduled: 0,
                 Completed: 0,
-                
                 warmLeads2: 0,
                 wonDeals: 0,
                 failedDeals: 0,
@@ -770,24 +664,16 @@ $user_id = $USER->GetID();
                 reasonStats: {}
             };
 
-            // Helper function to parse date from multiple formats
             function parseDateFromString(dateString) {
                 try {
                     if (!dateString) return new Date();
-                    
-                    // Handle DD.MM.YYYY HH:MM:SS or DD/MM/YYYY HH:MM:SS
                     let cleanDate = dateString.replace(/\./g, '/');
-                    
-                    // Split date and time
                     const [datePart, timePart] = cleanDate.split(' ');
                     const [day, month, year] = datePart.split('/');
-                    
-                    // Validate parts
                     if (!day || !month || !year) {
                         console.warn('Invalid date format:', dateString);
                         return new Date();
                     }
-                    
                     return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
                 } catch (error) {
                     console.error('Error parsing date:', dateString, error);
@@ -798,20 +684,20 @@ $user_id = $USER->GetID();
             this.rawDeals.forEach(deal => {
                 if (["UC_2OKWI1", "UC_NOUE6K", "UC_2IVED4", "UC_XG2GSV", "UC_ZODBLJ", "UC_7XY1I6", "6", "8", "WON"].includes(deal.stageId)) {
                     processed.Qualified++;
-                } 
+                }
                 if (["UC_NOUE6K", "UC_2IVED4", "UC_XG2GSV", "UC_ZODBLJ", "UC_7XY1I6", "6", "8", "WON"].includes(deal.stageId)) {
                     processed.Scheduled++;
-                }   
+                }
                 if (["UC_XG2GSV", "UC_ZODBLJ", "UC_7XY1I6", "6", "8", "WON"].includes(deal.stageId)) {
                     processed.Completed++;
-                } 
+                }
                 if (deal.stageId == 'LOSE') {
                     processed.failedDeals++;
-                }  
+                }
                 if (deal.stageId == 'WON') {
                     processed.wonDeals++;
                     processed.totalRevenue += (deal.opportunity || 0);
-                } 
+                }
 
                 if (!processed.managerStats[deal.manager]) {
                     processed.managerStats[deal.manager] = { leads: 0, junk: 0, won: 0, revenue: 0 };
@@ -823,10 +709,8 @@ $user_id = $USER->GetID();
                 }
                 if (deal.stageId == 'LOSE') {
                     processed.managerStats[deal.manager].junk++;
-                }  
+                }
 
-
-                // Source statistics
                 if (deal.source && !processed.sourceStats[deal.source]) {
                     processed.sourceStats[deal.source] = { leads: 0, won: 0 };
                 }
@@ -837,8 +721,6 @@ $user_id = $USER->GetID();
                     }
                 }
 
-
-                    // Source statistics
                 if (deal.reason && !processed.reasonStats[deal.reason]) {
                     processed.reasonStats[deal.reason] = { leads: 0, won: 0 };
                 }
@@ -848,15 +730,7 @@ $user_id = $USER->GetID();
                         processed.reasonStats[deal.reason].won++;
                     }
                 }
-                // Reason statistics
-                // if (deal.reason && !processed.reasonStats[deal.reason]) {
-                //     processed.reasonStats[deal.reason] = 0;
-                // }
-                // if (deal.reason) {
-                //     processed.reasonStats[deal.reason]++;
-                // }
 
-                // Monthly data processing
                 const dateObj = parseDateFromString(deal.dateCreate);
                 const monthKey = dateObj.getFullYear() + '-' + (dateObj.getMonth() + 1).toString().padStart(2, '0');
 
@@ -873,7 +747,6 @@ $user_id = $USER->GetID();
                     processed.monthlyData[monthKey].revenue += (deal.opportunity || 0);
                 }
 
-                // Status statistics
                 if (!processed.statusStats[deal.stageId]) {
                     processed.statusStats[deal.stageId] = 0;
                 }
@@ -883,368 +756,140 @@ $user_id = $USER->GetID();
             return processed;
         }
     }
+
     function updateStats() {
         const data = dataProcessor.processedData;
-        
-        // Update main statistics
-        if (document.getElementById('totalLeads')) {
+        if (document.getElementById('totalLeads'))
             document.getElementById('totalLeads').textContent = data.totalDeals.toLocaleString();
-        }
-        if (document.getElementById('confirmedLeads')) {
+        if (document.getElementById('confirmedLeads'))
             document.getElementById('confirmedLeads').textContent = data.Qualified.toLocaleString();
-        }
-        if (document.getElementById('nonQualified')) {
-            document.getElementById('nonQualified').textContent = (data.totalDeals) - (data.Qualified);
-        }
-        if (document.getElementById('Scheduled')) {
+        if (document.getElementById('nonQualified'))
+            document.getElementById('nonQualified').textContent = (data.totalDeals - data.Qualified).toLocaleString();
+        if (document.getElementById('Scheduled'))
             document.getElementById('Scheduled').textContent = data.Scheduled.toLocaleString();
-        }
-        if (document.getElementById('Completed')) {
+        if (document.getElementById('Completed'))
             document.getElementById('Completed').textContent = data.Completed.toLocaleString();
-        }
-        if (document.getElementById('unsuccessfulLeads')) {
+        if (document.getElementById('unsuccessfulLeads'))
             document.getElementById('unsuccessfulLeads').textContent = data.failedDeals.toLocaleString();
-        }
-        if (document.getElementById('inDealLeads')) {
+        if (document.getElementById('inDealLeads'))
             document.getElementById('inDealLeads').textContent = data.wonDeals.toLocaleString();
-        }
-        
         const conversionRate = data.totalDeals > 0 ? (data.wonDeals / data.totalDeals * 100).toFixed(2) : '0.00';
-        if (document.getElementById('conversionRate')) {
+        if (document.getElementById('conversionRate'))
             document.getElementById('conversionRate').textContent = conversionRate + '%';
-        }
-        
-        // Update total revenue
-        if (document.getElementById('totalRevenue')) {
+        if (document.getElementById('totalRevenue'))
             document.getElementById('totalRevenue').textContent = data.totalRevenue.toLocaleString() + ' ₾';
-        }
-    }
-   
-
-function createLeadsChart() {
-    const ctx = document.getElementById('leadsChart');
-    if (!ctx) return;
-    
-    const data = dataProcessor.processedData;
-
-    // Get date filter values
-    const startDateInput = document.getElementById('startDate');
-    const endDateInput = document.getElementById('endDate');
-
-    console.log(startDateInput);
-    console.log(endDateInput);
-    
-    let startDate = null;
-    let endDate = null;
-    
-    if (startDateInput && startDateInput.value) {
-        startDate = new Date(startDateInput.value);
-    }
-    
-    if (endDateInput && endDateInput.value) {
-        endDate = new Date(endDateInput.value);
     }
 
-    // Get all months from data (only for fallback when no date filters)
-    const monthlyEntries = Object.entries(data.monthlyData).sort((a, b) => {
-        return a[0].localeCompare(b[0]);
-    });
-
-    // Create comprehensive month range based on date filters or all available data
-    let allMonths = [];
-    
-    if (startDate && endDate) {
-
-        console.log(startDate);
-        console.log(endDate);
-
-        // If both dates are provided, create range from start to end
-        let currentYear = startDate.getFullYear();
-        let currentMonth = startDate.getMonth() + 1; // getMonth() returns 0-11, we need 1-12
-        
-        const endYear = endDate.getFullYear();
-        const endMonth = endDate.getMonth() + 1;
-        
-        while (currentYear < endYear || (currentYear === endYear && currentMonth <= endMonth)) {
-            const monthKey = currentYear + '-' + currentMonth.toString().padStart(2, '0');
-            allMonths.push(monthKey);
-            
-            currentMonth++;
-            if (currentMonth > 12) {
-                currentMonth = 1;
-                currentYear++;
-            }
-        }
-    } else if (startDate && !endDate) {
-        // If only start date is provided, start from start date to last available data
-        const lastAvailableMonth = monthlyEntries.length > 0 ? monthlyEntries[monthlyEntries.length - 1][0] : null;
-        
-        if (lastAvailableMonth) {
-            const [endYear, endMonth] = lastAvailableMonth.split('-').map(Number);
-            
-            let currentYear = startDate.getFullYear();
-            let currentMonth = startDate.getMonth() + 1;
-            
-            while (currentYear < endYear || (currentYear === endYear && currentMonth <= endMonth)) {
-                const monthKey = currentYear + '-' + currentMonth.toString().padStart(2, '0');
-                allMonths.push(monthKey);
-                
-                currentMonth++;
-                if (currentMonth > 12) {
-                    currentMonth = 1;
-                    currentYear++;
-                }
-            }
-        }
-    } else if (!startDate && endDate) {
-        // If only end date is provided, start from first available data to end date
-        const firstAvailableMonth = monthlyEntries.length > 0 ? monthlyEntries[0][0] : null;
-        
-        if (firstAvailableMonth) {
-            const [startYear, startMonth] = firstAvailableMonth.split('-').map(Number);
-            
-            let currentYear = startYear;
-            let currentMonth = startMonth;
-            
-            const endYear = endDate.getFullYear();
-            const endMonth = endDate.getMonth() + 1;
-            
-            while (currentYear < endYear || (currentYear === endYear && currentMonth <= endMonth)) {
-                const monthKey = currentYear + '-' + currentMonth.toString().padStart(2, '0');
-                allMonths.push(monthKey);
-                
-                currentMonth++;
-                if (currentMonth > 12) {
-                    currentMonth = 1;
-                    currentYear++;
-                }
-            }
-        }
-    } else {
-        // If no date filters, use all available data range
-        if (monthlyEntries.length > 0) {
-            const firstMonth = monthlyEntries[0][0];
-            const lastMonth = monthlyEntries[monthlyEntries.length - 1][0];
-            
-            const [startYear, startMonth] = firstMonth.split('-').map(Number);
-            const [endYear, endMonth] = lastMonth.split('-').map(Number);
-            
-            let currentYear = startYear;
-            let currentMonth = startMonth;
-            
-            while (currentYear < endYear || (currentYear === endYear && currentMonth <= endMonth)) {
-                const monthKey = currentYear + '-' + currentMonth.toString().padStart(2, '0');
-                allMonths.push(monthKey);
-                
-                currentMonth++;
-                if (currentMonth > 12) {
-                    currentMonth = 1;
-                    currentYear++;
-                }
-            }
-        }
-    }
-
-    console.log(allMonths);
-
-    // Create month labels in Georgian
-    const monthLabels = allMonths.map(month => {
-        const [year, monthNum] = month.split('-');
-        const monthNames = {
-            '01': 'Jan', '02': 'Feb', '03': 'Mar', '04': 'Apr',
-            '05': 'May', '06': 'Jun', '07': 'Jul', '08': 'Aug',
-            '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dec'
-        };
-        return `${monthNames[monthNum]} ${year}`;
-    });
-
-    // Create data arrays - only for confirmed and won
-    const monthlyConfirmed = allMonths.map(month => {
-        return data.monthlyData[month] ? data.monthlyData[month].confirmed : 0;
-    });
-
-
-    const monthlyWon = allMonths.map(month => {
-        return data.monthlyData[month] ? data.monthlyData[month].won : 0;
-    });
-
-
-    const monthlyTotal = allMonths.map(month => {
-        return data.monthlyData[month] ? data.monthlyData[month].total : 0;
-    });
-
-    // Calculate max value for y-axis scaling
-    const maxValue = Math.max(...monthlyConfirmed, ...monthlyWon, ...monthlyTotal);
-
-    // Destroy existing chart
-    if (leadsChart) {
-        leadsChart.destroy();
-    }
-
-    
-
-    leadsChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: monthLabels,
-            datasets: [
-
-                {
-                    label: 'Total',
-                    data: monthlyTotal,
-                    backgroundColor: 'rgba(182, 176, 176, 0.8)',
-                    borderColor: '#676763ff',
-                    borderWidth: 2,
-                    borderRadius: 5,
-                    borderSkipped: false
-                },
-                {
-                    label: 'QL',
-                    data: monthlyConfirmed,
-                    backgroundColor: 'rgba(70, 130, 180, 0.8)',
-                    borderColor: '#4682B4',
-                    borderWidth: 2,
-                    borderRadius: 5,
-                    borderSkipped: false
-                },
-                {
-                    label: 'WON',
-                    data: monthlyWon,
-                    backgroundColor: 'rgba(52, 168, 83, 0.8)',
-                    borderColor: '#34a853',
-                    borderWidth: 2,
-                    borderRadius: 5,
-                    borderSkipped: false
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                    align: 'start',
-                    labels: {
-                        usePointStyle: true,
-                        pointStyle: 'rect',
-                        padding: 20,
-                        font: {
-                            size: 12
-                        }
-                    }
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleColor: 'white',
-                    bodyColor: 'white',
-                    borderColor: '#ccc',
-                    borderWidth: 1,
-                    callbacks: {
-                        label: function(context) {
-                            return context.dataset.label + ': ' + context.parsed.y.toLocaleString();
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.1)',
-                        lineWidth: 1
-                    },
-                    ticks: {
-                        stepSize: Math.max(1, Math.ceil(maxValue / 8)),
-                        font: {
-                            size: 11
-                        },
-                        color: '#666'
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        font: {
-                            size: 11
-                        },
-                        color: '#666',
-                        maxRotation: 45
-                    }
-                }
-            },
-            interaction: {
-                intersect: false,
-                mode: 'index'
-            }
-        }
-    });
-}
-
-    function createStatusChart() {
-        const ctx = document.getElementById('statusChart');
+    function createLeadsChart() {
+        const ctx = document.getElementById('leadsChart');
         if (!ctx) return;
-        
-        const data = dataProcessor?.processedData || {};
 
-        const total = data.totalDeals || 0;
-        const fail = data.failedDeals || 0;
-        const success = data.wonDeals || 0;
-        const inWork = total-(fail+success) || 0;
+        const data = dataProcessor.processedData;
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
 
-        const failPercent = total > 0 ? (fail / total) * 100 : 0;
-        const successPercent = total > 0 ? (success / total) * 100 : 0;
-        const inWorkPercent = total > 0 ? (inWork / total) * 100 : 0;
+        let startDate = startDateInput && startDateInput.value ? new Date(startDateInput.value) : null;
+        let endDate   = endDateInput   && endDateInput.value   ? new Date(endDateInput.value)   : null;
 
-        if (statusChart) {
-            statusChart.destroy();
+        const monthlyEntries = Object.entries(data.monthlyData).sort((a, b) => a[0].localeCompare(b[0]));
+        let allMonths = [];
+
+        const buildRange = (sy, sm, ey, em) => {
+            let cy = sy, cm = sm;
+            while (cy < ey || (cy === ey && cm <= em)) {
+                allMonths.push(cy + '-' + cm.toString().padStart(2, '0'));
+                cm++; if (cm > 12) { cm = 1; cy++; }
+            }
+        };
+
+        if (startDate && endDate) {
+            buildRange(startDate.getFullYear(), startDate.getMonth()+1, endDate.getFullYear(), endDate.getMonth()+1);
+        } else if (startDate && !endDate) {
+            const lastAvailableMonth = monthlyEntries.length > 0 ? monthlyEntries[monthlyEntries.length-1][0] : null;
+            if (lastAvailableMonth) {
+                const [ey, em] = lastAvailableMonth.split('-').map(Number);
+                buildRange(startDate.getFullYear(), startDate.getMonth()+1, ey, em);
+            }
+        } else if (!startDate && endDate) {
+            const firstAvailableMonth = monthlyEntries.length > 0 ? monthlyEntries[0][0] : null;
+            if (firstAvailableMonth) {
+                const [sy, sm] = firstAvailableMonth.split('-').map(Number);
+                buildRange(sy, sm, endDate.getFullYear(), endDate.getMonth()+1);
+            }
+        } else {
+            if (monthlyEntries.length > 0) {
+                const [sy, sm] = monthlyEntries[0][0].split('-').map(Number);
+                const [ey, em] = monthlyEntries[monthlyEntries.length-1][0].split('-').map(Number);
+                buildRange(sy, sm, ey, em);
+            }
         }
 
-        statusChart = new Chart(ctx, {
+        const monthNames = {'01':'Jan','02':'Feb','03':'Mar','04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
+        const monthLabels  = allMonths.map(m => { const [y,mo] = m.split('-'); return `${monthNames[mo]} ${y}`; });
+        const monthlyTotal     = allMonths.map(m => data.monthlyData[m] ? data.monthlyData[m].total     : 0);
+        const monthlyConfirmed = allMonths.map(m => data.monthlyData[m] ? data.monthlyData[m].confirmed : 0);
+        const monthlyWon       = allMonths.map(m => data.monthlyData[m] ? data.monthlyData[m].won       : 0);
+        const maxValue = Math.max(...monthlyConfirmed, ...monthlyWon, ...monthlyTotal);
+
+        if (leadsChart) leadsChart.destroy();
+
+        leadsChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['JUNK', 'WON', 'IN WORK'],
-                datasets: [{
-                    data: [failPercent, successPercent, inWorkPercent],
-                    backgroundColor: ['#ea4335', '#34a853', '#fbbc04'],
-                    borderWidth: 1,
-                    borderRadius: 5
-                }]
+                labels: monthLabels,
+                datasets: [
+                    { label: 'Total', data: monthlyTotal,     backgroundColor: 'rgba(182,176,176,0.8)', borderColor: '#676763ff', borderWidth: 2, borderRadius: 5, borderSkipped: false },
+                    { label: 'QL',    data: monthlyConfirmed, backgroundColor: 'rgba(70,130,180,0.8)',  borderColor: '#4682B4',   borderWidth: 2, borderRadius: 5, borderSkipped: false },
+                    { label: 'WON',   data: monthlyWon,       backgroundColor: 'rgba(52,168,83,0.8)',   borderColor: '#34a853',   borderWidth: 2, borderRadius: 5, borderSkipped: false }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const count = Math.round((context.parsed.y / 100) * total);
-                                return context.label + ': ' + context.parsed.y.toFixed(1) + '% (' + count + ')';
-                            }
-                        }
-                    }
+                    legend: { position: 'top', align: 'start', labels: { usePointStyle: true, pointStyle: 'rect', padding: 20, font: { size: 12 } } },
+                    tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)', titleColor: 'white', bodyColor: 'white', borderColor: '#ccc', borderWidth: 1, callbacks: { label: (c) => c.dataset.label + ': ' + c.parsed.y.toLocaleString() } }
                 },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        ticks: {
-                            callback: function(value) {
-                                return value + '%';
-                            }
-                        }
-                    }
-                }
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.1)', lineWidth: 1 }, ticks: { stepSize: Math.max(1, Math.ceil(maxValue/8)), font: { size: 11 }, color: '#666' } },
+                    x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#666', maxRotation: 45 } }
+                },
+                interaction: { intersect: false, mode: 'index' }
             }
         });
     }
+
+    function createStatusChart() {
+        const ctx = document.getElementById('statusChart');
+        if (!ctx) return;
+
+        const data = dataProcessor?.processedData || {};
+        const total  = data.totalDeals  || 0;
+        const fail   = data.failedDeals || 0;
+        const success= data.wonDeals    || 0;
+        const inWork = total - (fail + success);
+
+        const failPercent    = total > 0 ? (fail   / total) * 100 : 0;
+        const successPercent = total > 0 ? (success/ total) * 100 : 0;
+        const inWorkPercent  = total > 0 ? (inWork / total) * 100 : 0;
+
+        if (statusChart) statusChart.destroy();
+
+        statusChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['JUNK', 'WON', 'IN WORK'],
+                datasets: [{ data: [failPercent, successPercent, inWorkPercent], backgroundColor: ['#ea4335', '#34a853', '#fbbc04'], borderWidth: 1, borderRadius: 5 }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => c.label + ': ' + c.parsed.y.toFixed(1) + '% (' + Math.round(c.parsed.y/100*total) + ')' } } },
+                scales: { y: { beginAtZero: true, max: 100, ticks: { callback: (v) => v + '%' } } }
+            }
+        });
+    }
+
     function createReasonChart() {
         const tbody = document.getElementById('reasonChart');
         const data = dataProcessor.processedData;
@@ -1270,14 +915,11 @@ function createLeadsChart() {
         };
 
         const sources = Object.entries(data.reasonStats)
-            .map(([name, stats]) => {
-                const translatedName = reasonTranslations[name] || name;
-                return {
-                    name: translatedName,
-                    leads: stats.leads,
-                    conversion: stats.leads > 0 ? (stats.won / stats.leads * 100).toFixed(2) : '0.00'
-                };
-            })
+            .map(([name, stats]) => ({
+                name: reasonTranslations[name] || name,
+                leads: stats.leads,
+                conversion: stats.leads > 0 ? (stats.won / stats.leads * 100).toFixed(2) : '0.00'
+            }))
             .sort((a, b) => b.leads - a.leads);
 
         tbody.innerHTML = sources.map((source, index) => `
@@ -1285,59 +927,35 @@ function createLeadsChart() {
                 <td class="reason-name">${source.name}</td>
                 <td>${source.leads}</td>
                 <td>
-                    <div class="conversion-bar">
-                        <div class="conversion-fill" style="width: ${Math.min(source.conversion * 2, 100)}%"></div>
-                    </div>
+                    <div class="conversion-bar"><div class="conversion-fill" style="width: ${Math.min(source.conversion * 2, 100)}%"></div></div>
                     ${source.conversion}%
                 </td>
-            </tr>
-        `).join('');
+            </tr>`).join('');
 
-        // Add toggle button
         if (sources.length > 4) {
             const buttonRow = document.createElement('tr');
-            buttonRow.innerHTML = `
-                <td colspan="3" style="text-align: center;">
-                    <button id="toggleReasonRows" class="toggle-btn">More</button>
-                </td>
-            `;
+            buttonRow.innerHTML = `<td colspan="3" style="text-align:center"><button id="toggleReasonRows" class="toggle-btn">More</button></td>`;
             tbody.appendChild(buttonRow);
-
             document.getElementById("toggleReasonRows").addEventListener("click", function () {
-                const hiddenRows = document.querySelectorAll(".reason-row");
                 const isCollapsed = this.textContent === "More";
-
-                hiddenRows.forEach((row, idx) => {
-                    if (idx >= 4) {
-                        row.style.display = isCollapsed ? "table-row" : "none";
-                    }
-                });
-
+                document.querySelectorAll(".reason-row").forEach((row, idx) => { if (idx >= 4) row.style.display = isCollapsed ? "table-row" : "none"; });
                 this.textContent = isCollapsed ? "Less" : "More";
             });
         }
     }
 
-
     function populateManagersTable() {
         const tbody = document.getElementById('managersTable');
         const data = dataProcessor.processedData;
 
-        // მხოლოდ ეს მენეჯერები უნდა გამოჩნდნენ
-        const allowedManagers = [
-            'Ana Arabidze',
-            'Ano Gelovani',
-            'Gala Tsintsadze',
-            'Kristina Khimshiashvili',
-            'Mari Andguladze'
-        ];
+        const allowedManagers = ['Ana Arabidze', 'Ano Gelovani', 'Gala Tsintsadze', 'Kristina Khimshiashvili', 'Mari Andguladze'];
 
         const managers = Object.entries(data.managerStats)
-            .filter(([name]) => allowedManagers.includes(name)) // ფილტრავს მხოლოდ დაშვებულ მენეჯერებს
+            //.filter(([name]) => allowedManagers.includes(name))
             .map(([name, stats]) => ({
                 name,
                 leads: stats.leads,
-                inWork: stats.leads -(stats.won + stats.junk),
+                inWork: stats.leads - (stats.won + stats.junk),
                 won: stats.won,
                 junk: stats.junk,
                 conversion: stats.leads > 0 ? (stats.won / stats.leads * 100).toFixed(2) : '0.00'
@@ -1352,37 +970,23 @@ function createLeadsChart() {
                 <td>${manager.won}</td>
                 <td>${manager.junk}</td>
                 <td>
-                    <div class="conversion-bar">
-                        <div class="conversion-fill" style="width: ${Math.min(manager.conversion * 2, 100)}%"></div>
-                    </div>
+                    <div class="conversion-bar"><div class="conversion-fill" style="width: ${Math.min(manager.conversion * 2, 100)}%"></div></div>
                     ${manager.conversion}%
                 </td>
-            </tr>
-        `).join('');
+            </tr>`).join('');
 
         if (managers.length > 4) {
             const buttonRow = document.createElement('tr');
-            buttonRow.innerHTML = `
-                <td colspan="6" style="text-align: center;">
-                    <button id="toggleManagerRows" class="toggle-btn">More</button>
-                </td>
-            `;
+            buttonRow.innerHTML = `<td colspan="6" style="text-align:center"><button id="toggleManagerRows" class="toggle-btn">More</button></td>`;
             tbody.appendChild(buttonRow);
-
             document.getElementById("toggleManagerRows").addEventListener("click", function () {
-                const hiddenRows = document.querySelectorAll(".manager-row");
                 const isCollapsed = this.textContent === "More";
-
-                hiddenRows.forEach((row, idx) => {
-                    if (idx >= 4) {
-                        row.style.display = isCollapsed ? "table-row" : "none";
-                    }
-                });
-
+                document.querySelectorAll(".manager-row").forEach((row, idx) => { if (idx >= 4) row.style.display = isCollapsed ? "table-row" : "none"; });
                 this.textContent = isCollapsed ? "Less" : "More";
             });
         }
     }
+
     function populateSourcesTable() {
         const tbody = document.getElementById('sourcesTable');
         const data = dataProcessor.processedData;
@@ -1402,136 +1006,85 @@ function createLeadsChart() {
                 <td>${source.leads}</td>
                 <td>${source.won}</td>
                 <td>
-                    <div class="conversion-bar">
-                        <div class="conversion-fill" style="width: ${Math.min(source.conversion * 2, 100)}%"></div>
-                    </div>
+                    <div class="conversion-bar"><div class="conversion-fill" style="width: ${Math.min(source.conversion * 2, 100)}%"></div></div>
                     ${source.conversion}%
                 </td>
-            </tr>
-        `).join('');
+            </tr>`).join('');
 
         if (sources.length > 4) {
             const buttonRow = document.createElement('tr');
-            buttonRow.innerHTML = `
-                <td colspan="4" style="text-align: center;">
-                    <button id="toggleSourceRows" class="toggle-btn">More</button>
-                </td>
-            `;
+            buttonRow.innerHTML = `<td colspan="4" style="text-align:center"><button id="toggleSourceRows" class="toggle-btn">More</button></td>`;
             tbody.appendChild(buttonRow);
-
             document.getElementById("toggleSourceRows").addEventListener("click", function () {
-                const hiddenRows = document.querySelectorAll(".source-row");
                 const isCollapsed = this.textContent === "More";
-
-                hiddenRows.forEach((row, idx) => {
-                    if (idx >= 4) {
-                        row.style.display = isCollapsed ? "table-row" : "none";
-                    }
-                });
-
+                document.querySelectorAll(".source-row").forEach((row, idx) => { if (idx >= 4) row.style.display = isCollapsed ? "table-row" : "none"; });
                 this.textContent = isCollapsed ? "Less" : "More";
             });
         }
     }
+
     function updateReport() {
         dataProcessor = new LeadsDataProcessor();
-
         updateStats();
         createLeadsChart();
         createStatusChart();
         createReasonChart();
         populateManagersTable();
         populateSourcesTable();
-        // populateStatusTable();
-        // populateReasonsTable();
     }
+
     function redirectToLifeCycle() {
         const startInput = document.getElementById("startDate");
         const endInput = document.getElementById("endDate");
-
-        if (!startInput.value || !endInput.value) {
-            alert("Please select both start and end dates.");
-            return;
-        }
-
-        const from = startInput.value; // yyyy-mm-dd
-        const to = endInput.value;
-
-        const url = `https://bitrix24.petragroup.ge/custom/reports/lifeCycle.php?from=${from}&to=${to}`;
-        window.open(url, "_blank"); // ან გამოიყენე: window.location.href = url;
+        if (!startInput.value || !endInput.value) { alert("Please select both start and end dates."); return; }
+        const url = `https://bitrix24.petragroup.ge/custom/reports/lifeCycle.php?from=${startInput.value}&to=${endInput.value}`;
+        window.open(url, "_blank");
     }
+
     document.addEventListener('DOMContentLoaded', function () {
-    const startDateInput = document.getElementById("startDate");
-    const endDateInput = document.getElementById("endDate");
+        const startDateInput = document.getElementById("startDate");
+        const endDateInput = document.getElementById("endDate");
 
-function convertToInputDateFormat(dateStr) {
-    // Check if dateStr is valid
-    if (!dateStr || typeof dateStr !== 'string') {
-        console.warn('Invalid date string:', dateStr);
-        return '';
-    }
-    
-    // Replace dots with slashes to handle both formats
-    const normalizedDate = dateStr.replace(/\./g, '/');
-    const parts = normalizedDate.split('/');
-    
-    // Validate that we have exactly 3 parts
-    if (parts.length !== 3) {
-        console.warn('Invalid date format:', dateStr);
-        return '';
-    }
-    
-    const [day, month, year] = parts;
-    
-    // Validate each part exists
-    if (!day || !month || !year) {
-        console.warn('Missing date components:', dateStr);
-        return '';
-    }
-    
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-}
-
-    // Set start date with fallback
-    if (startDateInput) {
-        const convertedStart = convertToInputDateFormat(datestartfilter1);
-        if (convertedStart) {
-            startDateInput.value = convertedStart;
-        } else {
-            // Fallback to first day of current month
-            const today = new Date();
-            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-            startDateInput.value = firstDay.toISOString().split('T')[0];
+        function convertToInputDateFormat(dateStr) {
+            if (!dateStr || typeof dateStr !== 'string') return '';
+            const normalizedDate = dateStr.replace(/\./g, '/');
+            const parts = normalizedDate.split('/');
+            if (parts.length !== 3) return '';
+            const [day, month, year] = parts;
+            if (!day || !month || !year) return '';
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
         }
-    }
 
-    // Set end date with fallback
-    if (endDateInput) {
-        const convertedEnd = convertToInputDateFormat(dateandfilter1);
-        if (convertedEnd) {
-            endDateInput.value = convertedEnd;
-        } else {
-            // Fallback to today
-            const today = new Date();
-            endDateInput.value = today.toISOString().split('T')[0];
+        if (startDateInput) {
+            const convertedStart = convertToInputDateFormat(datestartfilter1);
+            if (convertedStart) {
+                startDateInput.value = convertedStart;
+            } else {
+                const today = new Date();
+                startDateInput.value = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+            }
         }
-    }
 
-    // Set global date variables
-    if (startDateInput.value) {
-        const startParts = startDateInput.value.split('-'); // yyyy-mm-dd
-        datestartfilter = new Date(startParts[0], startParts[1] - 1, startParts[2]);
-    }
-    
-    if (endDateInput.value) {
-        const endParts = endDateInput.value.split('-');
-        dateandfilter = new Date(endParts[0], endParts[1] - 1, endParts[2]);
-    }
+        if (endDateInput) {
+            const convertedEnd = convertToInputDateFormat(dateandfilter1);
+            if (convertedEnd) {
+                endDateInput.value = convertedEnd;
+            } else {
+                endDateInput.value = new Date().toISOString().split('T')[0];
+            }
+        }
 
-    updateReport();
-});
+        if (startDateInput.value) {
+            const [y, m, d] = startDateInput.value.split('-');
+            datestartfilter = new Date(y, m - 1, d);
+        }
+        if (endDateInput.value) {
+            const [y, m, d] = endDateInput.value.split('-');
+            dateandfilter = new Date(y, m - 1, d);
+        }
 
-
+        updateReport();
+    });
 </script>
 </body>
 </html>
