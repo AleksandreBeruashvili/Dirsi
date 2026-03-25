@@ -1384,7 +1384,7 @@ if($arfilter){
         //     }, 50);
         // }
 
-        if(userID != 1){
+        if(userID != 1 && userID != 2788){
             if(stageId.includes("3") || stageId.includes("4") || stageId.includes("WON")){
                 // დაუყოვნებლივ CSS-ით ვბლოკავთ — setTimeout-ს არ ელოდება
                 var freezeStyle = document.createElement('style');
