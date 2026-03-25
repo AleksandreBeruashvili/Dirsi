@@ -75,10 +75,11 @@ $salesmenegerworkphone = $salesmeneger["WORK_PHONE"];
 $misamarti = $salesmeneger["PERSONAL_STREET"];
 
 $date = date("Y/m/d");
-$url = "https://nbg.gov.ge/gw/api/ct/monetarypolicy/currencies?Currencies=USD&date={$date}";
-$seb = file_get_contents($url);
+$dateNbg = date("Y-m-d");
+$url = "https://nbg.gov.ge/gw/api/ct/monetarypolicy/currencies?Currencies=USD&date={$dateNbg}";
+$seb = @file_get_contents($url);
 $seb = json_decode($seb);
-$seb_currency = $seb[0]->currencies[0]->rate;
+$seb_currency = isset($seb[0]->currencies[0]->rate) ? (float)$seb[0]->currencies[0]->rate : 0;
 
 if (isset($_GET["prod_ID"]) && !empty($_GET["prod_ID"]))
     $documentid = $_GET["prod_ID"];
@@ -120,11 +121,16 @@ $kvmPrice = $product[0]['livingarea_price_per'];
 $projectID = $product[0]['IBLOCK_SECTION_ID'];
 $projectName = $product[0]['PROJECT'];
 $totalprice = $product[0]['PRICE'];
-$totalpriceGEL = $product[0]['RETAIL_PRICE__CO8K0T'];
-
-
 $kvmprice = $product[0]['KVM_PRICE'];
-$kvmpriceGEL = $product[0]['_M2__SUXOA7'];
+$totalUsd = floatval($totalprice);
+$kvmUsd = floatval($kvmprice);
+if ($seb_currency > 0) {
+    $totalpriceGEL = round($totalUsd * $seb_currency, 2);
+    $kvmpriceGEL = round($kvmUsd * $seb_currency, 2);
+} else {
+    $totalpriceGEL = null;
+    $kvmpriceGEL = null;
+}
 
 
 $fartisType1 = $product[0]['PRODUCT_TYPE'];
@@ -417,6 +423,24 @@ img {
     font-family: "BPG WEB 001 Caps", sans-serif;
 }
 
+.footer2.offer-banner-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-right: 25px;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.offer-banner-nbg {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    margin-left: 12px;
+    flex-shrink: 0;
+}
+
 .tableclass {
     color: rgb(52, 87, 112);
     font-size: 18px;
@@ -578,7 +602,10 @@ img {
                     </table>
 
                     <div class="info-container-bg" style="<?php echo (isset($greenfoto) && $greenfoto) ? 'background-image: url(\'' . $greenfoto . '\'); background-size: 100%; width: 100%; background-repeat: no-repeat; margin-left: -20px; height: 90px;' : ''; ?>">
-                        <div class="footer2">ДАТА ПРЕДЛОЖЕНИЯ: <?php echo $date; ?></div>
+                        <div class="footer2 offer-banner-head">
+                            <span class="offer-banner-date">ДАТА ПРЕДЛОЖЕНИЯ: <?php echo $date; ?></span>
+                            <?php if ($seb_currency > 0): ?><span class="offer-banner-nbg">Курс НБГ (USD→GEL): <?php echo number_format($seb_currency, 4, '.', ''); ?></span><?php endif; ?>
+                        </div>
                         <table class="tableclass" style="border-collapse: collapse; margin-top: 25px; margin-left: 25px;">
                             <tr>
                                 <!-- Column 1 -->
@@ -604,14 +631,14 @@ img {
                                     <table style="border-collapse: collapse; margin-bottom: 10px;">
                                         <tr>
                                             <td style="vertical-align: middle;">
-                                            ОБЩАЯ ЦЕНА (GEL): ₾<?php echo $totalpriceGEL; ?>
+                                            ОБЩАЯ ЦЕНА (GEL): ₾<?php echo $totalpriceGEL !== null ? number_format($totalpriceGEL, 2, '.', '') : '—'; ?>
                                             </td>
                                         </tr>
                                     </table>
                                     <table style="border-collapse: collapse;">
                                         <tr>
                                             <td style="vertical-align: middle;">
-                                            Цена за м2 (GEL): ₾<?php echo $kvmpriceGEL; ?>
+                                            Цена за м2 (GEL): ₾<?php echo $kvmpriceGEL !== null ? number_format($kvmpriceGEL, 2, '.', '') : '—'; ?>
                                             </td>
                                         </tr>
                                     </table>
