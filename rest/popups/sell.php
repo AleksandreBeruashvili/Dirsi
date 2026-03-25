@@ -482,7 +482,7 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
             </div>
         </div>
 
-        <input type="hidden" id="dealId" value="<?= $dealId ?>">
+        <input type="hidden" id="sellDealIdHidden" value="<?= (int)$dealId ?>">
 
     </div>
 
@@ -502,6 +502,7 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
     const deal = <?php echo json_encode($deal, JSON_UNESCAPED_UNICODE); ?>;
     const contact = <?php echo json_encode($contact, JSON_UNESCAPED_UNICODE); ?>;
     const citizenOfData = <?php echo json_encode($citizenOf); ?>;
+    const sellDealIdPhp = <?php echo json_encode((int)$dealId); ?>;
 
     // Fill on load
     window.addEventListener('DOMContentLoaded', () => {
@@ -683,7 +684,17 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         btn.textContent = 'იგზავნება...';
 
         const formData = new FormData();
-        formData.append("dealId",             document.getElementById('dealId').value);
+        const dealIdParam = (document.getElementById('sellDealIdHidden').value || '').trim()
+            || (new URLSearchParams(window.location.search).get('DEAL_ID') || '').trim()
+            || String(sellDealIdPhp || '');
+        if (!dealIdParam || dealIdParam === '0') {
+            showAlert('alertError', 'Deal ID არ მოიძებნა — გაუქმება და ხელახლა გახსენით ფანჯარა დილის გვერდიდან.');
+            btn.disabled = false;
+            btn.textContent = 'გაგზავნა';
+            return;
+        }
+        formData.append("dealId", dealIdParam);
+        formData.append("DEAL_ID", dealIdParam);
         formData.append("contractDate",       document.getElementById('contractDate').value);
         formData.append("sellFlatFile",       document.getElementById('sellFlatText').value);
         formData.append("sellAttachFile",     document.getElementById('sellAttachText').value);
@@ -723,13 +734,22 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
                         window.top.location.reload();
                     }, 1500);
                 } else {
-                    showAlert('alertError', 'შეცდომა: ' + response.message);
+                    let errText = response.message || (response.errors ? JSON.stringify(response.errors) : '') || 'უცნობი შეცდომა';
+                    showAlert('alertError', 'შეცდომა: ' + errText);
                     btn.disabled = false;
                     btn.textContent = 'გაგზავნა';
                 }
             },
             error: function(xhr, status, error) {
-                showAlert('alertError', 'Server error: ' + error);
+                let msg = [xhr.status, error || status].filter(Boolean).join(' ');
+                try {
+                    const j = JSON.parse(xhr.responseText || '{}');
+                    if (j.message) msg = j.message;
+                } catch (e) {
+                    const t = (xhr.responseText || '').trim();
+                    if (t && t.length < 500) msg = (msg ? msg + ' — ' : '') + t;
+                }
+                showAlert('alertError', 'Server error: ' + (msg || 'უცნობი'));
                 btn.disabled = false;
                 btn.textContent = 'გაგზავნა';
             }
@@ -755,7 +775,7 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         const fileIdInput = document.getElementById(`${fieldID}Text`);
         fileIdInput.value = "";
         if (input && input.files.length > 0) {
-            const deal_id = <?php echo json_encode($dealId, JSON_UNESCAPED_UNICODE); ?>;
+            const deal_id = <?php echo json_encode((int)$dealId, JSON_UNESCAPED_UNICODE); ?>;
             const data = new FormData();
             data.append('file', input.files[0]);
             data.append('dealId', deal_id);

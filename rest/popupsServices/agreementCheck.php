@@ -18,8 +18,8 @@ if (!$dealId) {
     exit;
 }
 
-// --- ფუნქციები ---
-function getDealInfoByID($dealId)
+// --- ფუნქციები (არ ემთხვევა bp_workflow_functions.php getDealInfoByID-ს) ---
+function popupsServicesAgreementCheckFetchDeal($dealId)
 {
     $res = CCrmDeal::GetList(["ID" => "ASC"], ["ID" => $dealId], []);
     if ($arDeal = $res->Fetch()) {
@@ -29,7 +29,7 @@ function getDealInfoByID($dealId)
 }
 
 // --- ძირითადი ლოგიკა ---
-$deal = getDealInfoByID($dealId);
+$deal = popupsServicesAgreementCheckFetchDeal($dealId);
 if (!$deal) {
     echo json_encode(["status" => "error", "message" => "Deal not found"]);
     exit;

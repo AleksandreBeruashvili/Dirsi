@@ -8,18 +8,23 @@ if (!CModule::IncludeModule("crm")) {
     exit;
 }
 
+if (!CModule::IncludeModule("bizproc")) {
+    echo json_encode(["status" => "error", "message" => "Bizproc module not loaded"]);
+    exit;
+}
+
 global $USER;
 $currentUserId = $USER->GetID();
 
-// Deal ID აუცილებელია
-$dealId = intval($_POST["dealId"]);
+// Deal ID აუცილებელია (ფორმა იგზავნება dealId ან DEAL_ID-ით)
+$dealId = intval($_POST["dealId"] ?? $_POST["DEAL_ID"] ?? 0);
 if (!$dealId) {
     echo json_encode(["status" => "error", "message" => "Deal ID not provided"]);
     exit;
 }
 
-// --- ფუნქციები ---
-function getDealInfoByID($dealId)
+// --- ფუნქციები (სახელი უნდა განსხვავდებოდეს functions/bp_workflow_functions.php-ის getDealInfoByID-სგან) ---
+function popupsServicesSellFetchDeal($dealId)
 {
     $res = CCrmDeal::GetList(["ID" => "ASC"], ["ID" => $dealId], []);
     if ($arDeal = $res->Fetch()) {
@@ -29,78 +34,91 @@ function getDealInfoByID($dealId)
 }
 
 // --- ძირითადი ლოგიკა ---
-$deal = getDealInfoByID($dealId);
+$deal = popupsServicesSellFetchDeal($dealId);
 if (!$deal) {
     echo json_encode(["status" => "error", "message" => "Deal not found"]);
     exit;
 }
 
 
-$contractDate = trim($_POST["contractDate"]);
-$sellFlatFile = trim($_POST["sellFlatFile"]);
-$sellAttachFile = trim($_POST["sellAttachFile"]); 
-$clientDesc = trim($_POST["clientDesc"]); 
+$postStr = function ($key) {
+    $v = isset($_POST[$key]) ? $_POST[$key] : '';
+    return trim(is_string($v) ? $v : (string)$v);
+};
 
-$phone = trim($_POST["phone"]);
-$email = trim($_POST["email"]);
-$personalId = trim($_POST["personalId"]);
-$passportId = trim($_POST["passportId"]);
-$legalAddress = trim($_POST["legalAddress"]);
-$actualAddress = trim($_POST["actualAddress"]);
-$citizenshipType = trim($_POST["citizenshipType"]);
-$citizenOf = trim($_POST["citizenOf"]);
-$nationality = trim($_POST["nationality"]);
+$contractDate = $postStr("contractDate");
+$sellFlatFile = $postStr("sellFlatFile");
+$sellAttachFile = $postStr("sellAttachFile");
+$clientDesc = $postStr("clientDesc");
 
-$nameRU = trim($_POST["nameRU"]);
-$legalAddressRU = trim($_POST["legalAddressRU"]);
-$actualAddressRU = trim($_POST["actualAddressRU"]);
-$nameENG = trim($_POST["nameENG"]);
-$legalAddressENG = trim($_POST["legalAddressENG"]);
-$actualAddressENG = trim($_POST["actualAddressENG"]);
+$phone = $postStr("phone");
+$email = $postStr("email");
+$personalId = $postStr("personalId");
+$passportId = $postStr("passportId");
+$legalAddress = $postStr("legalAddress");
+$actualAddress = $postStr("actualAddress");
+$citizenshipType = $postStr("citizenshipType");
+$citizenOf = $postStr("citizenOf");
+$nationality = $postStr("nationality");
 
-$miznobrioba = trim($_POST["miznobrioba"]);
-$contactType = trim($_POST["contactType"]);
+$nameRU = $postStr("nameRU");
+$legalAddressRU = $postStr("legalAddressRU");
+$actualAddressRU = $postStr("actualAddressRU");
+$nameENG = $postStr("nameENG");
+$legalAddressENG = $postStr("legalAddressENG");
+$actualAddressENG = $postStr("actualAddressENG");
 
-$registrationInRest = trim($_POST["registrationInRest"]);
-$keytReceived = trim($_POST["keytReceived"]);
+$miznobrioba = $postStr("miznobrioba");
+$contactType = $postStr("contactType");
+
+$registrationInRest = $postStr("registrationInRest");
+$keytReceived = $postStr("keytReceived");
 
 
-if($dealId){
+if ($dealId) {
     $arErrorsTmp = array();
-    $wfId = CBPDocument::StartWorkflow(
-        19,
-        ["crm", "CCrmDocumentDeal", "DEAL_$dealId"],
-        [
-            "contractDate" => $contractDate,
-            "sellFlatFile" => $sellFlatFile,
-            "sellAttachFile" => $sellAttachFile,
-            "clientDesc" => $clientDesc,
-            "phone" => $phone,
-            "email" => $email,
-            "personalId" => $personalId,
-            "passportId" => $passportId,
-            "legalAddress" => $legalAddress,
-            "actualAddress" => $actualAddress,
-            "citizenshipType" => $citizenshipType,
-            "citizenOf" => $citizenOf,
-            "nationality" => $nationality,
-            "nameRU" => $nameRU,
-            "legalAddressRU" => $legalAddressRU,
-            "actualAddressRU" => $actualAddressRU,
-            "nameENG" => $nameENG,
-            "legalAddressENG" => $legalAddressENG,
-            "actualAddressENG" => $actualAddressENG,
-            "miznobrioba" => $miznobrioba,
-            "contactType" => $contactType,
-            "registrationInRest" => $registrationInRest,
-            "keytReceived" => $keytReceived,
-            "TargetUser" => "user_" . $currentUserId
-        ],
-        $arErrorsTmp
-    );
+    try {
+        CBPDocument::StartWorkflow(
+            19,
+            ["crm", "CCrmDocumentDeal", "DEAL_$dealId"],
+            [
+                "contractDate" => $contractDate,
+                "sellFlatFile" => $sellFlatFile,
+                "sellAttachFile" => $sellAttachFile,
+                "clientDesc" => $clientDesc,
+                "phone" => $phone,
+                "email" => $email,
+                "personalId" => $personalId,
+                "passportId" => $passportId,
+                "legalAddress" => $legalAddress,
+                "actualAddress" => $actualAddress,
+                "citizenshipType" => $citizenshipType,
+                "citizenOf" => $citizenOf,
+                "nationality" => $nationality,
+                "nameRU" => $nameRU,
+                "legalAddressRU" => $legalAddressRU,
+                "actualAddressRU" => $actualAddressRU,
+                "nameENG" => $nameENG,
+                "legalAddressENG" => $legalAddressENG,
+                "actualAddressENG" => $actualAddressENG,
+                "miznobrioba" => $miznobrioba,
+                "contactType" => $contactType,
+                "registrationInRest" => $registrationInRest,
+                "keytReceived" => $keytReceived,
+                "TargetUser" => "user_" . (int)$currentUserId
+            ],
+            $arErrorsTmp
+        );
+    } catch (\Throwable $e) {
+        echo json_encode([
+            "status" => "error",
+            "message" => $e->getMessage(),
+        ]);
+        exit;
+    }
 
     if (!empty($arErrorsTmp)) {
-        echo json_encode(["status" => "error", "errors" => $arErrorsTmp]);
+        echo json_encode(["status" => "error", "message" => "Workflow error", "errors" => $arErrorsTmp]);
         exit;
     }
 }

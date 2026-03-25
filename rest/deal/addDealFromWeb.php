@@ -190,6 +190,15 @@ function registerDealFromWebsite($name, $phone, $email, $flat_type, $message) {
             array("TargetUser" => "user_1"),
             $arErrorsTmp
         );
+
+        $arErrorsTmp2 = array();
+        $wfId2 = CBPDocument::StartWorkflow(  
+            6,                                                           //პროცესის ID
+            array("crm", "CCrmDocumentDeal", "DEAL_$dealId"),        // deal || contact || lead || company
+            array("TargetUser" => "user_1"),
+            $arErrorsTmp2
+        );
+
     }
     
 

@@ -470,7 +470,8 @@ if($dealId){
     const approvedInstallment = <?php echo json_encode($approvedInstallment ?? []); ?>;
     
     const pathname = window.location.pathname.split('/');
-    const dealIdForToolbar = pathname[4] || 0;
+    const dealDetailsPathMatch = window.location.pathname.match(/\/details\/(\d+)/);
+    const dealIdForToolbar = dealDetailsPathMatch ? dealDetailsPathMatch[1] : (pathname[4] || 0);
     
     let currentStageId = '';
 
