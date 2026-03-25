@@ -189,7 +189,8 @@ function getGadaxdebi($deals_IDs){
             continue;
         }
 
-        $amount = (float) str_replace("|USD","",$arProps["TANXA"]["VALUE"]);
+        $rawVal = is_array($arProps["TANXA"]["VALUE"]) ? '' : (string)($arProps["TANXA"]["VALUE"] ?? '');
+        $amount = (float) str_replace("|USD", "", $rawVal);
 
         $gadaxdebi[] = array(
             "DEAL_ID" => $dealID,
@@ -439,7 +440,7 @@ foreach ($filteredProducts as $product) {
     $prodBuilding  = $product["BUILDING"];
     $BB            = $product["BUILDING"] . $product["KORPUSIS_NOMERI_XE3NX2"];
     $status        = $product["STATUS"];
-    $prodTotalArea = $product["TOTAL_AREA"];
+    $prodTotalArea = (float) ($product["TOTAL_AREA"] ?? 0);
 
     // --- TOTAL group ---
     if (!isset($resArray["TOTAL"][$prodType])) {
@@ -475,7 +476,7 @@ foreach ($filteredProducts as $product) {
     $resArray[$BB][$prodType]["unitsTotal"]++;
     $resArray[$BB][$prodType]["sqmTotal"] += $prodTotalArea;
 
-    $price = $product["PRICE"];
+    $price = (float) ($product["PRICE"] ?? 0);
     $resArray[$BB][$prodType]["soldPricesSum"] += $price;
     $resArray["TOTAL"][$prodType]["soldPricesSum"] += $price;
     if ($status === "გაყიდული") {
@@ -542,7 +543,7 @@ foreach ($filteredProducts as $product) {
         $resArray["TOTAL"][$prodTypeAnothaOne]["unitsTotal"]++;
         $resArray["TOTAL"][$prodTypeAnothaOne]["sqmTotal"] += $prodTotalArea;
 
-        $price = $product["PRICE"];
+        $price = (float) ($product["PRICE"] ?? 0);
         $resArray["TOTAL"][$prodTypeAnothaOne]["soldPricesSum"] += $price;
         $resArray[$BB][$prodTypeAnothaOne]["soldPricesSum"] += $price;
         if ($status === "გაყიდული") {
@@ -830,15 +831,15 @@ function renderBBTable($groupKey, $groupData, $allProdTypes, $apartmentTypes, $t
                 $rowClass    = $isBreakdown ? 'class="breakdown-row"' : '';
 
                 if (!$isBreakdown) {
-                    $t_unitsTotal        += $info['unitsTotal']        ?? 0;
-                    $t_unitSold          += $info['unitSold']          ?? 0;
-                    $t_sqmTotal          += $info['sqmTotal']          ?? 0;
-                    $t_sqlSold           += $info['sqlSold']           ?? 0;
-                    $t_soldPricesSum     += $info['soldPricesSum']     ?? 0;
-                    $t_soldPricesDeal    += $info['soldPricesDeal']    ?? 0;
-                    $t_soldPricesProduct += $info['soldPricesProduct'] ?? 0;
-                    $t_receivedPayments  += $info['receivedPayments']  ?? 0;
-                    $t_soldDifferences   += $info['differences']       ?? 0;
+                    $t_unitsTotal        += (int)   ($info['unitsTotal']        ?? 0);
+                    $t_unitSold          += (int)   ($info['unitSold']          ?? 0);
+                    $t_sqmTotal          += (float) ($info['sqmTotal']          ?? 0);
+                    $t_sqlSold           += (float) ($info['sqlSold']           ?? 0);
+                    $t_soldPricesSum     += (float) ($info['soldPricesSum']     ?? 0);
+                    $t_soldPricesDeal    += (float) ($info['soldPricesDeal']    ?? 0);
+                    $t_soldPricesProduct += (float) ($info['soldPricesProduct'] ?? 0);
+                    $t_receivedPayments  += (float) ($info['receivedPayments']  ?? 0);
+                    $t_soldDifferences   += (float) ($info['differences']       ?? 0);
                 }
             ?>
             <tr <?= $rowClass ?>>

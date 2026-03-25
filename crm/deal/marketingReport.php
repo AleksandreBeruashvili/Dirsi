@@ -487,6 +487,9 @@ ob_end_clean();
         .conversion-grid { grid-template-columns: repeat(2, 1fr); }
         .filter-grid { grid-template-columns: 1fr; }
     }
+
+    .btn-export { background: linear-gradient(135deg, #1D6F42 0%, #2e7d32 100%); color: white; }
+    .btn-export:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(29,111,66,0.4); }
 </style>
 
 <div class="report-section">
@@ -530,6 +533,7 @@ ob_end_clean();
             <div class="filter-buttons">
                 <button type="submit" class="btn btn-primary">🔍 Apply Filters</button>
                 <button type="button" class="btn btn-secondary" onclick="window.location.href='<?= $_SERVER['PHP_SELF'] ?>'">🔄 Reset</button>
+                <button type="button" class="btn btn-export" onclick="exportToExcel()">📥 Export to Excel</button>
             </div>
         </form>
     </div>
@@ -610,3 +614,54 @@ ob_end_clean();
         </table>
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+function exportToExcel() {
+    var table = document.querySelector('.data-table');
+    var wb = XLSX.utils.book_new();
+
+    var rows = [];
+    var headers = [];
+    table.querySelectorAll('thead th').forEach(function(th) {
+        headers.push(th.innerText.trim());
+    });
+    rows.push(headers);
+
+    // Columns that should always stay as text (0-indexed)
+    var textOnlyCols = [0, 1, 2]; // Campaign Period, Source, UTM_S
+
+    table.querySelectorAll('tbody tr').forEach(function(tr) {
+        var cells = tr.querySelectorAll('td');
+        if (cells.length < 2) return;
+        var row = [];
+        cells.forEach(function(td, i) {
+            var text = td.innerText.trim();
+            if (textOnlyCols.indexOf(i) !== -1) {
+                row.push(text); // always string
+            } else {
+                var num = parseFloat(text.replace(/[$,]/g, ''));
+                row.push(isNaN(num) || text === '' ? text : num);
+            }
+        });
+        rows.push(row);
+    });
+
+    var ws = XLSX.utils.aoa_to_sheet(rows);
+
+    ws['!cols'] = [
+        {wch: 24}, {wch: 12}, {wch: 28}, {wch: 12},
+        {wch: 12}, {wch: 10}, {wch: 16}, {wch: 10},
+        {wch: 22}, {wch: 20}, {wch: 24}, {wch: 22},
+        {wch: 12}, {wch: 10},
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Marketing Report');
+
+    var today = new Date();
+    var dateStr = today.getFullYear() + '-'
+        + String(today.getMonth()+1).padStart(2,'0') + '-'
+        + String(today.getDate()).padStart(2,'0');
+    XLSX.writeFile(wb, 'marketing_report_' + dateStr + '.xlsx');
+}
+</script>
