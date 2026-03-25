@@ -478,7 +478,14 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
                     </select>
                     <div class="error-msg" id="keytReceived-error">გთხოვთ აირჩიოთ</div>
                 </div>
-                <div class="form-group"></div>
+                <div class="form-group">
+                    <label class="form-label">ბარტერი</label>
+                    <select id="barter" class="form-select">
+                        <option value="">აირჩიეთ...</option>
+                        <option value="1">დიახ</option>
+                        <option value="0">არა</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -535,6 +542,7 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         setSelectVal('miznobrioba',     deal["UF_CRM_1770204779269"],    ["170", "171"]);
         setSelectVal('registrationInRest', deal["UF_CRM_1771499394"],    ["1", "0"]);
         setSelectVal('keytReceived',    deal["UF_CRM_1771499429"],       ["1", "0"]);
+        setSelectVal('barter',          deal["UF_CRM_1774442641"],        ["1", "0"]);
 
         // Fill citizenOf dropdown
         const citizenSelect = document.getElementById('citizenOf');
@@ -718,6 +726,7 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         formData.append("contactType",        document.getElementById('contactType').value);
         formData.append("registrationInRest", document.getElementById('registrationInRest').value);
         formData.append("keytReceived",       document.getElementById('keytReceived').value);
+        formData.append("barter",             document.getElementById('barter').value);
 
         $.ajax({
             url: "/rest/popupsservices/sell.php",

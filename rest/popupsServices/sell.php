@@ -13,6 +13,11 @@ if (!CModule::IncludeModule("bizproc")) {
     exit;
 }
 
+if (!CModule::IncludeModule("iblock")) {
+    echo json_encode(["status" => "error", "message" => "Iblock module not loaded"]);
+    exit;
+}
+
 global $USER;
 $currentUserId = $USER->GetID();
 
@@ -73,7 +78,7 @@ $contactType = $postStr("contactType");
 
 $registrationInRest = $postStr("registrationInRest");
 $keytReceived = $postStr("keytReceived");
-
+$barter = $postStr("barter");
 
 if ($dealId) {
     $arErrorsTmp = array();
@@ -121,9 +126,53 @@ if ($dealId) {
         echo json_encode(["status" => "error", "message" => "Workflow error", "errors" => $arErrorsTmp]);
         exit;
     }
+
+
+    if ($barter === "1" || $barter === "0") {
+        // ინფობლოკი 14, თვისება BARTER (სია): yes=188, no=189 — დილის UF იგზავნება "1"/"0"
+        $barterListEnumId = ($barter === "1") ? 188 : 189;
+
+        $updateArr = array();
+        if (!empty($barter)) {
+            $updateArr["UF_CRM_1774442641"] = $barter;
+
+        }
+    
+        if (!empty($updateArr)) {
+            $dealObj = new CCrmDeal(false);
+    
+            $result = $dealObj->Update(
+                $dealId,
+                $updateArr,
+                false,
+                false,
+                ["CHECK_PERMISSIONS" => false]
+            );
+
+        }
+
+        if ($dealId) {
+            $productRows = CCrmDeal::LoadProductRows($dealId);
+            if (is_array($productRows)) {
+                foreach ($productRows as $row) {
+                    $productId = (int)($row["PRODUCT_ID"] ?? 0);
+                    if ($productId <= 0) {
+                        continue;
+                    }
+            
+                    $propertyValues = array();
+                    $propertyValues['BARTER'] = $barterListEnumId;
+                
+                    $element = new CIBlockElement();
+                
+                    $updateResult = $element->SetPropertyValuesEx($productId, 14, $propertyValues);
+                }
+            }
+        }
+    }
+
 }
 
 
 echo json_encode(["status" => "success", "message" => "Contact saved successfully"]);
 exit;
-
