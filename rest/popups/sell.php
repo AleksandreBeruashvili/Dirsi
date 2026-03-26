@@ -23,10 +23,10 @@ function getContactInfo($contactId) {
     return $arContact;
 }
 
-function getDealFieldsToolbar($fieldName)
+function getDealFieldsToolbar($fieldName, $sort = array())
 {
     $option = array();
-    $rsUField = CUserFieldEnum::GetList(array(), array("USER_FIELD_NAME" => $fieldName));
+    $rsUField = CUserFieldEnum::GetList($sort, array("USER_FIELD_NAME" => $fieldName));
     while ($arUField = $rsUField->GetNext()) {
         $option[$arUField["ID"]] = $arUField["VALUE"];
     }
@@ -35,6 +35,7 @@ function getDealFieldsToolbar($fieldName)
 }
 
 $citizenOf = getDealFieldsToolbar("UF_CRM_1770187155776");
+$nationalityOptions = getDealFieldsToolbar("UF_CRM_1769506891465", array("SORT" => "ASC"));
 $dealId = isset($_REQUEST['DEAL_ID']) ? intval($_REQUEST['DEAL_ID']) : 0;
 $deal = getDealInfoByIDToolbar($dealId);
 $contact = getContactInfo($deal["CONTACT_ID"]);
@@ -391,9 +392,11 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
                     <label class="form-label required">ნაციონალობა</label>
                     <select id="nationality" class="form-select">
                         <option value="">აირჩიეთ...</option>
-                        <option value="156">Georgian</option>
-                        <option value="157">Russian</option>
+                        <?php foreach ($nationalityOptions as $nid => $nlabel): ?>
+                        <option value="<?= htmlspecialchars((string)$nid) ?>"><?= htmlspecialchars($nlabel) ?></option>
+                        <?php endforeach; ?>
                     </select>
+                    <div class="error-msg" id="nationality-error">გთხოვთ აირჩიოთ ნაციონალობა</div>
                 </div>
             </div>
         </div>
@@ -537,7 +540,7 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         setVal('actualAddress',   contact["UF_CRM_1761653727005"]);
 
         setSelectVal('citizenshipType', contact["UF_CRM_1761651978222"]);
-        setSelectVal('nationality',     contact["UF_CRM_1769506891465"], ["156", "157"]);
+        setSelectVal('nationality',     contact["UF_CRM_1769506891465"], "");
         setSelectVal('contactType',     deal["UF_CRM_1770204855111"],    ["174", "175"]);
         setSelectVal('miznobrioba',     deal["UF_CRM_1770204779269"],    ["170", "171"]);
         setSelectVal('registrationInRest', deal["UF_CRM_1771499394"],    ["1", "0"]);
@@ -655,6 +658,11 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
             showError('citizenOf', 'გთხოვთ აირჩიოთ ქვეყანა');
             valid = false;
         } else { clearError('citizenOf'); }
+
+        if (!document.getElementById('nationality').value) {
+            showError('nationality', 'გთხოვთ აირჩიოთ ნაციონალობა');
+            valid = false;
+        } else { clearError('nationality'); }
 
         // Contact type
         if (!document.getElementById('contactType').value) {
