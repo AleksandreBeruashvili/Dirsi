@@ -305,7 +305,7 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
                     <div class="error-msg" id="contactType-error">გთხოვთ აირჩიოთ კონტრაქტის ტიპი</div>
                 </div>
             </div>
-            <div class="form-row">
+            <div class="form-row" style="display: none;">
                 <div class="form-group">
                     <label class="form-label">ხელშეკრულება (ფაილი)</label>
                     <input id="sellFlat" type="file" class="form-input" onchange="fileShetvirtva('sellFlat')">
