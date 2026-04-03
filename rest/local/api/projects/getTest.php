@@ -43,6 +43,36 @@ function getContactInfo($contactId) {
     return $arContact;
 }
 
+function getCIBlockElementsByFilterT($arFilter = array())
+{                                        
+    $arElements = array();                                                                        
+    $arSelect = array("ID", "IBLOCK_ID", "NAME", "DATE_ACTIVE_FROM", "DATE_CREATE", "PROPERTY_*");     
+    $res = CIBlockElement::GetList(array(), $arFilter, false, array("nPageSize" => 999), $arSelect); 
+    while ($ob = $res->GetNextElement()) {                                                       
+        $arFilds = $ob->GetFields();                                                              
+        $arProps = $ob->GetProperties();                                                          
+        $arPushs = array();                                                                       
+        foreach ($arFilds as $key => $arFild)
+            $arPushs[$key] = $arFild;                            
+        foreach ($arProps as $key => $arProp)
+            $arPushs[$key] = $arProp["VALUE"];                   
+        array_push($arElements, $arPushs);                                                        
+    }                                                                                             
+    return $arElements;                                                                           
+}
+
+
+function radAqcia($apartment = null) {
+    $arFilter = array(
+        "IBLOCK_ID" => 22,
+        "PROPERTY_akcia" => 191 // diax-is enum id
+    );
+
+    $aqciebi = getCIBlockElementsByFilterT($arFilter);
+    
+    return $aqciebi ?? [];
+}
+
 function getProducts($projId = null, $blockId = null) {
     $arFilter = array(
             "IBLOCK_ID" => 14
@@ -107,8 +137,28 @@ function getProducts($projId = null, $blockId = null) {
         }
         $arPushs['image3'] = $image3;
 
+        $arPushs["_1CH1KD"] = ($arPushs["_1CH1KD"] === "Y");
+
         $price = CPrice::GetBasePrice($arPushs["ID"]);
         $arPushs["PRICE"] = isset($price["PRICE"]) ? round($price["PRICE"], 2) : 0;
+        if ($arPushs["_1CH1KD"]) {
+            $aqciebi = radAqcia($arPushs);
+            foreach ($aqciebi as $aqcia) {
+                $discountType = $aqcia["discount_type"];
+                $kvmPrice = (float) $arPushs["KVM_PRICE"];
+                $discount = (float) $aqcia["discount"];
+                $totalArea = (float) $arPushs["TOTAL_AREA"];
+
+                if ($discountType === "თანხა"){
+                    $arPushs["saaqcioKvmPrice"] = $kvmPrice - $discount;
+                } else {
+                    $discountByPercent = $kvmPrice * $discount / 100;
+                    $arPushs["saaqcioKvmPrice"] = $kvmPrice - $discountByPercent;
+                }
+                $arPushs["saaqcioPrice"] = $arPushs["saaqcioKvmPrice"] * $totalArea;
+            }
+            $arPushs["aqciebi"] = $aqciebi;
+        }
 
         array_push($arElements, $arPushs);
     }

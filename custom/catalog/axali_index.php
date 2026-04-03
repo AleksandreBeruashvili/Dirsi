@@ -1230,6 +1230,101 @@ ob_end_clean();
         #popupImg:hover {
             transform: scale(1.02);
         }
+
+        /* ===================== AQCIA CARD ===================== */
+        .aqcia-card {
+            background: linear-gradient(135deg, #fff0f0, #ffe0e0);
+            border: 1.5px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin: 8px 0;
+            box-shadow: 0 3px 10px rgba(255, 107, 107, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .aqcia-card::before {
+            content: "🔥 აქცია";
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #e53935;
+            background: rgba(255,255,255,0.7);
+            padding: 2px 6px;
+            border-radius: 20px;
+        }
+
+        .aqcia-card-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #c62828;
+            margin-bottom: 6px;
+            padding-right: 60px;
+        }
+
+        .aqcia-prices {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .aqcia-original-price {
+            font-size: 13px;
+            color: #999;
+            text-decoration: line-through;
+        }
+
+        .aqcia-arrow {
+            color: #e53935;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .aqcia-sale-price {
+            font-size: 15px;
+            font-weight: 700;
+            color: #c62828;
+        }
+
+        .aqcia-saving {
+            font-size: 11px;
+            color: #fff;
+            background: #e53935;
+            padding: 2px 7px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .aqcia-details {
+            margin-top: 6px;
+            font-size: 11px;
+            color: #888;
+        }
+
+        li.aqcia-card::before {
+            display: none;
+        }
+
+        li.aqcia-card:hover {
+            transform: none;
+            background: linear-gradient(135deg, #fff0f0, #ffe0e0);
+        }
+
+        /* ===================== AQCIA DOT ===================== */
+        .aqcia-dot {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            font-size: 10px;
+            line-height: 1;
+            z-index: 10;
+            pointer-events: none;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+        }
     </style>
 
 </head>
@@ -1911,7 +2006,8 @@ ob_end_clean();
                                             data-floor="${apartment["FLOOR"]}"
                                             data-building="${building}"
                                             data-block="${block}"
-                                            style="transform: scale(1.2); outline: 2px solid #ff343a;">
+                                            style="transform: scale(1.2); outline: 2px solid #ff343a; position: relative;">
+                                            ${apartment["aqciebi"] && apartment["aqciebi"].length > 0 ? `<span class="aqcia-dot">🔥</span>` : ""}
                                             <div style="font-size: 10px;">${apartment["Number"]}</div> <div>${apartment["TOTAL_AREA"]}</div>
                                     </div>`;
                             } else {
@@ -1920,7 +2016,9 @@ ob_end_clean();
                                                 data-status="${apartment["STATUS"]}"
                                                 data-floor="${apartment["FLOOR"]}"
                                                 data-building="${building}"
-                                                data-block="${block}">
+                                                data-block="${block}"
+                                                style="position: relative;">
+                                                ${apartment["aqciebi"] && apartment["aqciebi"].length > 0 ? `<span class="aqcia-dot">🔥</span>` : ""}
                                                 <div style="font-size: 10px;">${apartment["Number"]}</div> <div>${apartment["TOTAL_AREA"]}</div>
                                         </div>`;
                             }
@@ -2230,6 +2328,7 @@ ob_end_clean();
                     </div>
                 </li>
             `;
+            detailsList.innerHTML += `<li id="aqcia-anchor" style="display:none;padding:0;background:none;box-shadow:none;"></li>`;
         }
         if (apartment["PRICE_GEL"]) {
             detailsList.innerHTML += `
@@ -2240,6 +2339,59 @@ ob_end_clean();
                     </div>
                 </li>
             `;
+        }
+
+        // aqciebi display
+        const existingAqciaCards = document.querySelectorAll(".aqcia-card");
+        existingAqciaCards.forEach(c => c.remove());
+
+        // aqciebi display
+        document.querySelectorAll(".aqcia-card").forEach(c => c.remove());
+
+        if (apartment["aqciebi"] && apartment["aqciebi"].length > 0) {
+            const anchor = document.getElementById("aqcia-anchor");
+
+            apartment["aqciebi"].forEach(aqcia => {
+                const originalPrice = apartment["PRICE"];
+                const originalKvmPrice = apartment["KVM_PRICE"];
+
+                let salePrice = originalPrice;
+                let saleKvmPrice = originalKvmPrice;
+                let savingText = "";
+
+                if (aqcia["discount_type"] === "თანხა") {
+                    saleKvmPrice = (originalKvmPrice - parseFloat(aqcia["discount"])).toFixed(2);
+                    salePrice = Math.round(saleKvmPrice * parseFloat(apartment["TOTAL_AREA"]));
+                    savingText = `- $${aqcia["discount"]}$`;
+                } else if (aqcia["discount_type"] === "პროცენტი") {
+                    const pct = parseFloat(aqcia["discount"]);
+                    salePrice = Math.round(originalPrice * (1 - pct / 100), 3);
+                    saleKvmPrice = (originalKvmPrice * (1 - pct / 100)).toFixed(2);
+                    savingText = `- ${pct}%`;
+                }
+
+                const card = document.createElement("li");
+                card.className = "aqcia-card";
+                card.style.cssText = "display:block; background: linear-gradient(135deg, #fff0f0, #ffe0e0);";
+                card.innerHTML = `
+                    <div class="aqcia-card-title">${aqcia["NAME"]}</div>
+                    <div class="aqcia-prices">
+                        <span class="aqcia-original-price">$${originalPrice?.toLocaleString()}</span>
+                        <span class="aqcia-arrow">→</span>
+                        <span class="aqcia-sale-price">$${salePrice?.toLocaleString()}</span>
+                    </div>
+                    <div class="aqcia-prices" style="margin-top:4px;">
+                        <span class="aqcia-original-price">${originalKvmPrice} $/მ²</span>
+                        <span class="aqcia-arrow">→</span>
+                        <span class="aqcia-sale-price">${saleKvmPrice} $/მ²</span>
+                        <span class="aqcia-saving">${savingText}</span>
+                    </div>
+                    ${aqcia["Advance_payment"] ? `<div class="aqcia-details">📅 წინასწარი გადახდა: ${aqcia["Advance_payment"]}%${aqcia["lastPayment"] ? ` &nbsp;|&nbsp; ბოლო: ${aqcia["lastPayment"]}%` : ""}</div>` : ""}
+                `;
+
+                // insert right after the anchor li
+                anchor.parentNode.insertBefore(card, anchor.nextSibling);
+            });
         }
 
         addLi("სრული ფართი მ<sup>2</sup>", apartment["TOTAL_AREA"], detailsList);
