@@ -1035,6 +1035,28 @@ if($arfilter){
 
         setInterval(() => {
 
+
+
+            if(userID != 2788){
+
+                let xelshNumberField = document.querySelector(
+                    "[data-cid='UF_CRM_1766563053146']"
+                );
+
+                let xelshNumberField2 = document.querySelector(
+                    "[data-cid='UF_CRM_1770640981002']"
+                );
+
+                if (xelshNumberField){
+                    xelshNumberField.style.pointerEvents = "none";
+                }
+                if (xelshNumberField2){
+                    xelshNumberField2.style.pointerEvents = "none";
+                }
+
+            }
+
+
             let priorityField = document.querySelector(
                 "[data-cid='UF_CRM_1770793691'] .field-item"
             );
@@ -1053,10 +1075,6 @@ if($arfilter){
                 "linear-gradient(35deg,#FFE400,#FFA500)";
 
             }
-
-
-
-
 
 
 
@@ -1128,8 +1146,6 @@ if($arfilter){
 
             });
 
-
-
             if(userID != 1){
                 // console.log("test");
                 uiToolbarContainer=document.getElementById('uiToolbarContainer');
@@ -1159,11 +1175,6 @@ if($arfilter){
                 }
 
             }
-
-
-
-            
-
         }, 500);
 
 

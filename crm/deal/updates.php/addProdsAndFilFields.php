@@ -26,6 +26,7 @@ function getDealsByFilter(
     $arSelect = [
         "ID",
         "DATE_CREATE",
+        "UF_CRM_1766736693236", // korp
         "UF_CRM_1766560580335", // floor
         "UF_CRM_1766421158035", // building number
         "UF_CRM_1774254583", // number
@@ -58,6 +59,9 @@ function getProductByDealFields($buildingNumber, $type, $floor, $number)
         "PROPERTY_PRODUCT_TYPE" => $type,
         "PROPERTY_FLOOR" => $floor,
         "PROPERTY_Number" => $number,
+        // მხოლოდ პროდუქტი, სადაც ეს ორი ველი ცარიელია (Bitrix-ში false = არ არის შევსებული)
+        "PROPERTY_OWNER_DEAL" => false,
+        // "PROPERTY_DEAL_RESPONSIBLE" => false,
         "ACTIVE" => "Y"
     ];
 
@@ -86,7 +90,12 @@ function getCIBlockElementsByID($productId)
         "PROPERTY_LIVING_SPACE",
         "PROPERTY_Bedrooms",
         "PROPERTY_PRODUCT_TYPE",
-        "PROPERTY_KVM_PRICE"
+        "PROPERTY_KVM_PRICE",
+        "PROPERTY_OWNER_DEAL",
+        "PROPERTY_DEAL_RESPONSIBLE",
+        "PROPERTY_OWNER_CONTACT",
+        "PROPERTY_OWNER_COMPANY",
+        "PROPERTY_STATUS",
     ];
 
     $res = CIBlockElement::GetList(
@@ -123,7 +132,13 @@ function getCIBlockElementsByID($productId)
         "TOTAL_AREA"    => (float)$el["PROPERTY_TOTAL_AREA_VALUE"],
         "LIVING_SPACE"  => (float)$el["PROPERTY_LIVING_SPACE_VALUE"],
         "PRICE"         => $price,
-        "KVM_PRICE"     => (float)$el["PROPERTY_KVM_PRICE_VALUE"]
+        "KVM_PRICE"     => (float)$el["PROPERTY_KVM_PRICE_VALUE"],
+        "OWNER_DEAL"    => $el["PROPERTY_OWNER_DEAL_VALUE"],
+        "DEAL_RESPONSIBLE" => $el["PROPERTY_DEAL_RESPONSIBLE_VALUE"],
+        "OWNER_CONTACT" => $el["PROPERTY_OWNER_CONTACT_VALUE"],
+        "OWNER_COMPANY" => $el["PROPERTY_OWNER_COMPANY_VALUE"],
+        "STATUS"        => $el["PROPERTY_STATUS_VALUE"],
+
     ];
 }
 
@@ -133,9 +148,10 @@ function getCIBlockElementsByID($productId)
 $arFilter = [
     "STAGE_ID" => "WON",
     // In this codebase filters are built as 'd/m/Y HH:MM:SS' to satisfy Bitrix parsing.
-    ">=DATE_CREATE" => date('d/m/Y', strtotime("2026-03-23")) . ' 00:00:00',
-    "<=DATE_CREATE" => date('d/m/Y', strtotime("2026-03-23")) . ' 23:59:59',
+    // ">=DATE_CREATE" => date('d/m/Y', strtotime("2026-03-23")) . ' 00:00:00',
+    // "<=DATE_CREATE" => date('d/m/Y', strtotime("2026-03-23")) . ' 23:59:59',
     // "ID" => 5340 
+    "UF_CRM_1766736693236" => "11",
 ];
 
 $deals = getDealsByFilter($arFilter);
@@ -144,27 +160,31 @@ $deals = getDealsByFilter($arFilter);
 
 printArr(count($deals));
 
+$count = 0;
+
 foreach ($deals as $deal) {
 
     $dealId    = (int)$deal["ID"];
 
+    $products = CCrmDeal::LoadProductRows($dealId);
+    foreach ($products as $product) {
+        $productId = $product["PRODUCT_ID"];
+    }
 
-    $buildingNumber = $deal["UF_CRM_1766421158035"];
-    $type      = $deal["UF_CRM_1766652554644"];
-    $floor     = $deal["UF_CRM_1766560580335"];
-    $number     = $deal["UF_CRM_1774254583"];
-   
-    // printArr("ტესტ");
-
-    $productId = getProductByDealFields($buildingNumber, $type, $floor, $number);
-    if (!$productId) {
+    if(empty($productId)){
         continue;
     }
 
-    // $productData = getCIBlockElementsByID($productId);
-    // if (empty($productData)) {
-    //     continue;
-    // }
+    $productData = getCIBlockElementsByID($productId);
+    if (empty($productData)) {
+        continue;
+    }
+
+    if($productData["DEAL_RESPONSIBLE"] == false){
+        $count++;
+        // printArr($productData);
+    }
+
 
     $propertyValues = array();
     $propertyValues['OWNER_DEAL'] = $dealId;
@@ -176,6 +196,31 @@ foreach ($deals as $deal) {
     $element = new CIBlockElement();
 
     $updateResult = $element->SetPropertyValuesEx($productId, 14, $propertyValues);
+
+
+
+
+
+
+    // $buildingNumber = $deal["UF_CRM_1766421158035"];
+    // $type      = $deal["UF_CRM_1766652554644"];
+    // $floor     = $deal["UF_CRM_1766560580335"];
+    // $number     = $deal["UF_CRM_1774254583"];
+   
+    // printArr("ტესტ");
+
+    // $productId = getProductByDealFields($buildingNumber, $type, $floor, $number);
+    // if (!$productId) {
+    //     continue;
+    // }
+
+
+  
+
+
+
+
+
 
 
     // $ProductID = $productId;
@@ -229,6 +274,8 @@ foreach ($deals as $deal) {
     //     continue;
     // }
 }
+
+printArr($count);
 
 echo "<h3>დამუშავება დასრულდა</h3>";
 

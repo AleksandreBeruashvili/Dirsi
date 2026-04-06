@@ -12,6 +12,26 @@ function getDealInfoByIDToolbar($dealId) {
 
 $dealId = isset($_REQUEST['DEAL_ID']) ? intval($_REQUEST['DEAL_ID']) : 0;
 $deal = getDealInfoByIDToolbar($dealId);
+
+// შევამოწმოთ: deal-ის კონტაქტს list 19-ში აქვს თუ არა მიბმული ელემენტი
+$contactHasDoc = false;
+$contactId = isset($deal['CONTACT_ID']) ? intval($deal['CONTACT_ID']) : 0;
+
+if ($contactId && CModule::IncludeModule('iblock')) {
+    $elRes = CIBlockElement::GetList(
+        [],
+        [
+            'IBLOCK_ID'        => 19,
+            'PROPERTY_CONTACT' => $contactId,
+        ],
+        false,
+        ['nTopCount' => 1],
+        ['ID']
+    );
+    if ($elRes->Fetch()) {
+        $contactHasDoc = true;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -144,8 +164,16 @@ $deal = getDealInfoByIDToolbar($dealId);
         <!-- Identity Document File -->
         <div class="file-group">
             <span>პიროვნების დამადასტურებელი დოკუმენტი:</span>
-            <input id="identityFile" type="file" onchange="fileUpload('identityFile')" />
-            <input id="identityFileText" type="hidden" />
+            <?php if ($contactHasDoc): ?>
+                <div id="identityDocInfo" style="margin-top:6px; padding:8px 12px; background:#eaf6ea; border:1px solid #7dc87d; border-radius:4px; color:#2d7a2d; font-size:13px;">
+                    ✔ კონტაქტზე უკვე ატვირთულია პიროვნების დამადასტურებელი დოკუმენტი
+                </div>
+                <input id="identityFile" type="file" onchange="fileUpload('identityFile')" style="margin-top:8px;" />
+                <input id="identityFileText" type="hidden" />
+            <?php else: ?>
+                <input id="identityFile" type="file" onchange="fileUpload('identityFile')" />
+                <input id="identityFileText" type="hidden" />
+            <?php endif; ?>
         </div>
 
         <!-- Comment -->
@@ -164,6 +192,7 @@ $deal = getDealInfoByIDToolbar($dealId);
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
     let deal = <?php echo json_encode($deal, JSON_UNESCAPED_UNICODE); ?>;
+    let contactHasDoc = <?php echo $contactHasDoc ? 'true' : 'false'; ?>;
 
     // Set contract type if exists in deal
     if(deal["UF_CRM_1770204855111"] == "174"){
@@ -240,7 +269,7 @@ $deal = getDealInfoByIDToolbar($dealId);
                 clearError("agreementFile");
             }
             
-            if (!$("#identityFile").val()) {
+            if (!contactHasDoc && !$("#identityFile").val()) {
                 showError("identityFile", "გთხოვთ დაამატეთ პიროვნების დამადასტურებელი დოკუმენტი");
                 valid = false;
             } else {
