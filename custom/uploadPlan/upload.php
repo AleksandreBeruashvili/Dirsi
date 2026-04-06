@@ -34,9 +34,9 @@ function findDealByParams($type, $number, $floor, $korpus) {
     CModule::IncludeModule("crm");
 
     $filter = array(
-        'UF_CRM_1766652554644' => $type,      // ფართის ტიპი
-        'UF_CRM_1766560564150' => $number,    // ნომერი
-        'UF_CRM_1766560580335' => $floor,      // სართული
+        'UF_CRM_1761658532158' => $type,      // ფართის ტიპი
+        'UF_CRM_1761658559005' => $number,    // ნომერი
+        'UF_CRM_1761658577987' => $floor,      // სართული
         'UF_CRM_1766736693236' => $korpus,
     );
 
@@ -101,8 +101,8 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST['action']) && $_POST['a
 
         // წაიკითხე პირველი 3 სვეტი
         $type = isset($row[0]) ? trim($row[0]) : '';      // A: ფართის ტიპი
-        $number= isset($row[1]) ? trim($row[1]) : '';     // B: სართული
-        $floor = isset($row[2]) ? trim($row[2]) : '';    // C: ბინის ნომერი
+        $floor = isset($row[1]) ? trim($row[1]) : '';    // B: სართული
+        $number= isset($row[2]) ? trim($row[2]) : '';    // C: ბინის ნომერი
         $korpus = isset($row[5]) ? trim($row[5]) : '';   // F: კორპუსი
 
         $results['debug'][] = "სტრიქონი $i: ტიპი='$type', სართული='$floor', ნომერი='$number'";
