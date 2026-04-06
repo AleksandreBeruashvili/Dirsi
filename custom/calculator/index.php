@@ -886,6 +886,14 @@ $nbgKursi = getNBGkursi($dateForNBG);
                    placeholder="dd/mm/YYYY" autocomplete="off" onchange="getAndFillGraph()"
                    onclick="BX.calendar({node: this, field: this, bTime: false, bSetFocus: false})">
         </div>
+
+        <div class="form-field hidden" id="ganvadebaTanxaField">
+            <label>განვადების თანხა</label>
+            <input id="ganvadebaTanxa" class="form-control green-border"
+                   placeholder="0"
+                   oninput="validateNumericInput(event,this)"
+                   onblur="handleInputFinish(this,'ganvadebaTanxa')">
+        </div>
     </div>
 
     <div class="form-row">
@@ -1105,6 +1113,7 @@ function initializeEventListeners() {
     document.getElementById('period').addEventListener('change', () => {
         fillData();
         getAndFillGraph();
+        if (parseFormattedNumber(getValue('ganvadebaTanxa'))) ganvadebaTanxaChange();
     });
     
     // განვადების ტიპი
@@ -1206,12 +1215,20 @@ function changeType() {
         fillType("არასტანდარტული");
         enable('discountType');
         enable('discountNum');
-    } else if (ganvadebaType === "allCash") {
-        fillType("ერთიანი გადახდა");
-    } else if (ganvadebaType === "mortgage") {
-        fillType("განვადება");
-    } else if (ganvadebaType === "bankLoan") {
-        fillType("ბანკის");
+        show('ganvadebaTanxaField');
+    } else {
+        hide('ganvadebaTanxaField');
+        setValue('ganvadebaTanxa', '');
+        enable('lastPayment');
+        enable('lastPaymentPercent');
+
+        if (ganvadebaType === "allCash") {
+            fillType("ერთიანი გადახდა");
+        } else if (ganvadebaType === "mortgage") {
+            fillType("განვადება");
+        } else if (ganvadebaType === "bankLoan") {
+            fillType("ბანკის");
+        }
     }
 }
 
@@ -1322,6 +1339,7 @@ function fillDataForCustomType() {
     setValue('endDate', data.projEndDate);
     
     enable('endDate');
+    show('ganvadebaTanxaField');
 }
 
 /**
@@ -1594,6 +1612,15 @@ async function getAndFillGraph() {
         hide('saveCalculation');
         clearTable('graphData');
         return;
+    }
+
+    // თუ ganvadebaTanxa შევსებულია — lastPayment/lastPayDate გადათვლა
+    const ganvadebaTanxaVal = parseFormattedNumber(getValue('ganvadebaTanxa'));
+    if (ganvadebaTanxaVal) {
+        ganvadebaTanxaChange();
+        if (!getValue('lastPayDate') && endDate) {
+            setValue('lastPayDate', dateAddDay(endDate, 1));
+        }
     }
     
     const requestData = {
@@ -2267,6 +2294,40 @@ function today() {
 }
 
 /**
+ * ორ თარიღს შორის თვეების რაოდენობა (PHP-ს monthsBetweenDates-ის ანალოგი)
+ */
+function monthsBetweenDates(date1, date2) {
+    const [d1, m1, y1] = date1.split('/').map(Number);
+    const [d2, m2, y2] = date2.split('/').map(Number);
+    return (y2 - y1) * 12 + (m2 - m1);
+}
+
+/**
+ * გადახდების რაოდენობა (PHP backend-ის ანალოგი)
+ */
+function calcPaymentsCount(startDate, endDate, period) {
+    if (!startDate || !endDate) return 0;
+    const p = parseInt(period) || 1;
+    const months = monthsBetweenDates(startDate, endDate) + 1;
+    if (p === 1) {
+        return Math.floor(months / p);
+    }
+    return Math.floor(months / p + 1);
+}
+
+/**
+ * თარიღს დღის დამატება
+ */
+function dateAddDay(date, days) {
+    const [day, month, year] = date.split('/');
+    const dateObj = new Date(year, month - 1, day);
+    dateObj.setDate(dateObj.getDate() + parseInt(days));
+    const newDay = String(dateObj.getDate()).padStart(2, '0');
+    const newMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+    return `${newDay}/${newMonth}/${dateObj.getFullYear()}`;
+}
+
+/**
  * თარიღს თვის დამატება
  */
 function dateAddMonth(date, months) {
@@ -2431,6 +2492,44 @@ function handleInputFinish(inputElement, type) {
         case 'bookPayment':
             bookPayment_change();
             break;
+        case 'ganvadebaTanxa':
+            ganvadebaTanxaChange();
+            break;
+    }
+}
+
+/**
+ * განვადების თანხის ცვლილება
+ */
+function ganvadebaTanxaChange() {
+    const ganvadebaTanxa = parseFormattedNumber(getValue('ganvadebaTanxa'));
+    const price = parseFormattedNumber(getValue('price'));
+    const advancePayment = parseFormattedNumber(getValue('advancePayment')) || 0;
+
+    if (ganvadebaTanxa && price > 0) {
+        const startDate = getValue('startDate');
+        const endDate = getValue('endDate');
+        const period = getValue('period') || 1;
+
+        const paymentsCount = calcPaymentsCount(startDate, endDate, period);
+
+        // ყოველ პერიოდში ganvadebaTanxa, დარჩენილი → ბოლო შენატანი
+        const totalDistributed = ganvadebaTanxa * paymentsCount;
+        const lastPayment = Math.max(0, price - advancePayment - totalDistributed);
+        const lastPaymentPercent = price > 0 ? (lastPayment / price * 100).toFixed(2) : 0;
+
+        setValue('lastPayment', formatNumber(lastPayment));
+        setValue('lastPaymentPercent', formatNumber(lastPaymentPercent));
+        disable('lastPayment');
+        disable('lastPaymentPercent');
+
+        // lastPayDate ავტომატურად შეიხება თუ ცარიელია — endDate + 1 დღე
+        if (!getValue('lastPayDate') && endDate) {
+            setValue('lastPayDate', dateAddDay(endDate, 1));
+        }
+    } else {
+        enable('lastPayment');
+        enable('lastPaymentPercent');
     }
 }
 
@@ -2456,6 +2555,11 @@ function advancePaymentChange() {
         alert(`პირველადი შენატანი არ უნდა იყოს ${advancedBySchedule}$_ზე ნაკლები`);
         setValue('bookPayment', 0);
         fillAdvancePaymentData();
+    }
+
+    const ganvadebaTanxa = parseFormattedNumber(getValue('ganvadebaTanxa'));
+    if (ganvadebaTanxa) {
+        ganvadebaTanxaChange();
     }
 }
 
@@ -2486,6 +2590,11 @@ function advancePaymentPercentChange() {
     } else if (advancePaymentPercent > 100) {
         alert("პირველადი შენატანი არასწორადაა შევსებული");
         fillAdvancePaymentData();
+    }
+
+    const ganvadebaTanxa = parseFormattedNumber(getValue('ganvadebaTanxa'));
+    if (ganvadebaTanxa) {
+        ganvadebaTanxaChange();
     }
 }
 
