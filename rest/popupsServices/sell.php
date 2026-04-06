@@ -79,6 +79,8 @@ $contactType = $postStr("contactType");
 $registrationInRest = $postStr("registrationInRest");
 $keytReceived = $postStr("keytReceived");
 $barter = $postStr("barter");
+$giftVoucher = $postStr("giftVoucher");
+$giftVoucherName = $postStr("giftVoucherName");
 
 if ($dealId) {
     $arErrorsTmp = array();
@@ -110,6 +112,8 @@ if ($dealId) {
                 "contactType" => $contactType,
                 "registrationInRest" => $registrationInRest,
                 "keytReceived" => $keytReceived,
+                "giftVoucher" => $giftVoucher,
+                "giftVoucherName" => $giftVoucherName,
                 "TargetUser" => "user_" . (int)$currentUserId
             ],
             $arErrorsTmp
@@ -173,6 +177,27 @@ if ($dealId) {
 
 }
 
+
+// // სასაჩუქრე ვაუჩერის ველების განახლება
+// $updateVoucherArr = [];
+// if ($giftVoucher === "1" || $giftVoucher === "0") {
+//     $updateVoucherArr["UF_CRM_1775473780"] = $giftVoucher;
+//     if ($giftVoucher === "1") {
+//         $updateVoucherArr["UF_CRM_1775474132"] = $giftVoucherName;
+//     } else {
+//         $updateVoucherArr["UF_CRM_1775474132"] = "";
+//     }
+// }
+// if (!empty($updateVoucherArr)) {
+//     $dealObjVoucher = new CCrmDeal(false);
+//     $dealObjVoucher->Update(
+//         $dealId,
+//         $updateVoucherArr,
+//         false,
+//         false,
+//         ["CHECK_PERMISSIONS" => false]
+//     );
+// }
 
 echo json_encode(["status" => "success", "message" => "Contact saved successfully"]);
 exit;

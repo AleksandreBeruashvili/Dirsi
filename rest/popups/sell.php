@@ -39,6 +39,23 @@ $nationalityOptions = getDealFieldsToolbar("UF_CRM_1769506891465", array("SORT" 
 $dealId = isset($_REQUEST['DEAL_ID']) ? intval($_REQUEST['DEAL_ID']) : 0;
 $deal = getDealInfoByIDToolbar($dealId);
 $contact = getContactInfo($deal["CONTACT_ID"]);
+
+function getGiftVoucherOptions() {
+    $options = [];
+    if (!CModule::IncludeModule('iblock')) return $options;
+    $res = CIBlockElement::GetList(
+        ["NAME" => "ASC"],
+        ["IBLOCK_ID" => 38, "ACTIVE" => "Y", "PROPERTY_ACTIVE" => "193"],
+        false,
+        false,
+        ["ID", "NAME"]
+    );
+    while ($el = $res->Fetch()) {
+        $options[] = ["id" => $el["ID"], "name" => $el["NAME"]];
+    }
+    return $options;
+}
+$giftVoucherOptions = getGiftVoucherOptions();
 ?>
 
 <!DOCTYPE html>
@@ -492,6 +509,30 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
             </div>
         </div>
 
+        <!-- სასაჩუქრე ვაუჩერი -->
+        <div class="section-block section-block-green">
+            <div class="section-label">🎁 სასაჩუქრე ვაუჩერი</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">სასაჩუქრე ვაუჩერი</label>
+                    <select id="giftVoucher" class="form-select" onchange="toggleGiftVoucherName()">
+                        <option value="">აირჩიეთ...</option>
+                        <option value="1">დიახ</option>
+                        <option value="0">არა</option>
+                    </select>
+                </div>
+                <div class="form-group" id="giftVoucherNameDiv" style="display:none;">
+                    <label class="form-label">სასაჩუქრე ვაუჩერის დასახელება</label>
+                    <select id="giftVoucherName" class="form-select">
+                        <option value="">აირჩიეთ...</option>
+                        <?php foreach ($giftVoucherOptions as $opt): ?>
+                        <option value="<?= htmlspecialchars($opt['name']) ?>"><?= htmlspecialchars($opt['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+        </div>
+
         <input type="hidden" id="sellDealIdHidden" value="<?= (int)$dealId ?>">
 
     </div>
@@ -546,6 +587,11 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         setSelectVal('registrationInRest', deal["UF_CRM_1771499394"],    ["1", "0"]);
         setSelectVal('keytReceived',    deal["UF_CRM_1771499429"],       ["1", "0"]);
         setSelectVal('barter',          deal["UF_CRM_1774442641"],        ["1", "0"]);
+        setSelectVal('giftVoucher',     deal["UF_CRM_1775473780"],        ["1", "0"]);
+        if (deal["UF_CRM_1775474132"]) {
+            document.getElementById('giftVoucherName').value = deal["UF_CRM_1775474132"];
+        }
+        toggleGiftVoucherName();
 
         // Fill citizenOf dropdown
         const citizenSelect = document.getElementById('citizenOf');
@@ -586,6 +632,15 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         if (citizenship !== '46') {
             document.getElementById('citizenOf').value = '';
             clearError('citizenOf');
+        }
+    }
+
+    function toggleGiftVoucherName() {
+        const val = document.getElementById('giftVoucher').value;
+        const div = document.getElementById('giftVoucherNameDiv');
+        div.style.display = (val === '1') ? 'block' : 'none';
+        if (val !== '1') {
+            document.getElementById('giftVoucherName').value = '';
         }
     }
 
@@ -735,6 +790,8 @@ $contact = getContactInfo($deal["CONTACT_ID"]);
         formData.append("registrationInRest", document.getElementById('registrationInRest').value);
         formData.append("keytReceived",       document.getElementById('keytReceived').value);
         formData.append("barter",             document.getElementById('barter').value);
+        formData.append("giftVoucher",        document.getElementById('giftVoucher').value);
+        formData.append("giftVoucherName",    document.getElementById('giftVoucherName').value);
 
         $.ajax({
             url: "/rest/popupsservices/sell.php",

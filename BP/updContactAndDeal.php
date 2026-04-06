@@ -28,6 +28,9 @@ $contType = $root->GetVariable("contType");
 $registrationInRest = $root->GetVariable("registrationInRest");
 $keytReceived = $root->GetVariable("keytReceived");
 
+$giftVoucher = $root->GetVariable("giftVoucher");
+$giftVoucherName = $root->GetVariable("giftVoucherName");
+
 if($clientPhone){
     $fieldMulti = new \CCrmFieldMulti();
 
@@ -139,6 +142,8 @@ $upd = array(
     "UF_CRM_1770204855111" => $contType,
     "UF_CRM_1771499394" => $registrationInRest,
     "UF_CRM_1771499429" => $keytReceived,
+    "UF_CRM_1775473780" => $giftVoucher,
+    "UF_CRM_1775474132" => $giftVoucherName,
 );
 $CCrmDeal->Update($dealId, $upd);
 
