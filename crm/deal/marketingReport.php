@@ -112,9 +112,9 @@ if ($displayDateTo !== '') {
 
 $sourcesMap = [
         "Meta"     => ["UC_GWOB5R", "5|FACEBOOK", "REPEAT_SALE", "RECOMMENDATION", "WEB", "EMAIL"],
-        "Other"    => ["UC_MF3UL1", "UC_I4GPI2", "UC_33R68T", "UC_BXC6ET", "6", "RC_GENERATOR", "PARTNER", "CALL"],
+        "Other"    => ["UC_MF3UL1", "UC_I4GPI2", "UC_33R68T", "UC_BXC6ET", "6", "RC_GENERATOR", "PARTNER", "CALL", "UC_8EMZX2", "WZ690d6450-95bd-4422-90db-a5abd8f885d0"],
         "Bank"     => ["UC_MTQVO0", "UC_6XZU1C"],
-        "Old Base" => ["UC_NGXD08"],
+        "Old Base" => ["UC_NGXD08", "UC_L7ERUF"],
         "Broker"   => ["UC_VXLB3C", "UC_8AFO20", "UC_M4NTDI", "UC_3KD0VI"],
         "Ads"      => ["UC_K8MG32", "UC_AIDAQM", "UC_P2OOT2", "UC_TNUYXL", "UC_CD0QF5", "UC_W5U32M", "UC_A261E5", "BOOKING", "STORE", "CALLBACK", "WEBFORM", "TRADE_SHOW"]
 ];
@@ -179,16 +179,15 @@ $dealDateTo   = !empty($allCostToDates)   ? max($allCostToDates)->format('d/m/Y'
 $sourceIdsToQuery = [];
 if (!empty($filterSource)) {
     $sourceIdsToQuery = $sourcesMap[$filterSource] ?? [];
-} else {
-    $sourceIdsToQuery = array_unique(array_reduce($sourcesFilterList, function($carry, $source) use ($sourcesMap) {
-        return array_merge($carry, $sourcesMap[$source] ?? []);
-    }, []));
+} 
+else {
+    $sourceIdsToQuery = array_unique(array_merge(...array_values($sourcesMap)));
 }
 
 // Build deal filter
 $dealFilter = [];
-if (!empty($dealDateFrom))      $dealFilter[">=DATE_CREATE"]  = $dealDateFrom;
-if (!empty($dealDateTo))        $dealFilter["<=DATE_CREATE"]  = $dealDateTo;
+if (!empty($filterDateFrom))      $dealFilter[">=DATE_CREATE"]  = $filterDateFrom;
+if (!empty($filterDateTo))        $dealFilter["<=DATE_CREATE"]  = $filterDateTo;
 if (!empty($sourceIdsToQuery))  $dealFilter["SOURCE_ID"]      = $sourceIdsToQuery;
 if (!empty($filterResponsible)) $dealFilter["ASSIGNED_BY_ID"] = $filterResponsible;
 
@@ -228,7 +227,7 @@ $meetingFinishedDeals = [];
 $meetingAgreedDeals   = [];
 $qualifiedDeals       = [];
 $nonQualifiedDeals    = [];
-$wonDeals             = [];
+$wonDeals = array_keys(array_filter($deals, fn($n) => $n["STAGE_ID"] === 'WON'));
 
 foreach ($dealsHistories as $dealId => $events) {
     if (!isset($deals[$dealId])) continue;
@@ -238,12 +237,7 @@ foreach ($dealsHistories as $dealId => $events) {
     $meetingFinished = false;
     $meetingAgreed   = false;
     $nonQualified    = false;
-
-    // Won — current STAGE_ID
-    if (in_array($deals[$dealId]["STAGE_ID"], $wonStageIds)) {
-        $wonDeals[] = $dealId;
-    }
-
+    
     foreach ($events as $event) {
 
         // Lost Negotiation
@@ -490,6 +484,62 @@ ob_end_clean();
 
     .btn-export { background: linear-gradient(135deg, #1D6F42 0%, #2e7d32 100%); color: white; }
     .btn-export:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(29,111,66,0.4); }
+
+    /* ===== CLICKABLE STAT CARDS ===== */
+    .stat-card.clickable { cursor: pointer; }
+    .stat-card.clickable:hover { border-color: #667eea; box-shadow: 0 8px 20px rgba(102,126,234,0.2); }
+    .stat-card.clickable::after { content: '🔍'; font-size: 11px; display: block; margin-top: 6px; opacity: 0.4; transition: opacity 0.2s; }
+    .stat-card.clickable:hover::after { opacity: 1; }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.55); backdrop-filter: blur(3px);
+        z-index: 9999; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+        background: #fff; border-radius: 14px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        width: 100%; max-width: 1000px; max-height: 85vh;
+        display: flex; flex-direction: column;
+        animation: modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes modalIn {
+        from { opacity: 0; transform: scale(0.92) translateY(20px); }
+        to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 20px 28px; border-bottom: 1px solid #e9ecef;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 14px 14px 0 0; color: white;
+    }
+    .modal-title { font-size: 18px; font-weight: 700; letter-spacing: 0.3px; }
+    .modal-count { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+    .modal-close {
+        background: rgba(255,255,255,0.2); border: none; border-radius: 8px;
+        color: white; font-size: 20px; width: 36px; height: 36px;
+        cursor: pointer; transition: background 0.2s;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.35); }
+    .modal-body { overflow-y: auto; flex: 1; }
+    .modal-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .modal-table thead th {
+        position: sticky; top: 0; background: #f8f9fa;
+        padding: 12px 16px; text-align: left; font-size: 11px;
+        font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
+        color: #495057; border-bottom: 2px solid #dee2e6; white-space: nowrap;
+    }
+    .modal-table tbody td { padding: 11px 16px; border-bottom: 1px solid #f1f3f5; color: #212529; }
+    .modal-table tbody tr:hover { background: #f8f9fa; }
+    .modal-table tbody tr:last-child td { border-bottom: none; }
+    .stage-pill {
+        display: inline-block; padding: 3px 10px; border-radius: 20px;
+        font-size: 11px; font-weight: 600; background: #e9ecef; color: #495057;
+    }
+    .modal-empty { text-align: center; padding: 50px; color: #adb5bd; font-size: 15px; }
 </style>
 
 <div class="report-section">
@@ -542,14 +592,14 @@ ob_end_clean();
     <div class="stats-section">
         <div class="stats-section-label">📈 Volume Metrics</div>
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-value color-budget">$<?= number_format($statCards['totalBudget'], 2) ?></div><div class="stat-label">Total Budget</div></div>
-            <div class="stat-card"><div class="stat-value color-total"><?= $statCards['totalLeads'] ?></div><div class="stat-label">Total Leads</div></div>
-            <div class="stat-card"><div class="stat-value color-ql"><?= $statCards['qualifiedLeads'] ?></div><div class="stat-label">QL</div></div>
-            <div class="stat-card"><div class="stat-value color-nql"><?= $statCards['nonQualifiedLeads'] ?></div><div class="stat-label">NQL</div></div>
-            <div class="stat-card"><div class="stat-value color-agreed"><?= $statCards['meetingAgreedLeads'] ?></div><div class="stat-label">Meeting Scheduled</div></div>
-            <div class="stat-card"><div class="stat-value color-finished"><?= $statCards['meetingFinishedLeads'] ?></div><div class="stat-label">Meeting Completed</div></div>
-            <div class="stat-card"><div class="stat-value color-won"><?= $statCards['wonDeals'] ?></div><div class="stat-label">Won Deals</div></div>
-            <div class="stat-card"><div class="stat-value color-lost"><?= $statCards['lostDeals'] ?></div><div class="stat-label">Junk Deals</div></div>
+            <div class="stat-card clickable" onclick="openModal('totalBudget')"><div class="stat-value color-budget">$<?= number_format($statCards['totalBudget'], 2) ?></div><div class="stat-label">Total Budget</div></div>
+            <div class="stat-card clickable" onclick="openModal('totalLeads')"><div class="stat-value color-total"><?= $statCards['totalLeads'] ?></div><div class="stat-label">Total Leads</div></div>
+            <div class="stat-card clickable" onclick="openModal('qualifiedLeads')"><div class="stat-value color-ql"><?= $statCards['qualifiedLeads'] ?></div><div class="stat-label">QL</div></div>
+            <div class="stat-card clickable" onclick="openModal('nonQualifiedLeads')"><div class="stat-value color-nql"><?= $statCards['nonQualifiedLeads'] ?></div><div class="stat-label">NQL</div></div>
+            <div class="stat-card clickable" onclick="openModal('meetingAgreedLeads')"><div class="stat-value color-agreed"><?= $statCards['meetingAgreedLeads'] ?></div><div class="stat-label">Meeting Scheduled</div></div>
+            <div class="stat-card clickable" onclick="openModal('meetingFinishedLeads')"><div class="stat-value color-finished"><?= $statCards['meetingFinishedLeads'] ?></div><div class="stat-label">Meeting Completed</div></div>
+            <div class="stat-card clickable" onclick="openModal('wonDeals')"><div class="stat-value color-won"><?= $statCards['wonDeals'] ?></div><div class="stat-label">Won Deals</div></div>
+            <div class="stat-card clickable" onclick="openModal('lostDeals')"><div class="stat-value color-lost"><?= $statCards['lostDeals'] ?></div><div class="stat-label">Junk Deals</div></div>
         </div>
 
         <div class="stats-section-label">🔄 Conversion Rates</div>
@@ -615,53 +665,169 @@ ob_end_clean();
     </div>
 </div>
 
+<!-- ===== MODAL ===== -->
+<div class="modal-overlay" id="dealsModal" onclick="if(event.target===this) closeModal()">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div>
+                <div class="modal-title" id="modalTitle">Deals</div>
+                <div class="modal-count" id="modalCount"></div>
+            </div>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <table class="modal-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Deal ID</th>
+                        <th>Date Created</th>
+                        <th>Source</th>
+                        <th>Stage</th>
+                        <th>Responsible</th>
+                    </tr>
+                </thead>
+                <tbody id="modalTableBody"></tbody>
+            </table>
+            <div class="modal-empty" id="modalEmpty" style="display:none">No deals found</div>
+        </div>
+    </div>
+</div>
+
+<?php
+// Build deal detail map for modal
+$dealDetailsForModal = [];
+foreach ($deals as $dealId => $deal) {
+    $user = CUser::GetByID($deal["ASSIGNED_BY_ID"])->Fetch();
+    $userName = $user ? trim(($user["NAME"] ?? '') . ' ' . ($user["LAST_NAME"] ?? '')) : '';
+    $dealDetailsForModal[$dealId] = [
+        'id'          => $dealId,
+        'date'        => $deal['DATE_CREATE'] ?? '',
+        'source_id'   => $deal['SOURCE_ID']   ?? '',
+        'source_name' => $sources[$deal['SOURCE_ID']] ?? ($deal['SOURCE_ID'] ?? ''),
+        'stage'       => $deal['STAGE_ID']    ?? '',
+        'responsible' => $userName,
+    ];
+}
+?>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-function exportToExcel() {
-    var table = document.querySelector('.data-table');
-    var wb = XLSX.utils.book_new();
+    function exportToExcel() {
+        var table = document.querySelector('.data-table');
+        var wb = XLSX.utils.book_new();
 
-    var rows = [];
-    var headers = [];
-    table.querySelectorAll('thead th').forEach(function(th) {
-        headers.push(th.innerText.trim());
-    });
-    rows.push(headers);
-
-    // Columns that should always stay as text (0-indexed)
-    var textOnlyCols = [0, 1, 2]; // Campaign Period, Source, UTM_S
-
-    table.querySelectorAll('tbody tr').forEach(function(tr) {
-        var cells = tr.querySelectorAll('td');
-        if (cells.length < 2) return;
-        var row = [];
-        cells.forEach(function(td, i) {
-            var text = td.innerText.trim();
-            if (textOnlyCols.indexOf(i) !== -1) {
-                row.push(text); // always string
-            } else {
-                var num = parseFloat(text.replace(/[$,]/g, ''));
-                row.push(isNaN(num) || text === '' ? text : num);
-            }
+        var rows = [];
+        var headers = [];
+        table.querySelectorAll('thead th').forEach(function(th) {
+            headers.push(th.innerText.trim());
         });
-        rows.push(row);
+        rows.push(headers);
+
+        // Columns that should always stay as text (0-indexed)
+        var textOnlyCols = [0, 1, 2]; // Campaign Period, Source, UTM_S
+
+        table.querySelectorAll('tbody tr').forEach(function(tr) {
+            var cells = tr.querySelectorAll('td');
+            if (cells.length < 2) return;
+            var row = [];
+            cells.forEach(function(td, i) {
+                var text = td.innerText.trim();
+                if (textOnlyCols.indexOf(i) !== -1) {
+                    row.push(text); // always string
+                } else {
+                    var num = parseFloat(text.replace(/[$,]/g, ''));
+                    row.push(isNaN(num) || text === '' ? text : num);
+                }
+            });
+            rows.push(row);
+        });
+
+        var ws = XLSX.utils.aoa_to_sheet(rows);
+
+        ws['!cols'] = [
+            {wch: 24}, {wch: 12}, {wch: 28}, {wch: 12},
+            {wch: 12}, {wch: 10}, {wch: 16}, {wch: 10},
+            {wch: 22}, {wch: 20}, {wch: 24}, {wch: 22},
+            {wch: 12}, {wch: 10},
+        ];
+
+        XLSX.utils.book_append_sheet(wb, ws, 'Marketing Report');
+
+        var today = new Date();
+        var dateStr = today.getFullYear() + '-'
+            + String(today.getMonth()+1).padStart(2,'0') + '-'
+            + String(today.getDate()).padStart(2,'0');
+        XLSX.writeFile(wb, 'marketing_report_' + dateStr + '.xlsx');
+    }
+
+    // ===== MODAL DATA =====
+    const dealDetails    = <?= json_encode($dealDetailsForModal) ?>;
+    const sourcesMapJs   = <?= json_encode($sources) ?>;
+
+    const buckets = {
+        totalBudget:          <?= json_encode(array_keys($deals)) ?>,
+        totalLeads:           <?= json_encode(array_keys($deals)) ?>,
+        qualifiedLeads:       <?= json_encode($qualifiedDeals) ?>,
+        nonQualifiedLeads:    <?= json_encode($nonQualifiedDeals) ?>,
+        meetingAgreedLeads:   <?= json_encode($meetingAgreedDeals) ?>,
+        meetingFinishedLeads: <?= json_encode($meetingFinishedDeals) ?>,
+        wonDeals:             <?= json_encode($wonDeals) ?>,
+        lostDeals:            <?= json_encode($lostDeals) ?>,
+    };
+
+    const bucketLabels = {
+        totalBudget:          'Total Budget — All Deals',
+        totalLeads:           'Total Leads',
+        qualifiedLeads:       'Qualified Leads (QL)',
+        nonQualifiedLeads:    'Non-Qualified Leads (NQL)',
+        meetingAgreedLeads:   'Meeting Scheduled',
+        meetingFinishedLeads: 'Meeting Completed',
+        wonDeals:             'Won Deals',
+        lostDeals:            'Junk Deals',
+    };
+
+    function openModal(bucketKey) {
+        const ids    = buckets[bucketKey] || [];
+        const label  = bucketLabels[bucketKey] || bucketKey;
+        const tbody  = document.getElementById('modalTableBody');
+        const empty  = document.getElementById('modalEmpty');
+
+        document.getElementById('modalTitle').textContent = label;
+        document.getElementById('modalCount').textContent = ids.length + ' deal(s)';
+        tbody.innerHTML = '';
+
+        if (ids.length === 0) {
+            empty.style.display = 'block';
+        } else {
+            empty.style.display = 'none';
+            ids.forEach(function(id, idx) {
+                const d   = dealDetails[id];
+                if (!d) return;
+                const tr  = document.createElement('tr');
+                tr.innerHTML =
+                    '<td style="color:#adb5bd;font-size:11px">' + (idx + 1) + '</td>' +
+                    '<td><a href="/crm/deal/details/' + d.id + '/" target="_blank" style="color:#667eea;font-weight:700;text-decoration:none;" onmouseover="this.style.textDecoration=\'underline\'" onmouseout="this.style.textDecoration=\'none\'">#' + d.id + '</a></td>' +
+                    '<td>' + (d.date || '—') + '</td>' +
+                    '<td>' + (d.source_name || d.source_id || '—') + '</td>' +
+                    '<td><span class="stage-pill">' + (d.stage || '—') + '</span></td>' +
+                    '<td>' + (d.responsible || '—') + '</td>';
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('dealsModal').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('dealsModal').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeModal();
     });
 
-    var ws = XLSX.utils.aoa_to_sheet(rows);
 
-    ws['!cols'] = [
-        {wch: 24}, {wch: 12}, {wch: 28}, {wch: 12},
-        {wch: 12}, {wch: 10}, {wch: 16}, {wch: 10},
-        {wch: 22}, {wch: 20}, {wch: 24}, {wch: 22},
-        {wch: 12}, {wch: 10},
-    ];
-
-    XLSX.utils.book_append_sheet(wb, ws, 'Marketing Report');
-
-    var today = new Date();
-    var dateStr = today.getFullYear() + '-'
-        + String(today.getMonth()+1).padStart(2,'0') + '-'
-        + String(today.getDate()).padStart(2,'0');
-    XLSX.writeFile(wb, 'marketing_report_' + dateStr + '.xlsx');
-}
 </script>

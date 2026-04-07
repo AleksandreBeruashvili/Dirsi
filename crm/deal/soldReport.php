@@ -54,7 +54,8 @@ function getDealsByFilter($arFilter) {
               "UF_CRM_1764317005", "UF_CRM_1761658516561", "UF_CRM_1766736693236",
               "UF_CRM_1761658577987", "UF_CRM_1770888201367", "UF_CRM_1770640981002",
               "UF_CRM_1767011536", "UF_CRM_1761658608306", "UF_CRM_1761658503260",
-              "UF_CRM_1761658559005", "UF_CRM_1762416342444", "SOURCE_ID")
+              "UF_CRM_1761658559005", "UF_CRM_1762416342444", "SOURCE_ID", "UF_CRM_1775473780", 
+              "UF_CRM_1775474132", "UF_CRM_1766563053146")
     );
     $resArr = array();
     while ($arDeal = $res->Fetch()) {
@@ -209,7 +210,7 @@ function getAllDaricxvebi($dealIds) {
         ["IBLOCK_ID" => 20, "PROPERTY_DEAL" => $dealIds],
         false,
         ["nPageSize" => 99999],
-        ["ID", "PROPERTY_*"]
+        array()
     );
     $result = [];
     while ($ob = $res->GetNextElement()) {
@@ -228,7 +229,7 @@ function getAllGadaxdebi($dealIds) {
         ["IBLOCK_ID" => 21, "PROPERTY_DEAL" => $dealIds],
         false,
         ["nPageSize" => 99999],
-        ["ID", "PROPERTY_*"]
+        array()
     );
     $result = [];
     while ($ob = $res->GetNextElement()) {
@@ -295,8 +296,8 @@ if ($filterProductType !== '') {
 
 $deals = getDealsByFilter($arFilter);
 
-$dealIds          = array_keys($deals); // full set for dropdowns
-$allProducts      = getProducts($dealIds); // used only for populating filters
+$allDealIds          = array_keys($deals); // full set for dropdowns
+$allProducts      = getProducts($allDealIds); // used only for populating filters
 
 // NOW apply date filter
 if ($displayDateFrom !== '' || $displayDateTo !== '') {
@@ -315,13 +316,14 @@ if ($displayDateFrom !== '' || $displayDateTo !== '') {
     });
 }
 
-$dealIds  = array_keys($deals); // filtered set for products/tables
+$dealIds  = array_keys($deals);
 $products = getProducts($dealIds);
 
 $lang = isset($_GET['lang']) ? $_GET['lang'] : 'eng';
 // Bulk fetch — 2 queries instead of 2×N
-$allDaricxvebi = getAllDaricxvebi($allDealIds);
+$allDaricxvebi = getAllDaricxvebi($dealIds);
 $allGadaxdebi  = getAllGadaxdebi($allDealIds);
+// printArr($allGadaxdebi[1345]);
 $gadaxdebiByDeal = $allGadaxdebi;
 
 // Hydrate deals with dates, payments, responsible, contact
@@ -337,6 +339,7 @@ foreach ($deals as $id => &$arDeal) {
     $arDeal["OWNER_CONTACT_PN"]          = $contact["UF_CRM_1761651998145"] ?? '';
     $arDeal["OWNER_CONTACT_CITIZENSHIP"] = getCountry($contact["UF_CRM_1769506891465"] ?? '');
     $arDeal["OWNER_CONTACT_PHONE"]       = $contact["PHONE"] ?? '';
+    $arDeal["OWNER_CONTACT_EMAIL"]       = $contact["EMAIL"] ?? ''; // <-- add this
 }
 unset($arDeal);
 
@@ -383,6 +386,8 @@ $labels = [
 
         // Excel column headers
         'xls_deal'       => 'Deal#',
+        'xls_contract_old' => 'Contract # (Old Base)',
+        'xls_contract_new' => 'Contract #',
         'xls_client'     => 'Client',
         'xls_resp'       => 'Responsible',
         'xls_contract'   => 'Contract Signing Date',
@@ -392,6 +397,7 @@ $labels = [
         'xls_id_num'     => 'ID Number',
         'xls_citizen'    => 'Citizenship',
         'xls_phone'      => 'Mobile Number',
+        'xls_email' => 'Email',
         'xls_re_type'    => 'Real Estate Type',
         'xls_area'       => 'Area (sqm)',
         'xls_building'   => 'Building',
@@ -401,6 +407,8 @@ $labels = [
         'xls_price_sqm'  => 'Price per sqm',
         'xls_total_price'=> 'Total Price',
         'xls_paid'       => 'Amount Paid',
+        'xls_voucher'      => 'Gift Voucher (Yes/No)',
+        'xls_voucher_name' => 'Gift Voucher Name',
     ],
     'ge' => [
         // Filter labels
@@ -444,6 +452,8 @@ $labels = [
 
         // Excel column headers
         'xls_deal'       => 'გარიგება#',
+        'xls_contract_old' => 'ხელშეკრულების N (ძველი ბაზა)',
+        'xls_contract_new' => 'ხელშეკრულების N',
         'xls_client'     => 'კლიენტი',
         'xls_resp'       => 'პასუხისმგებელი',
         'xls_contract'   => 'ხელშეკრულების თარიღი',
@@ -453,6 +463,7 @@ $labels = [
         'xls_id_num'     => 'პირადი ნომერი',
         'xls_citizen'    => 'მოქალაქეობა',
         'xls_phone'      => 'მობილური',
+        'xls_email' => 'ელ. ფოსტა',
         'xls_re_type'    => 'უძრავი ქონების ტიპი',
         'xls_area'       => 'ფართობი (კვ.მ)',
         'xls_building'   => 'კორპუსი',
@@ -462,6 +473,8 @@ $labels = [
         'xls_price_sqm'  => 'ფასი კვ.მ-ზე',
         'xls_total_price'=> 'სრული ფასი',
         'xls_paid'       => 'გადახდილი თანხა',
+        'xls_voucher'      => 'სასაჩუქრე ვაუჩერი (დიახ/არა)',
+        'xls_voucher_name' => 'სასაჩუქრე ვაუჩერის დასახელება',
     ],
 ];
 
@@ -1057,6 +1070,8 @@ ob_end_clean();
         // =============================================
         const fields = [
             { key: 'ID',                        label: t.xls_deal },
+            { key: 'UF_CRM_1766563053146', label: t.xls_contract_old },
+            { key: 'UF_CRM_1770640981002', label: t.xls_contract_new },
             { key: 'CONTACT_FULL_NAME',         label: t.xls_client },
             { key: 'responsible',               label: t.xls_resp },
             { key: 'UF_CRM_1762416342444',      label: t.xls_contract },
@@ -1066,6 +1081,7 @@ ob_end_clean();
             { key: 'OWNER_CONTACT_PN',          label: t.xls_id_num },
             { key: 'OWNER_CONTACT_CITIZENSHIP', label: t.xls_citizen },
             { key: 'OWNER_CONTACT_PHONE',       label: t.xls_phone },
+            { key: 'OWNER_CONTACT_EMAIL',       label: t.xls_email },
             { key: 'prodTypeNew',               label: t.xls_re_type },
             { key: 'UF_CRM_1761658608306',      label: t.xls_area },
             { key: 'UF_CRM_1766736693236',      label: t.xls_building },
@@ -1075,6 +1091,8 @@ ob_end_clean();
             { key: 'UF_CRM_1761658503260',      label: t.xls_price_sqm },
             { key: 'OPPORTUNITY',               label: t.xls_total_price },
             { key: 'payment',                   label: t.xls_paid },
+            { key: 'UF_CRM_1775473780',  label: t.xls_voucher },
+            { key: 'UF_CRM_1775474132',  label: t.xls_voucher_name },
         ];
 
         const productByDeal = {};
