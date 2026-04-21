@@ -197,9 +197,16 @@ foreach ($filteredProducts as $product) {
         $resArray["გარე პარკინგი"][$prodStatus]["total_area"] += (float) $product["TOTAL_AREA"] ?? 0;
         $resArray["გარე პარკინგი"][$prodStatus]["price"] += (float) $product["PRICE"] ?? 0;
     } else if ($product["PRODUCT_TYPE"] === $prodType) {
+
+        if ($prodStatus === "გაყიდული") {
+            $price = (float) $deals[$product["OWNER_DEAL"]]["OPPORTUNITY"];
+        } else {
+            $price = (float) $product["PRICE"];
+        }
+
         $resArray[$prodType][$prodStatus]["num"]++;
         $resArray[$prodType][$prodStatus]["total_area"] += (float) $product["TOTAL_AREA"] ?? 0;
-        $resArray[$prodType][$prodStatus]["price"] += (float) $product["PRICE"] ?? 0;
+        $resArray[$prodType][$prodStatus]["price"] += $price ?? 0;
 
         if ($product["PRODUCT_TYPE"] === "Flat") {
             if ($product["Bedrooms"] === "1") {
@@ -212,9 +219,14 @@ foreach ($filteredProducts as $product) {
                 continue;
             }
     
+            if ($prodStatus === "გაყიდული") {
+                $price = (float) $deals[$product["OWNER_DEAL"]]["OPPORTUNITY"];
+            } else {
+                $price = (float) $product["PRICE"];
+            }
             $resArray[$prodTypeAnothaOne][$prodStatus]["num"]++;
             $resArray[$prodTypeAnothaOne][$prodStatus]["total_area"] += (float) $product["TOTAL_AREA"] ?? 0;
-            $resArray[$prodTypeAnothaOne][$prodStatus]["price"] += (float) $product["PRICE"] ?? 0;
+            $resArray[$prodTypeAnothaOne][$prodStatus]["price"] += $price ?? 0;
         }
     }
 }
@@ -584,6 +596,14 @@ foreach ($apartmentTypes as $aptType) {
             <td><?= number_format($row_total_price, 2) ?></td>
         </tr>
         <?php endforeach; ?>
+        <tr class="total-row">
+            <td>TOTAL</td>
+            <td><?= number_format($status_totals_price['თავისუფალი'] + $status_totals_price['დაჯავშნილი'], 2) ?></td>
+            <td><?= number_format($status_totals_price['დაჯავშნილი'], 2) ?></td>
+            <td><?= number_format($status_totals_price['გაყიდული'], 2) ?></td>
+            <td><?= number_format($status_totals_price['NFS'], 2) ?></td>
+            <td><?= number_format(array_sum($status_totals_price), 2) ?></td>
+        </tr>
     </tbody>
 </table>
 

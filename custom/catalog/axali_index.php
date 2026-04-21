@@ -397,7 +397,7 @@ ob_end_clean();
             flex-shrink: 0;
             overflow-x: auto;
             overflow-y: overlay;
-            max-width: 1170px;
+            max-width: 1130px;
             transition: right 0.35s ease;
             padding: 10px;
             padding-left: 30px;
@@ -406,7 +406,7 @@ ob_end_clean();
 
         #apsDisplay::-webkit-scrollbar {
             height: 7px;
-        }
+        } 
 
         #apsDisplay::-webkit-scrollbar-track {
             background: #f2f2f2;
@@ -1331,7 +1331,15 @@ ob_end_clean();
 
 <body>
 <div class="containerCatalog">
+    
     <div id="filterContainer">
+        <a href="https://crmasgroup.ge/crm/deal/main/linksPage.php" target="_blank" style="display:block; margin-bottom:12px;" id="mainPageButt">
+            <button style="width:67%; padding:8px; border-radius:8px; border:2px solid #ccc; background:#fff; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.25s ease;"
+                onmouseover="this.style.background='#5a7dff';this.style.color='#fff';this.style.borderColor='#5a7dff';"
+                onmouseout="this.style.background='#fff';this.style.color='#000';this.style.borderColor='#ccc';">
+                მთავარი გვერდი
+            </button>
+        </a>
 
         <h2>ძირითადი ფილტრი</h2>
 
@@ -1505,6 +1513,7 @@ ob_end_clean();
         // aps display scroll designs
         document.getElementById("apsDisplay").style.maxWidth = '820px'; 
         document.getElementById("apartmentPopup").style.position = 'absolute';
+        document.getElementById("mainPageButt").style.display = 'none';
         let containerDiv = document.querySelector(".containerCatalog");
         containerDiv.style.paddingLeft = '0';
 
@@ -1922,21 +1931,14 @@ ob_end_clean();
             });
         });
 
-        // Calculate width for each block
-        const blockWidths = {};
-        Object.entries(maxApartmentsPerBlock).forEach(([key, maxCount]) => {
-            blockWidths[key] = (maxCount * 40) + ((maxCount - 1) * 5);
-        });
-
         // Render building and block labels
         let blockLabel = `<div class="floor-row" id="block-labels">`;
         selectedBuildings.forEach(building => {
             const blocks = Object.keys(buildingBlockStructure[building] || {}).sort();
             
             blocks.forEach(block => {
-                const key = `${building}-${block}`;
-                const width = blockWidths[key] || 350;
-                blockLabel += `<div id="label-div" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; height: 40px; flex-shrink: 0;">
+                const extraStyle = building == '11' ? 'width: 625px;' : '';
+                blockLabel += `<div id="label-div" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; height: 40px; flex-shrink: 0; ${extraStyle}">
                     <div style="font-size: 11px; color: #666; font-weight: 500;">${building}</div>
                     <div style="font-weight: 600;">${block}</div>
                 </div>`;
@@ -1974,15 +1976,14 @@ ob_end_clean();
                 const blocks = Object.keys(buildingBlockStructure[building] || {}).sort();
                 
                 blocks.forEach(block => {
-                    const key = `${building}-${block}`;
-                    const width = blockWidths[key] || 350;
                     
+                    const extraWidth = building == '11' ? 'width: 625px;' : '';
                     let blockOnFloorDiv = `<div 
-                            class="blockOnFloor"
-                            data-floor="${floorNumber}"
-                            data-building="${building}"
-                            data-block="${block}"
-                            style="height:40px; flex-shrink: 0;">`;
+                        class="blockOnFloor"
+                        data-floor="${floorNumber}"
+                        data-building="${building}"
+                        data-block="${block}"
+                        style="height:40px; flex-shrink: 0; ${extraWidth}">`;
 
                     const blockApartments = floor.filter(apt => 
                         apt["BUILDING"] === building && apt["KORPUSIS_NOMERI_XE3NX2"] === block
@@ -2473,7 +2474,7 @@ ob_end_clean();
         if (openedOnDeal) {
             document.getElementById("apsDisplay").style.maxWidth = '820px';
         } else {
-            document.getElementById("apsDisplay").style.maxWidth = "1170px";
+            document.getElementById("apsDisplay").style.maxWidth = "1130px";
         }
     });
     
@@ -2494,7 +2495,7 @@ ob_end_clean();
                 if (openedOnDeal) {
                     document.getElementById("apsDisplay").style.maxWidth = '820px';
                 } else {
-                    document.getElementById("apsDisplay").style.maxWidth = "1170px";
+                    document.getElementById("apsDisplay").style.maxWidth = "1130px";
                 }
             } 
                 
