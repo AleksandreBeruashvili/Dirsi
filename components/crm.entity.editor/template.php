@@ -1047,12 +1047,32 @@ if($arfilter){
                     "[data-cid='UF_CRM_1770640981002']"
                 );
 
-                if (xelshNumberField){
-                    xelshNumberField.style.pointerEvents = "none";
+                function contractFieldValueHasDigits(block) {
+                    if (!block) {
+                        return false;
+                    }
+                    var input = block.querySelector('input[type="text"], input:not([type]), textarea');
+                    if (input && 'value' in input) {
+                        return /\d/.test(String(input.value || '').trim());
+                    }
+                    var fieldItem = block.querySelector('.field-item');
+                    var text = fieldItem ? fieldItem.textContent : block.textContent;
+                    return /\d/.test(String(text || '').trim());
                 }
-                if (xelshNumberField2){
-                    xelshNumberField2.style.pointerEvents = "none";
+
+                function setContractFieldFreeze(block) {
+                    if (!block) {
+                        return;
+                    }
+                    if (contractFieldValueHasDigits(block)) {
+                        block.style.pointerEvents = "none";
+                    } else {
+                        block.style.pointerEvents = "";
+                    }
                 }
+
+                setContractFieldFreeze(xelshNumberField);
+                setContractFieldFreeze(xelshNumberField2);
 
             }
 
