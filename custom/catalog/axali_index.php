@@ -406,7 +406,7 @@ ob_end_clean();
 
         #apsDisplay::-webkit-scrollbar {
             height: 7px;
-        } 
+        }
 
         #apsDisplay::-webkit-scrollbar-track {
             background: #f2f2f2;
