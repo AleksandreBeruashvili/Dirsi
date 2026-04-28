@@ -28,7 +28,7 @@ if ($USER->IsAuthorized()) {
             
             divToCheck= divToCheck.forEach(element => {
                 let divTitle=element.children[0].textContent;
-                if(divTitle=='Priority'){
+                if(divTitle=='Priority' || divTitle=='პრიორიტეტი'){
                     divValue=element.children[1].textContent;
 
                     if(divValue=='Yes'){        
