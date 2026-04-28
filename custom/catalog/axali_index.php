@@ -1937,7 +1937,7 @@ ob_end_clean();
             const blocks = Object.keys(buildingBlockStructure[building] || {}).sort();
             
             blocks.forEach(block => {
-                const extraStyle = building == '11' ? 'width: 625px;' : '';
+                const extraStyle = building == '11' || building == '9' ? 'width: 625px;' : '';
                 blockLabel += `<div id="label-div" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; height: 40px; flex-shrink: 0; ${extraStyle}">
                     <div style="font-size: 11px; color: #666; font-weight: 500;">${building}</div>
                     <div style="font-weight: 600;">${block}</div>
@@ -1962,12 +1962,14 @@ ob_end_clean();
         const floorsContainer = document.getElementById("floors");
         floorsContainer.innerHTML = "";
 
-        for (let i = max; i >= min; i--) {
-            floorsContainer.innerHTML += `<div class="floor-label"><div>${i}</div></div>`;
+        const floorNumbers = Object.keys(byFloor).map(Number).sort((a, b) => b - a);
+
+        for (let i = 0; i < floorNumbers.length; i++) {
+            floorsContainer.innerHTML += `<div class="floor-label"><div>${floorNumbers[i]}</div></div>`;
         }
 
         // Render each floor with building-block structure
-        Object.keys(byFloor).sort((a, b) => b - a).forEach(floorNumber => {
+        Object.keys(byFloor).map(Number).sort((a, b) => b - a).forEach(floorNumber => {
             const floor = byFloor[floorNumber]; 
 
             let floorDiv = `<div class="floor-row">`;
@@ -1977,7 +1979,7 @@ ob_end_clean();
                 
                 blocks.forEach(block => {
                     
-                    const extraWidth = building == '11' ? 'width: 625px;' : '';
+                    const extraWidth = building == '11' || building == '9' ? 'width: 625px;' : '';
                     let blockOnFloorDiv = `<div 
                         class="blockOnFloor"
                         data-floor="${floorNumber}"
