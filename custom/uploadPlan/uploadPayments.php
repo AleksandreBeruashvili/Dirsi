@@ -70,19 +70,27 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST['action']) && $_POST['a
         $amountUSD      = trim($row[3]);
         $amountGEL      = trim($row[4]);
 
-        // Deal-ის ძიება
+        // Deal-ის ძიება: ჯერ ძველი ხელშ. ველი, შემდეგ ახალი (ან ნებისმიერი შესაბამისობა)
         $dealBitrixId = null;
-        $dbDeals = CCrmDeal::GetListEx(
-                [],
+        $dealLookupFilters = [
                 ['UF_CRM_1766563053146' => $contractNumber, 'CHECK_PERMISSIONS' => 'N'],
-                false,
-                ['nTopCount' => 1],
-                ['ID']
-        );
-        if ($deal = $dbDeals->Fetch()) {
-            $dealBitrixId = intval($deal['ID']);
-        } else {
-            $results['errors'][] = "სტრიქონი $i: Deal ვერ მოიძებნა ხელშეკრ. ნომრით '$contractNumber'";
+                ['UF_CRM_1770640981002' => $contractNumber, 'CHECK_PERMISSIONS' => 'N'],
+        ];
+        foreach ($dealLookupFilters as $dealFilter) {
+            $dbDeals = CCrmDeal::GetListEx(
+                    [],
+                    $dealFilter,
+                    false,
+                    ['nTopCount' => 1],
+                    ['ID']
+            );
+            if ($deal = $dbDeals->Fetch()) {
+                $dealBitrixId = intval($deal['ID']);
+                break;
+            }
+        }
+        if ($dealBitrixId === null) {
+            $results['errors'][] = "სტრიქონი $i: Deal ვერ მოიძებნა ხელშეკრ. ნომრით '$contractNumber' (ველები: ძველი/ახალი ნომერი)";
             $results['processed_rows']++;
             continue;
         }
