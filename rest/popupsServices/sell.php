@@ -81,6 +81,9 @@ $keytReceived = $postStr("keytReceived");
 $barter = $postStr("barter");
 $giftVoucher = $postStr("giftVoucher");
 $giftVoucherName = $postStr("giftVoucherName");
+$brandedGift = $postStr("brandedGift");
+$brandedGiftText = $postStr("brandedGiftText");
+$brandedGiftDetails = $postStr("brandedGiftDetails");
 
 if ($dealId) {
     $arErrorsTmp = array();
@@ -114,6 +117,9 @@ if ($dealId) {
                 "keytReceived" => $keytReceived,
                 "giftVoucher" => $giftVoucher,
                 "giftVoucherName" => $giftVoucherName,
+                "brandedGift" => $brandedGift,
+                "brandedGiftText" => $brandedGiftText,
+                "brandedGiftDetails" => $brandedGiftDetails,
                 "TargetUser" => "user_" . (int)$currentUserId
             ],
             $arErrorsTmp
@@ -140,6 +146,10 @@ if ($dealId) {
         if (!empty($barter)) {
             $updateArr["UF_CRM_1774442641"] = $barter;
 
+        }
+        if ($brandedGift !== "") {
+            $updateArr["UF_CRM_1777483846"] = $brandedGift;
+            $updateArr["UF_CRM_1777483938"] = ($brandedGift === "340") ? $brandedGiftDetails : "";
         }
     
         if (!empty($updateArr)) {

@@ -36,6 +36,7 @@ function getDealFieldsToolbar($fieldName, $sort = array())
 
 $citizenOf = getDealFieldsToolbar("UF_CRM_1770187155776");
 $nationalityOptions = getDealFieldsToolbar("UF_CRM_1769506891465", array("SORT" => "ASC"));
+$brandedGiftOptions = getDealFieldsToolbar("UF_CRM_1777483846", array("SORT" => "ASC"));
 $dealId = isset($_REQUEST['DEAL_ID']) ? intval($_REQUEST['DEAL_ID']) : 0;
 $deal = getDealInfoByIDToolbar($dealId);
 $contact = getContactInfo($deal["CONTACT_ID"]);
@@ -141,8 +142,8 @@ $giftVoucherOptions = getGiftVoucherOptions();
         }
 
         textarea.form-input {
-            height: auto;
-            min-height: 50px;
+            /* height: auto; */
+            /* min-height: 50px; */
             resize: vertical;
         }
 
@@ -533,6 +534,26 @@ $giftVoucherOptions = getGiftVoucherOptions();
             </div>
         </div>
 
+        <!-- ბრენდირებული საჩუქარი -->
+        <div class="section-block section-block-purple">
+            <div class="section-label">🎀 ბრენდირებული საჩუქარი</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">ბრენდირებული საჩუქარი</label>
+                    <select id="brandedGift" class="form-select" onchange="toggleBrandedGiftDetails()">
+                        <option value="">აირჩიეთ...</option>
+                        <?php foreach ($brandedGiftOptions as $bid => $blabel): ?>
+                        <option value="<?= htmlspecialchars((string)$bid) ?>"><?= htmlspecialchars($blabel) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group" id="brandedGiftDetailsDiv" style="display:none;">
+                    <label class="form-label">ბრენდირებული საჩუქარი დეტალურად</label>
+                    <textarea id="brandedGiftDetails" class="form-input" rows="2"></textarea>
+                </div>
+            </div>
+        </div>
+
         <input type="hidden" id="sellDealIdHidden" value="<?= (int)$dealId ?>">
 
     </div>
@@ -588,10 +609,15 @@ $giftVoucherOptions = getGiftVoucherOptions();
         setSelectVal('keytReceived',    deal["UF_CRM_1771499429"],       ["1", "0"]);
         setSelectVal('barter',          deal["UF_CRM_1774442641"],        ["1", "0"]);
         setSelectVal('giftVoucher',     deal["UF_CRM_1775473780"],        ["1", "0"]);
+        setSelectVal('brandedGift',     deal["UF_CRM_1777483846"]);
         if (deal["UF_CRM_1775474132"]) {
             document.getElementById('giftVoucherName').value = deal["UF_CRM_1775474132"];
         }
+        if (deal["UF_CRM_1777483938"]) {
+            document.getElementById('brandedGiftDetails').value = deal["UF_CRM_1777483938"];
+        }
         toggleGiftVoucherName();
+        toggleBrandedGiftDetails();
 
         // Fill citizenOf dropdown
         const citizenSelect = document.getElementById('citizenOf');
@@ -641,6 +667,15 @@ $giftVoucherOptions = getGiftVoucherOptions();
         div.style.display = (val === '1') ? 'block' : 'none';
         if (val !== '1') {
             document.getElementById('giftVoucherName').value = '';
+        }
+    }
+
+    function toggleBrandedGiftDetails() {
+        const val = document.getElementById('brandedGift').value;
+        const div = document.getElementById('brandedGiftDetailsDiv');
+        div.style.display = (val === '340') ? 'block' : 'none';
+        if (val !== '340') {
+            document.getElementById('brandedGiftDetails').value = '';
         }
     }
 
@@ -792,6 +827,9 @@ $giftVoucherOptions = getGiftVoucherOptions();
         formData.append("barter",             document.getElementById('barter').value);
         formData.append("giftVoucher",        document.getElementById('giftVoucher').value);
         formData.append("giftVoucherName",    document.getElementById('giftVoucherName').value);
+        formData.append("brandedGift",        document.getElementById('brandedGift').value);
+        formData.append("brandedGiftText",    document.getElementById('brandedGift').options[document.getElementById('brandedGift').selectedIndex]?.text || '');
+        formData.append("brandedGiftDetails", document.getElementById('brandedGiftDetails').value);
 
         $.ajax({
             url: "/rest/popupsservices/sell.php",
