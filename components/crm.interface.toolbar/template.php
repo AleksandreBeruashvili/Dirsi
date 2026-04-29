@@ -733,6 +733,10 @@ if($dealId){
         openNonStandardAgreement(dealId) {
             this.open(`/rest/popups/nonStandardAgreement.php?DEAL_ID=${dealId}`, 'არასტანდარტული ხელშეკრულება');
         },
+
+        openAgreementCancellation(dealId) {
+            this.open(`/rest/popups/agreementCancellation.php?DEAL_ID=${dealId}`, 'ხელშეკრულების გაუქმება');
+        },
         
         openDocuments(dealId) {
             this.open(`/crm/deal/buttons_page.php?dealid=${dealId}`, 'დოკუმენტები');
@@ -876,6 +880,17 @@ if($dealId){
                     icon: ButtonFactory.icons.documents,
                     label: 'არასტანდარტული ხელშეკრულება',
                     onClick: () => PopupManager.openNonStandardAgreement(dealIdForToolbar)
+                });
+            }
+
+            // ხელშეკრულების გაუქმება
+            const agreementCancellationStages = ['4', 'WON'];
+            if (Utils.hasProduct() && Utils.isStageIn(stageId, agreementCancellationStages)) {
+                this.addButton({
+                    id: 'agreementCancellationBtn',
+                    icon: ButtonFactory.icons.documents,
+                    label: 'ხელშეკრულების გაუქმება',
+                    onClick: () => PopupManager.openAgreementCancellation(dealIdForToolbar)
                 });
             }
             
