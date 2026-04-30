@@ -36,6 +36,7 @@ if (!$deal) {
 }
 
 $contactType = trim($_POST["contactType"]);
+$contactTypeStr = "";
 
 if($contactType == "174"){
     $contactTypeStr = "სტანდარტული";
@@ -46,6 +47,15 @@ if($contactType == "174"){
 $agreementFile = trim($_POST["agreementFile"]);
 $identityFile = trim($_POST["identityFile"]);
 $comment = trim($_POST["comment"]);
+$agreementNumber = trim($_POST["agreementNumber"]);
+
+if (!preg_match('/^PB\/SALES\/\d+$/', $agreementNumber)) {
+    echo json_encode([
+        "status" => "error",
+        "message" => "Invalid agreement number format. Use: PB/SALES/123"
+    ]);
+    exit;
+}
 
 if($dealId){
     $arErrorsTmp = array();
@@ -71,6 +81,7 @@ if($dealId){
             "agreementFile" => $agreementFile,
             "identityFile" => $identityFile,
             "comment" => $comment,
+            "agreementNumber" => $agreementNumber,
             "TargetUser" => "user_" . $currentUserId
         ],
         $arErrorsTmp

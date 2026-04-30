@@ -154,6 +154,12 @@ if ($contactId && CModule::IncludeModule('iblock')) {
             <div class="error" id="contactType-error">გთხოვთ აირჩიოთ კონტრაქტის ტიპი</div>
         </div>
 
+        <div class="form-group">
+            <label for="agreementNumber" class="required">ხელშეკრულების N</label>
+            <input type="text" id="agreementNumber" name="agreementNumber" placeholder="PB/SALES/497" required>
+            <div class="error" id="agreementNumber-error">შეიყვანეთ ფორმატში: PB/SALES/123</div>
+        </div>
+
         <!-- Agreement File -->
         <div class="file-group">
             <span>ხელშეკრულება:</span>
@@ -199,6 +205,10 @@ if ($contactId && CModule::IncludeModule('iblock')) {
         document.getElementById("contactType").value = "174";
     } else if(deal["UF_CRM_1770204855111"] == "175"){
         document.getElementById("contactType").value = "175";
+    }
+
+    if (deal["UF_CRM_1770640981002"]) {
+        document.getElementById("agreementNumber").value = String(deal["UF_CRM_1770640981002"]).trim();
     }
 
     function closePopup() {
@@ -253,6 +263,7 @@ if ($contactId && CModule::IncludeModule('iblock')) {
 
         function validateForm() {
             let valid = true;
+            const agreementNumberPattern = /^PB\/SALES\/\d+$/;
 
             // Validate contract type
             if (!$("#contactType").val()) {
@@ -267,6 +278,14 @@ if ($contactId && CModule::IncludeModule('iblock')) {
                 valid = false;
             } else {
                 clearError("agreementFile");
+            }
+
+            const agreementNumber = ($("#agreementNumber").val() || "").trim();
+            if (!agreementNumberPattern.test(agreementNumber)) {
+                showError("agreementNumber", "შეიყვანეთ ფორმატში: PB/SALES/123");
+                valid = false;
+            } else {
+                clearError("agreementNumber");
             }
             
             if (!contactHasDoc && !$("#identityFile").val()) {
@@ -298,6 +317,7 @@ if ($contactId && CModule::IncludeModule('iblock')) {
             formData.append("agreementFile", agreementFileId);
             formData.append("identityFile", identityFileId);
             formData.append("comment", $("#comment").val());
+            formData.append("agreementNumber", $("#agreementNumber").val().trim());
 
             $.ajax({
                 url: "/rest/popupsservices/agreementCheck.php",
