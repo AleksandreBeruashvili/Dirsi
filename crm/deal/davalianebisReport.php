@@ -112,7 +112,7 @@ function getDealsByFilter($arFilter, $project = '', $arSelect = array(), $arSort
     $result["deals_data"] = array();
     $result["deals_IDs"] = array();
 
-    $res_deals = CCrmDeal::GetList($arSort, $arFilter, array("ID", "DATE_CREATE", "CONTACT_ID","COMPANY_ID", "TITLE","CONTACT_FULL_NAME","OPPORTUNITY","COMPANY_TITLE","UF_CRM_1761658532158","ASSIGNED_BY_ID","UF_CRM_1766560177934", "UF_CRM_1764317005", "UF_CRM_1761658516561", "UF_CRM_1766736693236", "UF_CRM_1761658577987", "UF_CRM_1770888201367", "UF_CRM_1770640981002", "UF_CRM_1767011536", "UF_CRM_1761658608306", "UF_CRM_1761658503260", "UF_CRM_1761658559005", "UF_CRM_1762416342444"));
+    $res_deals = CCrmDeal::GetList($arSort, $arFilter, array("ID", "DATE_CREATE", "CONTACT_ID","COMPANY_ID", "TITLE","CONTACT_FULL_NAME","OPPORTUNITY","COMPANY_TITLE","UF_CRM_1761658532158","ASSIGNED_BY_ID","UF_CRM_1766560177934", "UF_CRM_1764317005", "UF_CRM_1761658516561", "UF_CRM_1766736693236", "UF_CRM_1761658577987", "UF_CRM_1770888201367", "UF_CRM_1770640981002", "UF_CRM_1767011536", "UF_CRM_1761658608306", "UF_CRM_1761658503260", "UF_CRM_1761658559005", "UF_CRM_1762416342444", 'UF_CRM_1766563053146'));
     while($arDeal = $res_deals->Fetch()) {
         $arDeal["payment"] = 0;
         $arDeal["responsible"] = getUserName($arDeal["ASSIGNED_BY_ID"]);
@@ -231,6 +231,8 @@ $labels = [
         'xls_debt'       => 'Debt',
         'xls_overdue'    => 'Overdue Days',
         'xls_status'     => 'Status',
+        'xls_contract_old' => 'Contract # (Old Base)',
+        'xls_contract_new' => 'Contract #',
     ],
     'ge' => [
         'project'        => 'პროექტი',
@@ -288,6 +290,8 @@ $labels = [
         'xls_debt'       => 'დავალიანება',
         'xls_overdue'    => 'ვადაგადაცილების დღეები',
         'xls_status'     => 'სტატუსი',
+        'xls_contract_old' => 'ხელშეკრულების N (ძველი ბაზა)',
+        'xls_contract_new' => 'ხელშეკრულების N',
     ],
 ];
 
@@ -993,6 +997,8 @@ ob_end_clean();
         // =============================================
         const fields = [
             { key: 'ID',                        label: t.xls_deal },
+            { key: 'UF_CRM_1766563053146',      label: t.xls_contract_old },
+            { key: 'UF_CRM_1770640981002',      label: t.xls_contract_new },
             { key: 'CONTACT_FULL_NAME',         label: t.xls_client },
             { key: 'responsible',               label: t.xls_resp },
             { key: 'UF_CRM_1762416342444',      label: t.xls_contract },

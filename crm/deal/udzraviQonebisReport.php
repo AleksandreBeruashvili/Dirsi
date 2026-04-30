@@ -172,6 +172,8 @@ foreach ($products as $product) {
         if ($product["OWNER_DEAL"]) {
             $registraciaReestrshi = $deals[$product["OWNER_DEAL"]]["UF_CRM_1771499394"];
             $filteredProducts[$product["ID"]]["registeredOrNo"] = $registraciaReestrshi === "1" ? "Yes" : "No";
+            $filteredProducts[$product["ID"]]["contractNumOld"] = $deals[$product["OWNER_DEAL"]]['UF_CRM_1766563053146'];
+            $filteredProducts[$product["ID"]]["contractNum"] = $deals[$product["OWNER_DEAL"]]['UF_CRM_1770640981002'];
         }
 
         $filteredProducts[$product["ID"]]["available"] = $product["STATUS"] === "გაყიდული" ? "NO" : "Yes";
@@ -673,6 +675,8 @@ foreach ($apartmentTypes as $aptType) {
             { key: 'LIVING_SPACE',   label: 'Living Area (sq meters)' },
             { key: 'BALCONY_AREA',   label: 'Balcony (sq meters)' },
             { key: 'OWNER_DEAL',     label: '№ Deal' },
+            { key: 'contractNumOld', label: 'Contract # (Old Base)' },
+            { key: 'contractNum',    label: 'Contract # ' },
             { key: '',               label: 'Year' },
             { key: '',               label: 'Month' },
             { key: 'projEndDate',    label: 'Date' },

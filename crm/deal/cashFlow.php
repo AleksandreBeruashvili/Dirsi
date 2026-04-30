@@ -19,7 +19,7 @@ function getDealsByFilter($arFilter, $project, $arSelect = array(), $arSort = ar
         $arFilter["UF_CRM_1761658516561"] = $project;
     }
 
-    $res_deals = CCrmDeal::GetList($arSort, $arFilter, array("ID", "DATE_CREATE", "CONTACT_ID","COMPANY_ID", "TITLE","CONTACT_FULL_NAME","OPPORTUNITY","COMPANY_TITLE","UF_CRM_1695822282629","ASSIGNED_BY_ID","UF_CRM_1667309488937"));
+    $res_deals = CCrmDeal::GetList($arSort, $arFilter, array("ID", "DATE_CREATE", "CONTACT_ID","COMPANY_ID", "TITLE","CONTACT_FULL_NAME","OPPORTUNITY","COMPANY_TITLE","UF_CRM_1695822282629","ASSIGNED_BY_ID","UF_CRM_1667309488937", "UF_CRM_1766563053146", "UF_CRM_1770640981002"));
     while($arDeal = $res_deals->Fetch()) {
         $arDeal["payment"] = 0;
         $result["deals_data"][$arDeal["ID"]] = $arDeal;
@@ -688,7 +688,16 @@ ob_end_clean();
             Object.keys(dates).forEach(date => allDatesSet.add(date));
         });
 
-        const allDates = Array.from(allDatesSet).sort((a,b) => new Date(a) - new Date(b));
+        const allDates = Array.from(allDatesSet).sort((a, b) => {
+            const parseDate = (d) => {
+                if (d.includes('/')) {
+                    const [day, month, year] = d.split('/');
+                    return new Date(year, month - 1, day);
+                }
+                return new Date(a);
+            };
+            return parseDate(a) - parseDate(b);
+        });
 
         const data = [];
 
@@ -697,6 +706,8 @@ ob_end_clean();
                 "Client": deal.CONTACT_FULL_NAME || "",
                 "Deal#": deal.TITLE || "",
                 "Contract Sign Date": deal.UF_CRM_1667309488937 || "",
+                "Contract # Old": deal.UF_CRM_1766563053146 || "",
+                "Contract #": deal.UF_CRM_1770640981002 || "",
                 "Price": deal.OPPORTUNITY || 0,
                 "Payment": deal.payment || 0,
                 "Left to pay": (deal.OPPORTUNITY || 0) - (deal.payment || 0),

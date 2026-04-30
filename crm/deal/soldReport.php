@@ -861,17 +861,23 @@ ob_end_clean();
     $mainTypes      = array_values(array_filter($allProdTypes, fn($pt) => !in_array($pt, $apartmentTypes)));
     $breakdownTypes = array_values(array_filter($allProdTypes, fn($pt) =>  in_array($pt, $apartmentTypes)));
 
-    // Sort main types alphabetically
     sort($mainTypes);
-
-    // Sort bedroom breakdowns ascending: Flat (1 Bed.) → Flat (2 Bed.) → Flat (3 Bed.)
     usort($breakdownTypes, function($a, $b) {
         preg_match('/(\d+)/', $a, $mA);
         preg_match('/(\d+)/', $b, $mB);
         return (int)($mA[1] ?? 0) - (int)($mB[1] ?? 0);
     });
 
-    $allProdTypes = array_merge($mainTypes, $breakdownTypes);
+    // Insert bedroom breakdowns immediately after "Flat"
+    $allProdTypes = [];
+    foreach ($mainTypes as $mt) {
+        $allProdTypes[] = $mt;
+        if ($mt === 'Flat') {
+            foreach ($breakdownTypes as $bt) {
+                $allProdTypes[] = $bt;
+            }
+        }
+    }
 
     // ---- Render function ----
     function renderBBTable($groupKey, $groupData, $allProdTypes, $apartmentTypes, $t) {
@@ -946,7 +952,7 @@ ob_end_clean();
                     <td>$<?= number_format($t_soldPricesProduct,  2) ?></td>
                     <td>$<?= number_format($t_receivedPayments, 2) ?></td>
                     <td>$<?= number_format($t_soldDifferences, 2) ?></td>
-                    <td>$<?= number_format($t_avg,          2) ?></td>
+                    <!-- <td>$<?= number_format($t_avg,          2) ?></td> -->
                 </tr>
             </tbody>
         </table>
@@ -985,13 +991,24 @@ ob_end_clean();
     }
     $mainTypes      = array_values(array_filter($allProdTypes, fn($pt) => !in_array($pt, $apartmentTypes)));
     $breakdownTypes = array_values(array_filter($allProdTypes, fn($pt) =>  in_array($pt, $apartmentTypes)));
+
     sort($mainTypes);
     usort($breakdownTypes, function($a, $b) {
         preg_match('/(\d+)/', $a, $mA);
         preg_match('/(\d+)/', $b, $mB);
         return (int)($mA[1] ?? 0) - (int)($mB[1] ?? 0);
     });
-    $allProdTypes = array_merge($mainTypes, $breakdownTypes);
+
+    // Insert bedroom breakdowns immediately after "Flat"
+    $allProdTypes = [];
+    foreach ($mainTypes as $mt) {
+        $allProdTypes[] = $mt;
+        if ($mt === 'Flat') {
+            foreach ($breakdownTypes as $bt) {
+                $allProdTypes[] = $bt;
+            }
+        }
+    }
 
     echo '<h2>' . $t['sales_summary'] . '</h2>';
     renderBBTable("TOTAL", $resArray["TOTAL"], $allProdTypes, $apartmentTypes, $t);

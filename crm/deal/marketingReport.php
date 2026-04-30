@@ -216,7 +216,7 @@ $dealIds        = array_keys($deals);
 $dealsHistories = getStageChangesForMultipleDeals($dealIds);
 
 // ----------------------------- STAGE DEFINITIONS -----------------------
-$qualifiedLeadStagesNotCounted = ["New Lead", "Processed", "Sell", "Lost Negotiation"];
+$qualifiedLeadStagesNotCounted = ["New Lead", 'ახალი ლიდი', "Processed", 'დამუშავებული', "Sell", 'გაყიდული', "Lost Negotiation", 'ჯანქი'];
 $allowedLostReasons            = ["83", "203", "42", "205", "43", "206", "207", "208", "209", "210", "211", "212"];
 $nonQualifiedLeadReasons       = ["42", "40", "44", "41"];
 $wonStageIds                   = ["WON"];
@@ -229,6 +229,7 @@ $qualifiedDeals       = [];
 $nonQualifiedDeals    = [];
 $wonDeals = array_keys(array_filter($deals, fn($n) => $n["STAGE_ID"] === 'WON'));
 
+$uniqueQualifiedStages = [];
 foreach ($dealsHistories as $dealId => $events) {
     if (!isset($deals[$dealId])) continue;
 
@@ -238,8 +239,8 @@ foreach ($dealsHistories as $dealId => $events) {
     $meetingAgreed   = false;
     $nonQualified    = false;
     
+    
     foreach ($events as $event) {
-
         // Lost Negotiation
         if ($event["EVENT_TEXT_2"] === "Lost Negotiation" && !$lost) {
             if (in_array($deals[$dealId]["UF_CRM_1761575156657"], $allowedLostReasons)) {
@@ -252,10 +253,15 @@ foreach ($dealsHistories as $dealId => $events) {
             }
         }
 
+        if (!in_array($event["EVENT_TEXT_2"],$uniqueQualifiedStages) && !in_array($event["EVENT_TEXT_2"], $qualifiedLeadStagesNotCounted)) {
+            $uniqueQualifiedStages[] = $event["EVENT_TEXT_2"];
+        }
+
         // Qualified
         if (!in_array($event["EVENT_TEXT_2"], $qualifiedLeadStagesNotCounted) && !$qualified) {
             $qualified = true;
             $qualifiedDeals[] = $dealId;
+            
         }
 
         // Meeting Agreed
@@ -270,7 +276,11 @@ foreach ($dealsHistories as $dealId => $events) {
             $meetingFinishedDeals[] = $dealId;
         }
     }
+    
 }
+
+
+
 
 // ----------------------------- GLOBAL COUNTS ---------------------------
 $numOfTotalDeals            = count($deals);
@@ -672,6 +682,7 @@ ob_end_clean();
             <div>
                 <div class="modal-title" id="modalTitle">Deals</div>
                 <div class="modal-count" id="modalCount"></div>
+                <div id="modalSubtitle" style="display:none; font-size:11px; opacity:0.75; margin-top:4px; font-style:italic;"></div>
             </div>
             <button class="modal-close" onclick="closeModal()">✕</button>
         </div>
@@ -713,6 +724,7 @@ foreach ($deals as $dealId => $deal) {
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
+    const qualifiedStageNames = <?= json_encode($uniqueQualifiedStages) ?>;
     function exportToExcel() {
         var table = document.querySelector('.data-table');
         var wb = XLSX.utils.book_new();
@@ -794,6 +806,14 @@ foreach ($deals as $dealId => $deal) {
         const empty  = document.getElementById('modalEmpty');
 
         document.getElementById('modalTitle').textContent = label;
+        // Add stage names subtitle for qualified leads
+        const subtitle = document.getElementById('modalSubtitle');
+        if (bucketKey === 'qualifiedLeads' && qualifiedStageNames.length > 0) {
+            subtitle.textContent = 'Stages: ' + qualifiedStageNames.join(', ');
+            subtitle.style.display = 'block';
+        } else {
+            subtitle.style.display = 'none';
+        }
         document.getElementById('modalCount').textContent = ids.length + ' deal(s)';
         tbody.innerHTML = '';
 
